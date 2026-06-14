@@ -107,7 +107,7 @@ process_algorithm_os/
 │
 └── memory_management/
     ├── __init__.py                # Makes python treat this directory as a package
-    ├── main.py                    # The central entry point (UI / terminal menu)
+    ├── memory_management_main.py                    # The central entry point (UI / terminal menu)
     │
     ├── utils/
     │   ├── __init__.py
