@@ -33,4 +33,11 @@ class LRU(PageReplacementAlgorithm):
                 self.fault_count += 1
                 evicted = None
 
-                
+                if len(cache) >= self.num_frames:
+                    # evict the least recently used (first item)
+                    evicted, _ = cache.popitem(last=False)
+
+                cache[page] = True
+                self.steps.append(SimStep(i, page, self.snapshot(list(cache)), True, evicted))
+
+        return self.steps
