@@ -340,7 +340,7 @@ class MemoryManagementApp:
                 
                 # Render leftover internal fragmentation shard
                 if partition.internal_fragmentation > 0:
-                    self.mft_canvas.create_rectangle(x1, y1 + proc_height, x2, y2, fill="#ffcccc", outline="black", width=1, hatch="/")
+                    self.mft_canvas.create_rectangle(x1, y1 + proc_height, x2, y2, fill="#ffcccc", outline="black", width=1)
                     self.mft_canvas.create_text(x1 + 125, y1 + proc_height + ((height - proc_height) / 2), text=f"Internal Frag\n{partition.internal_fragmentation}K", font=("Arial", 9, "italic"), fill="red")
                     total_internal_fragmentation += partition.internal_fragmentation
             else:
@@ -392,7 +392,7 @@ class MemoryManagementApp:
                 self.mvt_canvas.create_rectangle(x1, y1, x2, y2, fill="#cce5ff", outline="black", width=2)
                 self.mvt_canvas.create_text(x1 + 125, y1 + (height / 2), text=f"{block.occupied_process.process_id}\n({block.block_size}K)", font=("Arial", 10, "bold"))
             else:
-                self.mvt_canvas.create_rectangle(x1, y1, x2, y2, fill="#e2ffe2", outline="black", width=2, hatch="\\")
+                self.mvt_canvas.create_rectangle(x1, y1, x2, y2, fill="#e2ffe2", outline="black", width=2)
                 self.mvt_canvas.create_text(x1 + 125, y1 + (height / 2), text=f"FREE HOLE\n({block.block_size}K)", font=("Arial", 10, "bold"), fill="green")
                 total_free_space += block.block_size
                 free_hole_segments_count += 1
