@@ -18,3 +18,6 @@ class SimStep:
     @property
     def status(self):
         return 'FAULT' if self.is_fault else 'HIT'
+    
+class PageReplacementAlgorithm(ABC):
+    '''Abstract base class for page replacement algorithms.'''
