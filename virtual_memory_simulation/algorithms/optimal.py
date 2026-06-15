@@ -10,4 +10,8 @@ class Optimal(PageReplacementAlgorithm):
     Requires knowing the full reference list in advance (theoretical base case).
     '''
 
+    @property
+    def name(self):
+        return 'Optimal'
+    
     
