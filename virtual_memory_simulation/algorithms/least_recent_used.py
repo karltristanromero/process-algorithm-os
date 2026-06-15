@@ -11,3 +11,9 @@ class LRU(PageReplacementAlgorithm):
     Uses an OrderedDict to efficiently track recency - least recently used
     page is always at the front, most recently used at the end.
     '''
+
+    @property
+    def name(self):
+        return "LRU"
+    
+    
