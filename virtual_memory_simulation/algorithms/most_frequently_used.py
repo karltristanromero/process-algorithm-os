@@ -43,4 +43,12 @@ class MFU(PageReplacementAlgorithm):
                     max_freq = max(frames.values())
                     victim = next(p for p in lru_order if frames[p] == max_freq)
 
-                    
+                    evicted = victim
+                    del frames[victim]
+                    lru_order.remove(victim)
+                    frames[page] = 1
+                    lru_order.append(page)
+
+                self.steps.append(SimStep(i, page, self._snapshot(list(frames)), True, evicted))
+
+        return self.steps
