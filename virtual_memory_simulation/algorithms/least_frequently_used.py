@@ -42,3 +42,9 @@ class LFU(PageReplacementAlgorithm):
                     # among ties, pick the least recently used
                     min_freq = min(frames.values())
                     victim = next(p for p in lru_order if frames[p] == min_freq)
+
+                    evicted = victim
+                    del frames[victim]
+                    lru_order.remove(victim)
+                    frames[page] = 1
+                    lru_order.append(page)
