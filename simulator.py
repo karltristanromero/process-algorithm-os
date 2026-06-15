@@ -50,3 +50,18 @@ class VMSimulator:
                 return pages
             except ValueError:
                 print("  ⚠  Invalid input — please enter integers only.")
+
+    def _generate_random(self) -> list[int]:
+        while True:
+            try:
+                length = int(input("\n How many page references? (e.g. 15): ").strip())
+                page_max = int(input("  Highest page number? (e.g. 9 gives pages 0-9): ").strip())
+
+                if length < 2 or page_max < 1:
+                    print("  ⚠  Length must be ≥ 2 and page max ≥ 1.")
+                    continue
+                ref = [random.randint(0, page_max) for _ in range(length)]
+                print("\n Generated: {' '.join(map(str, ref))}")
+                return ref
+            except ValueError:
+                print("  ⚠  Please enter valid integers.")
