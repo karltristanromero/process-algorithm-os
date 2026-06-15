@@ -28,3 +28,9 @@ class Display:
 
         # Algorithm name
         print(f"  {algo_name}")
+
+        # Reference string row
+        print(f"  {'Ref':<4}", end="")
+        for s in steps:
+            print(f"{s.page:^{w}}", end="")
+        print()
