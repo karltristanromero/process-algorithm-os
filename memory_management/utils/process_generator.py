@@ -2,18 +2,28 @@ import random
 
 # Part 1: Define what a Process is
 class Process:
-    def __init__(self, process_id, process_size):
-        self.process_id = process_id        # Set up the process id (strictly "P1" through "P10")
-        self.process_size = process_size    # Set up the memory size needed (randomly chosen up to 64K)
-        self.is_allocated = False           # Set up a flag to track if it is currently inside memory (True/False)
-        self.partition_id = None            # Set up a variable to track which memory block/partition ID it is inside
+    def __init__(self, process_number: int, process_size: int = 0):
+        self.process_id = f"P{process_number}"          # Set up the process id (strictly "P1" through "P10")
+        self.process_size = process_size                # Set up the memory size needed (randomly chosen up to 64K)
+        self.is_allocated = False                       # Set up a flag to track if it is currently inside memory (True/False)
+        self.partition_id = None                        # Set up a variable to track which memory block/partition ID it is inside
 
 
 # Part 2: Manual Input Option (MFT / MVT Standard)
-# Create a function to make a single manual process entry
-    # Check if the user entered a valid ID string (P1 to P10)
+def create_manual_process(process_id: str, process_size: int):
+    process_id = process_id.strip().upper()             # Clean the input string spaces and force uppercase
+    
+    # Check if the user entered a valid process number (1 to 10)
+    valid_ids = [f"P{i}" for i in range(1, 11)]
+    if process_id not in valid_ids:
+        raise ValueError("Invalid process ID. Please enter a process ID between P1 and P10.")
+    
     # Check if the user entered a valid size (greater than 0 and max 64K)
+    if process_size <= 0 or process_size > 64:
+        raise ValueError("Invalid process size. Please enter a size between 1K and 64K.")
+    
     # Create and return one Process object with the user's ID and size
+    return Process(process_number=int(process_id[1:]), process_size=process_size)
 
 
 # Part 3: Automatic Random Event Generator (Strict MFT/MVT Logic)
