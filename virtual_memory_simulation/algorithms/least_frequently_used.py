@@ -33,3 +33,10 @@ class LFU(PageReplacementAlgorithm):
             else:
                 self.fault_count += 1
                 evicted = None
+
+                if len(frames) < self.num_frames:
+                    frames[pages] = 1
+                    lru_order.append(page)
+                else:
+                    min_freq = min(frames.values())
+                    victim = next(p for p in lru_order if frames[p] == min_freq)])
