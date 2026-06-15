@@ -31,3 +31,19 @@ def main():
     print(f"\n  Default number of frames: 4")
 
     simulator = VMSimulator(num_frames=4)
+
+    while True:
+        ref = simulator.get_reference_string()
+        print(f"\n  Reference string ({len(ref)} refs): {' '.join(map(str, ref))}")
+ 
+        choice = simulator.choose_algorithm()
+ 
+        if choice == "7":
+            simulator.run_all(ref)
+        else:
+            simulator.run_one(choice, ref)
+ 
+        again = input("\n  Run another simulation? [y/n]: ").strip().lower()
+        if again != "y":
+            print("\n  Goodbye! Good luck on your finals!\n")
+            break
