@@ -22,3 +22,13 @@ class FIFO(PageReplacementAlgorithm):
 
         frames = []         # current pages in memory
         queue = deque()     # tracks insertion order (oldest at front)
+
+        for i, page in enumerate(reference_string, 1):
+            if page in frames:
+                self.hit_count += 1
+                self.steps.append(SimStep(i, page, self.snapshot(frames), False))
+            else:
+                self.fault_count += 1
+                evicted = None
+
+                
