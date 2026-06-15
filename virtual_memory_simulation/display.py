@@ -65,3 +65,11 @@ class Display:
         for _ in steps:
             print(f"{'─' * w}", end="")
         print()
+
+    @classmethod
+    def print_stats(cls, algorithm: PageReplacementAlgorithm):
+        """Prints fault/hit summary for one algorithm."""
+        total = algorithm.fault_count + algorithm.hit_count
+        print(f"\n  Page faults : {algorithm.fault_count} / {total}")
+        print(f"  Page hits   : {algorithm.hit_count} / {total}")
+        print(f"  Hit rate    : {algorithm.hit_rate:.1f}%")
