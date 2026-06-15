@@ -250,55 +250,56 @@ class DiskSchedulerGUI:
         main_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
         
         # Left panel - Input
-        left_frame = ttk.Frame(main_frame, width=250)
-        left_frame.pack(side=tk.LEFT, fill=tk.BOTH, padx=(0, 10))
+        left_frame = ttk.Frame(main_frame, width=360)
+        left_frame.pack(side=tk.LEFT, fill=tk.BOTH, padx=(10, 20))
+        left_frame.pack_propagate(False)
         
-        ttk.Label(left_frame, text="Input Parameters", style='Title.TLabel').pack(anchor=tk.W, pady=(0, 15))
+        ttk.Label(left_frame, text="Input Parameters", style='Title.TLabel').pack(anchor=tk.W, pady=(0, 20))
         
         # Disk requests input
-        ttk.Label(left_frame, text="Disk Requests (comma-separated):").pack(anchor=tk.W)
-        self.requests_entry = ttk.Entry(left_frame, width=30)
-        self.requests_entry.pack(fill=tk.X, pady=(0, 10))
+        ttk.Label(left_frame, text="Disk Requests (comma-separated):").pack(anchor=tk.W, padx=(5, 0))
+        self.requests_entry = ttk.Entry(left_frame, width=38)
+        self.requests_entry.pack(fill=tk.X, padx=(5, 0), pady=(0, 12))
         self.requests_entry.insert(0, "98, 183, 37, 122, 14, 124, 65, 67")
         
         # Initial head position
-        ttk.Label(left_frame, text="Initial Head Position:").pack(anchor=tk.W)
-        self.head_entry = ttk.Entry(left_frame, width=30)
-        self.head_entry.pack(fill=tk.X, pady=(0, 10))
+        ttk.Label(left_frame, text="Initial Head Position:").pack(anchor=tk.W, padx=(5, 0))
+        self.head_entry = ttk.Entry(left_frame, width=38)
+        self.head_entry.pack(fill=tk.X, padx=(5, 0), pady=(0, 12))
         self.head_entry.insert(0, "53")
         
         # Disk size
-        ttk.Label(left_frame, text="Disk Size (cylinders):").pack(anchor=tk.W)
-        self.disk_size_entry = ttk.Entry(left_frame, width=30)
-        self.disk_size_entry.pack(fill=tk.X, pady=(0, 15))
+        ttk.Label(left_frame, text="Disk Size (cylinders):").pack(anchor=tk.W, padx=(5, 0))
+        self.disk_size_entry = ttk.Entry(left_frame, width=38)
+        self.disk_size_entry.pack(fill=tk.X, padx=(5, 0), pady=(0, 18))
         self.disk_size_entry.insert(0, "200")
         
         # Algorithm selection
-        ttk.Label(left_frame, text="Select Algorithm:", style='Title.TLabel').pack(anchor=tk.W, pady=(10, 10))
+        ttk.Label(left_frame, text="Select Algorithm:", style='Title.TLabel').pack(anchor=tk.W, pady=(12, 12), padx=(5, 0))
         
         self.algorithm_var = tk.StringVar(value="FCFS")
         for algo in self.algorithms.keys():
             ttk.Radiobutton(left_frame, text=algo, variable=self.algorithm_var, 
-                           value=algo).pack(anchor=tk.W, pady=5)
+                           value=algo).pack(anchor=tk.W, padx=(10, 0), pady=4)
         
         # Run button
         ttk.Button(left_frame, text="Run Simulation", 
-                  command=self.run_simulation).pack(fill=tk.X, pady=(20, 0))
+                  command=self.run_simulation).pack(fill=tk.X, padx=(5, 0), pady=(18, 0))
         
         # Results frame
         results_frame = ttk.LabelFrame(left_frame, text="Results", padding=10)
-        results_frame.pack(fill=tk.X, pady=(20, 0))
+        results_frame.pack(fill=tk.BOTH, expand=True, pady=(20, 0), padx=(5, 0))
         
         ttk.Label(results_frame, text="Total Seek Time:").pack(anchor=tk.W)
         self.seek_time_label = ttk.Label(results_frame, text="N/A", foreground="blue")
         self.seek_time_label.pack(anchor=tk.W, pady=(0, 10))
         
         ttk.Label(results_frame, text="Sequence:").pack(anchor=tk.W)
-        self.sequence_text = tk.Text(results_frame, height=6, width=28, font=('Courier', 9))
+        self.sequence_text = tk.Text(results_frame, height=6, width=34, font=('Courier', 9))
         self.sequence_text.pack(fill=tk.BOTH, expand=True)
 
         ttk.Label(results_frame, text="Computation:").pack(anchor=tk.W, pady=(10, 0))
-        self.computation_text = tk.Text(results_frame, height=10, width=28, font=('Courier', 9))
+        self.computation_text = tk.Text(results_frame, height=10, width=34, font=('Courier', 9))
         self.computation_text.pack(fill=tk.BOTH, expand=True)
         
         # Right panel - Visualization
