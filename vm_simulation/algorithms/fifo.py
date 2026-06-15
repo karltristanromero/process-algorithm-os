@@ -10,3 +10,7 @@ class FIFO(PageReplacementAlgorithm):
     Evicts the page that has been in memory the longest.
     Uses a queue to tract insertion order.
     '''
+
+    @property
+    def name(self):
+        return 'FIFO'
