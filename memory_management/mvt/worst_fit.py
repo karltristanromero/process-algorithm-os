@@ -1,28 +1,51 @@
+from mvt.variable_partition import MemoryBlock
+
 # Part 1: MVT Worst Fit Allocation Logic
-# Define a function named worst_fit_mvt(process, memory_manager)
-    # Track the index of the worst matching hole found (initialize as -1)
-    # Track the maximum leftover space seen so far (initialize to -1)
+def worst_fit_mvt(process, memory_manager):
+    """
+    Scans the entire list of dynamic blocks to find and carve the 
+    absolute largest free hole available for the incoming process.
+    """
+    worst_index = -1
+    max_leftover = -1
     
-    # Loop through each block in memory_manager.blocks using its index:
-        # Check if the block is an unallocated free hole AND block.block_size >= process.process_size:
-            # Calculate the potential leftover space (block.block_size - process.process_size)
-            # If this leftover space is larger than our maximum tracker:
-                # Update our maximum tracker with this higher value
-                # Update our worst index tracker with this current index
-                
-    # After checking all blocks, if a valid index was found (index != -1):
-        # 1. Grab that worst block from memory_manager.blocks[worst_index]
-        # 2. Save its original hole size
-        # 3. Shrink its block_size to match the process size exactly
-        # 4. Assign the process to it: block.occupied_process = process
+    # Loop through each block in memory_manager.blocks using its index
+    for index, block in enumerate(memory_manager.blocks):
         
-        # 5. If leftover space > 0:
-            # Create a new MemoryBlock for the leftover free hole
-            # Set its start_address to (block.start_address + process.process_size)
-            # Insert it right after the newly allocated block in the list array
+        # Check if the block is an unallocated free hole and can fit the process size
+        if block.occupied_process is None and block.block_size >= process.process_size:
+            current_leftover = block.block_size - process.process_size
             
-        # 6. Toggle process tracking flags (is_allocated = True, partition_id)
-        # 7. Return a success details string
+            # Find the largest possible fit (biggest leftover hole)
+            if current_leftover > max_leftover:
+                max_leftover = current_leftover
+                worst_index = index
+
+    # If a maximum capacity free hole index was discovered after the system-wide scan
+    if worst_index != -1:
+        block = memory_manager.blocks[worst_index]
+        original_hole_size = block.block_size
         
-    # If no single hole was large enough:
-        # Check total free space to determine if External Fragmentation requires Compaction
+        # Shrink the block to fit the process size exactly
+        block.block_size = process.process_size
+        block.occupied_process = process
+        
+        # If leftover space exists from our assignment choice, insert the new smaller free hole
+        if max_leftover > 0:
+            new_free_address = block.start_address + process.process_size
+            new_free_hole = MemoryBlock(start_address=new_free_address, block_size=max_leftover)
+            memory_manager.blocks.insert(worst_index + 1, new_free_hole)
+            
+        # Update the process object's tracking flags
+        process.is_allocated = True
+        process.partition_id = f"Dynamic Block ({block.start_address}K-{block.start_address + process.process_size}K)"
+        
+        return f"Allocated {process.process_id} ({process.process_size}K) to largest address {block.start_address}K [Worst Fit]."
+
+    # If the loop finishes and no single hole was large enough, check for fragmentation issues
+    total_free_memory = sum(b.block_size for b in memory_manager.blocks if b.occupied_process is None)
+    
+    if total_free_memory >= process.process_size:
+        return f"Allocation Failed: External Fragmentation detected. Total free space is {total_free_memory}K, but it is split. Compaction required."
+    else:
+        return f"Allocation Failed: Insufficient total memory. System only has {total_free_memory}K free."
