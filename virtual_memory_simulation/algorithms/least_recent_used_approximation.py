@@ -13,3 +13,9 @@ class LRUApproximation(PageReplacementAlgorithm):
        - bit = 1 → give a second chance (reset to 0, advance hand)
        - bit = 0 → evict this page
     '''
+
+    @property
+    def name(self):
+        return 'LRU Approximation (Second-Chance)'
+    
+    
