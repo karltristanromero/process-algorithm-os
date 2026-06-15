@@ -26,4 +26,15 @@ class LRUApproximation(PageReplacementAlgorithm):
         frames = []        # list of [page, reference_bit]
         clock_hand = 0     # points to next eviction candidate
 
-        
+        for i, page in enumerate(reference_string, 1):
+            pages_in_mem = [f[0] for f in frames]
+
+            if page in pages_in_mem:
+                # hit – set the page's reference bit to 1
+                index = pages_in_mem.index(page)
+                frames[index][1] = 1
+                self.hit_count += 1
+                self.steps.append(SimStep(i, page, self.snapshot(pages_in_mem), False))
+            else:
+                self.fault_count += 1
+                evicted = None
