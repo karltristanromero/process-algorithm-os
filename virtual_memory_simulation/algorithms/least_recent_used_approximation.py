@@ -47,3 +47,9 @@ class LRUApproximation(PageReplacementAlgorithm):
                     while frames[clock_hand][1] == 1:
                         frames[clock_hand][1] = 0  # second chance – clear bit
                         clock_hand = (clock_hand + 1) % self.num_frames
+
+                    evicted = frames[clock_hand][0]
+                    frames[clock_hand] = [page, 1]
+                    clock_hand = (clock_hand + 1) % self.num_frames
+
+                
