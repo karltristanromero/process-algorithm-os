@@ -101,7 +101,7 @@ class SCAN(DiskSchedulingAlgorithm):
 
 
 class CSCAN(DiskSchedulingAlgorithm):
-    """Circular SCAN - moves in one direction and wraps around"""
+    """Circular SCAN - moves upward, goes to the end, wraps to 0, then continues upward"""
     
     def schedule(self) -> Tuple[List[int], int]:
         current_head = self.head_position
@@ -109,30 +109,30 @@ class CSCAN(DiskSchedulingAlgorithm):
         self.total_seek_time = 0
         
         # Separate requests into left and right of current head
-        left = [x for x in self.requests if x < current_head]
-        right = [x for x in self.requests if x >= current_head]
-        
-        left.sort()
-        right.sort()
-        
-        # Move right to end
+        left = sorted([x for x in self.requests if x < current_head])
+        right = sorted([x for x in self.requests if x >= current_head])
+
+        # Service higher-numbered requests first
         for request in right:
             seek_time = self.calculate_seek_time(current_head, request)
             self.total_seek_time += seek_time
             self.sequence.append(request)
             current_head = request
         
-        # Move to disk end, then wrap to beginning
+        # Move to the highest cylinder before wrapping
         if left:
-            seek_time = self.calculate_seek_time(current_head, self.disk_size - 1)
-            self.total_seek_time += seek_time
-            current_head = self.disk_size - 1
-            
+            if current_head != self.disk_size - 1:
+                seek_time = self.calculate_seek_time(current_head, self.disk_size - 1)
+                self.total_seek_time += seek_time
+                self.sequence.append(self.disk_size - 1)
+                current_head = self.disk_size - 1
+
             seek_time = self.calculate_seek_time(current_head, 0)
             self.total_seek_time += seek_time
+            self.sequence.append(0)
             current_head = 0
             
-            # Service left requests
+            # Continue upward from the low end
             for request in left:
                 seek_time = self.calculate_seek_time(current_head, request)
                 self.total_seek_time += seek_time
@@ -402,9 +402,11 @@ class DiskSchedulerGUI:
             x1, y1 = sequence[i], y_positions[i]
             x2, y2 = sequence[i + 1], y_positions[i + 1]
             
-            # Draw line with arrow
+            # Show C-SCAN wrap as a dashed jump so it does not look like C-LOOK
+            is_wrap_jump = self.algorithm_var.get() == "C-SCAN" and x2 < x1
             ax.annotate('', xy=(x2, y2), xytext=(x1, y1),
-                       arrowprops=dict(arrowstyle='->', lw=2, color='navy', alpha=0.7))
+                       arrowprops=dict(arrowstyle='->', lw=2, color='navy', alpha=0.7,
+                                       linestyle='--' if is_wrap_jump else '-'))
         
         # Mark all access points with dots
         for i, (pos, y) in enumerate(zip(sequence, y_positions)):
