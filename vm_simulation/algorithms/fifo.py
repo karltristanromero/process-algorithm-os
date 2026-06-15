@@ -37,4 +37,7 @@ class FIFO(PageReplacementAlgorithm):
                     evicted = queue.popleft()
                     frames[frames.index(evicted)] = page
 
-                
+                queue.append(page)
+                self.steps.append(SimStep(i, page, self.snapshot(frames), True, evicted))
+
+        return self.steps
