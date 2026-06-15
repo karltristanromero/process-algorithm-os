@@ -31,3 +31,8 @@ class PageReplacementAlgorithm(ABC):
     @property
     def name(self) -> str:
         raise NotImplementedError
+    
+    @property
+    def hit_rate(self) -> float:
+        total = self.fault_count + self.hit_count
+        return (self.hit_count / total * 100) if total > 0 else 0.0
