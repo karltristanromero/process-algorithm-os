@@ -34,3 +34,8 @@ class Display:
         for s in steps:
             print(f"{s.page:^{w}}", end="")
         print()
+
+        print(f"{'─' * 6}", end="")
+        for _ in steps:
+            print(f"{'─' * w}", end="")
+        print()
