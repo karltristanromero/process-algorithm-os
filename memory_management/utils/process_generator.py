@@ -64,8 +64,21 @@ def generate_random_process_event():
 
 
 # Part 4: User Choice Router
-# Create a function that routes the application based on GUI selection
-    # If the user chose "Manual Mode":
-        # Process the specific text box inputs and pass them to the layout manager
-    # If the user chose "Automatic Mode":
-        # Run the random event generator to feed the next dynamic step to MFT or MVT
+def process_user_choice(mode_choice: str, action_type: str = None, process_id: str = None, process_size: int = None):
+    mode_choice = mode_choice.strip().upper()
+    
+    if mode_choice == "MANUAL":
+        action_type = action_type.strip().upper()
+        if action_type == "ALLOCATE":
+            if process_size is None:
+                raise ValueError("Manual allocation requires a valid process size calculation entry.")
+            return "ALLOCATE" , create_manual_process(process_id, process_size)
+        elif action_type == "DEALLOCATE":
+            return "DEALLOCATE", terminate_manual_process(process_id)
+        else:
+            raise ValueError("Invalid action type for manual mode. Please enter 'ALLOCATE' or 'DEALLOCATE'.")
+    
+    elif mode_choice == "RANDOM":
+        return generate_random_process_event()
+    else:
+        raise ValueError("Invalid mode choice. Please enter 'MANUAL' or 'RANDOM'.")
