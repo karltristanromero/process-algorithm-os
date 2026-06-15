@@ -26,6 +26,7 @@ class MFU(PageReplacementAlgorithm):
 
         for i, page in enumerate(reference_string, 1):
             if page in frames:
+                # hit – increment frequency and update recency
                 frames[page] += 1
                 lru_order.remove(page)
                 lru_order.append(page)
