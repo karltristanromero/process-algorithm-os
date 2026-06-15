@@ -24,3 +24,11 @@ class VMSimulator:
 
     def __init__(self, num_frames: int = 4):
         self.num_frames = num_frames
+
+    # ── Input helpers ──────────────────────────────────────────────────────────
+
+    def get_reference_string(self) -> list[int]:
+        print("\n   How would you like to provide the reference string?")
+        print("     [1] Enter manually")
+        print("     [2] Randomize")
+        choice = input("\n Your choice: ").strip()
