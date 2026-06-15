@@ -45,7 +45,7 @@ def main():
  
         again = input("\n  Run another simulation? [y/n]: ").strip().lower()
         if again != "y":
-            print("\n  Goodbye! Good luck on your finals!\n")
+            print("\n  Goodbye! Thank you for trying Virtual Memory Simulator!\n")
             break
 
 
