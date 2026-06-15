@@ -39,3 +39,12 @@ class Display:
         for _ in steps:
             print(f"{'─' * w}", end="")
         print()
+
+        # Frame rows
+        for frame_idx in range(num_frames):
+            print(f"  F{frame_idx + 1}  ", end="")
+            for s in steps:
+                val = s.frames[frame_idx]
+                cell = str(val) if val is not None else "·"
+                print(f"{cell:^{w}}", end="")
+            print()
