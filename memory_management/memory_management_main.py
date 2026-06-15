@@ -1,8 +1,20 @@
 # Part 1: System Imports and Boot Environment
-# Import tkinter core (tk, ttk, messagebox)
-# Import Process and global pool from utils.process_generator
-# Import MFT fixed core and individual search algorithm fits
-# Import MVT variable core and individual search algorithm fits
+import tkinter as tk
+from tkinter import ttk, messagebox
+import random
+
+# Import core structural classes for memory management
+from utils.process_generator import process_pool, process_user_choice
+
+from mft.fixed_partition import FixedMemoryManager
+from mft.first_fit import first_fit_mft
+from mft.best_fit import best_fit_mft
+from mft.best_available_fit import best_available_fit_mft
+
+from mvt.variable_partition import VariableMemoryManager
+from mvt.first_fit import first_fit_mvt
+from mvt.best_fit import best_fit_mvt
+from mvt.worst_fit import worst_fit_mvt
 
 # Part 2: Main Application Architecture and Layout Structure
 # Create class MemoryManagementApp
