@@ -360,8 +360,56 @@ class MemoryManagementApp:
 
     def update_mvt_display_map(self):
         # 1. Clear MVT canvas tracking elements
+        self.mvt_canvas.delete("all")
+        
+        total_free_space = 0
+        total_external_fragmentation = 0
+        free_hole_segments_count = 0
+        
         # 2. Render vertical text listings for the current Waiting Queue
+        self.mvt_canvas.create_text(650, 30, text="MVT Waiting Queue:", font=("Arial", 14, "bold"), anchor=tk.W)
+        if not self.mvt_manager.waiting_queue:
+            self.mvt_canvas.create_text(650, 60, text="[ Queue Empty ]", font=("Arial", 11, "italic"), fill="grey", anchor=tk.W)
+        else:
+            for idx, proc in enumerate(self.mvt_manager.waiting_queue):
+                self.mvt_canvas.create_text(650, 60 + (idx * 25), text=f"• {proc.process_id} ({proc.process_size}K)", font=("Arial", 11), fill="red", anchor=tk.W)
+        
         # 3. Iterate through dynamic block arrays and stack slots vertically using start_address parameters
-        # 4. Render blue boxes for packed processes and green-hatched bars for empty holes
+        start_y = 50
+        x1, x2 = 250, 500  # Vertical matching axis lanes
+        canvas_scale = 10
+        
+        for block in self.mvt_manager.blocks:
+            height = block.block_size * canvas_scale
+            y1, y2 = start_y, start_y + height
+            
+            # Map tracking addresses alongside the column walls
+            self.mvt_canvas.create_text(x1 - 15, y1, text=f"Addr: {block.start_address}K", font=("Arial", 9, "bold"), anchor=tk.E)
+            
+            # 4. Render blue boxes for packed processes and green-hatched bars for empty holes
+            if block.occupied_process:
+                self.mvt_canvas.create_rectangle(x1, y1, x2, y2, fill="#cce5ff", outline="black", width=2)
+                self.mvt_canvas.create_text(x1 + 125, y1 + (height / 2), text=f"{block.occupied_process.process_id}\n({block.block_size}K)", font=("Arial", 10, "bold"))
+            else:
+                self.mvt_canvas.create_rectangle(x1, y1, x2, y2, fill="#e2ffe2", outline="black", width=2, hatch="\\")
+                self.mvt_canvas.create_text(x1 + 125, y1 + (height / 2), text=f"FREE HOLE\n({block.block_size}K)", font=("Arial", 10, "bold"), fill="green")
+                total_free_space += block.block_size
+                free_hole_segments_count += 1
+                
+            start_y += height
+            
+        # Draw terminating wall bound limit indicator
+        self.mvt_canvas.create_text(x1 - 15, start_y, text="Addr: 64K\n(Limit)", font=("Arial", 9, "bold"), anchor=tk.E)
+
         # 5. Evaluate scattered spaces to calculate external fragmentation metrics
+        active_allocations = any(b.occupied_process is not None for b in self.mvt_manager.blocks)
+        if active_allocations and free_hole_segments_count > 1:
+            total_external_fragmentation = total_free_space
+        elif active_allocations and free_hole_segments_count == 1:
+            # If a single hole remains but it is trapped behind processes
+            if self.mvt_manager.blocks[-1].occupied_process is not None:
+                total_external_fragmentation = total_free_space
+
         # 6. Update header labels to display total free space continuously
+        self.lbl_mvt_free_space.config(text=f"Total Unallocated Free Space: {total_free_space}K")
+        self.lbl_mvt_external_frag.config(text=f"Total External Fragmentation: {total_external_fragmentation}K")
