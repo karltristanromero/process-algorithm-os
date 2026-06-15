@@ -31,4 +31,10 @@ class FIFO(PageReplacementAlgorithm):
                 self.fault_count += 1
                 evicted = None
 
+                if len(frames) < self.num_frames:
+                    frames.append(page)
+                else:
+                    evicted = queue.popleft()
+                    frames[frames.index(evicted)] = page
+
                 
