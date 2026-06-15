@@ -84,3 +84,6 @@ class Display:
         col = 30
         print(f"\n  {'Algorithm':<{col}} {'Faults':>8} {'Hits':>8} {'Hit Rate':>10}")
         print(f"  {'─' * col} {'─' * 8} {'─' * 8} {'─' * 10}")
+
+        sorted_results = sorted(results, key=lambda x: x[1])  # sort by fault count
+        best_faults = sorted_results[0][1]
