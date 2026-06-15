@@ -32,3 +32,8 @@ class VMSimulator:
         print("     [1] Enter manually")
         print("     [2] Randomize")
         choice = input("\n Your choice: ").strip()
+
+        if choice == "2":
+            return self._generate_random()
+        else:
+            return self._get_manual_input()
