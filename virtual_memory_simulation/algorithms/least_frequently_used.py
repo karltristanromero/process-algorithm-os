@@ -20,4 +20,4 @@ class LFU(PageReplacementAlgorithm):
         self.hit_count = 0
 
         frames = {}         # page -> frequency count
-        lru_queue = []      # recency tracker for tie-breaking (oldest at front)
+        lru_order = []      # recency tracker for tie-breaking (oldest at front)
