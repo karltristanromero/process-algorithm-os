@@ -17,12 +17,28 @@ from mvt.best_fit import best_fit_mvt
 from mvt.worst_fit import worst_fit_mvt
 
 # Part 2: Main Application Architecture and Layout Structure
-# Create class MemoryManagementApp
-    # Initialize __init__ with root window configuration (Strict 1920x1080 geometry)
-    # Instantiate FixedMemoryManager and VariableMemoryManager backends
-    # Create empty list trackers for MFT and MVT waiting queues
-    # Invoke build_gui_layout() to set up panels
-    # Trigger initial canvas repaint updates
+class MemoryManagementApp:
+    def __init__(self, window_root):
+        self.window_root = window_root
+        self.window_root.title("Memory Management Simulator - MFT & MVT")
+        
+        # Set window size
+        self.window_root.geometry("1920x1080")
+        
+        # Initialize core memory engines
+        self.mft_manager = FixedMemoryManager(total_memory_size=64)
+        self.mvt_manager = VariableMemoryManager(total_memory_size=64)
+        
+        # Track waiting processes that cannot currently fit into active vlocks
+        self.mft_manager.waiting_queue = []
+        self.mvt_manager.waiting_queue = []
+        
+        # Build the layout grids
+        self.build_gui_layout()
+        
+        # Initial draw of both workspace components to calculate starting free spaces
+        self.update_mft_display_map()
+        self.update_mvt_display_map()
 
     # Method build_gui_layout():
         # 1. Create a ttk.Notebook tab framework spanning the window viewport
