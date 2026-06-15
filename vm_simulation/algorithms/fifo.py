@@ -14,3 +14,11 @@ class FIFO(PageReplacementAlgorithm):
     @property
     def name(self):
         return 'FIFO'
+    
+    def simulate(self, reference_string: list[int]) -> list[SimStep]:
+        self.steps = []
+        self.fault_count = 0
+        self.hit_count = 0
+
+        frames = []         # current pages in memory
+        queue = deque()     # tracks insertion order (oldest at front)
