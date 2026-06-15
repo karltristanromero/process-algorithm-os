@@ -2,6 +2,8 @@
 Handles all terminal output: frame trace table, stats, and comparison summary.
 '''
 
+from base import PageReplacementAlgorithm, SimStep
+
 class Display:
     '''Handles all terminal output formatting.'''
 
