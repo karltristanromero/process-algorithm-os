@@ -60,3 +60,8 @@ class Display:
             marker = "F" if s.is_fault else "H"
             print(f"{marker:^{w}}", end="")
         print()
+
+        print(f"{'─' * 6}", end="")
+        for _ in steps:
+            print(f"{'─' * w}", end="")
+        print()
