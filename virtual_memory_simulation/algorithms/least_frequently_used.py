@@ -41,4 +41,4 @@ class LFU(PageReplacementAlgorithm):
                     # evict the page with the lowest frequency
                     # among ties, pick the least recently used
                     min_freq = min(frames.values())
-                    victim = next(p for p in lru_order if frames[p] == min_freq)])
+                    victim = next(p for p in lru_order if frames[p] == min_freq)
