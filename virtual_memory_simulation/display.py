@@ -92,3 +92,7 @@ class Display:
             marker = " ← best" if faults == best_faults else ""
             print(f"  {name:<{col}} {faults:>8} {hits:>8} {rate:>9.1f}%{marker}")
         print()
+
+    @classmethod
+    def legend(cls):
+        print("\n  Legend:  F = Page Fault  |  H = Page Hit  |  · = Empty frame\n")
