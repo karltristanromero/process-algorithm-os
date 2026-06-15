@@ -269,10 +269,36 @@ class MemoryManagementApp:
             messagebox.showerror("MVT Operational Error", str(e))
 
 
-    # Method trigger_mvt_compaction():
+    def trigger_mvt_compaction(self):
+        """
         # 1. Invoke memory compaction sequence on dynamic manager
         # 2. Cycle through MVT waiting queue to pack newly unified free holes
         # 3. Refresh MVT canvas
+        """
+        try:
+            msg = self.mvt_manager.compact_memory()
+            self.log_message(self.txt_mvt_log, msg)
+            
+            # Attempt to allocate elements now that scattered external fragments are merged
+            self.reorder_mvt_queue()
+            self.update_mvt_display_map()
+        except Exception as e:
+            messagebox.showerror("MVT Compaction Error", str(e))
+
+    def reorder_mvt_queue(self):
+        """ Helper sequence to automatically test waiting elements against dynamic holes. """
+        algo = self.combo_mvt_algo.get()
+        for queued_proc in list(self.mvt_manager.waiting_queue):
+            if algo == "First Fit":
+                res = first_fit_mvt(queued_proc, self.mvt_manager)
+            elif algo == "Best Fit":
+                res = best_fit_mvt(queued_proc, self.mvt_manager)
+            else:
+                res = worst_fit_mvt(queued_proc, self.mvt_manager)
+                
+            if "Allocated" in res:
+                self.mvt_manager.waiting_queue.remove(queued_proc)
+                self.log_message(self.txt_mvt_log, f"[Queue Release] {res}")
 
 # Part 4: Physical Canvas Rendering Engines (Vertical Box Track)
     # Method update_mft_display_map():
