@@ -65,7 +65,7 @@ class SSTF(DiskSchedulingAlgorithm):
 
 
 class SCAN(DiskSchedulingAlgorithm):
-    """SCAN - moves head in one direction until end, then reverses"""
+    """SCAN - moves toward track 0 first, then reverses upward"""
     
     def schedule(self) -> Tuple[List[int], int]:
         current_head = self.head_position
@@ -73,20 +73,25 @@ class SCAN(DiskSchedulingAlgorithm):
         self.total_seek_time = 0
         
         # Separate requests into left and right of current head
-        left = [x for x in self.requests if x < current_head]
-        right = [x for x in self.requests if x >= current_head]
+        left = sorted([x for x in self.requests if x < current_head], reverse=True)
+        right = sorted([x for x in self.requests if x >= current_head])
         
-        left.sort(reverse=True)
-        right.sort()
-        
-        # Move right first, then left
-        for request in right:
+        # Move toward track 0 first
+        for request in left:
             seek_time = self.calculate_seek_time(current_head, request)
             self.total_seek_time += seek_time
             self.sequence.append(request)
             current_head = request
+
+        # Continue to track 0 before reversing
+        if current_head != 0:
+            seek_time = self.calculate_seek_time(current_head, 0)
+            self.total_seek_time += seek_time
+            self.sequence.append(0)
+            current_head = 0
         
-        for request in left:
+        # Reverse direction and service the higher-numbered requests
+        for request in right:
             seek_time = self.calculate_seek_time(current_head, request)
             self.total_seek_time += seek_time
             self.sequence.append(request)
@@ -352,25 +357,27 @@ class DiskSchedulerGUI:
         for widget in self.canvas_frame.winfo_children():
             widget.destroy()
         
-        # Create figure with multiple subplots
+        # Create figure with a top cylinder scale and a downward head path
         fig = Figure(figsize=(12, 8), dpi=100)
         
-        # Main visualization subplot
         ax = fig.add_subplot(111)
         
-        # Draw horizontal disk cylinder axis
-        ax.plot([0, disk_size], [0, 0], 'k-', linewidth=3, zorder=1)
+        axis_y = 1.0
+        path_start_y = 0.55
+        path_step = 0.75
+        y_positions = [path_start_y - (i * path_step) for i in range(len(sequence))]
+
+        # Put the cylinder scale at the top so the movement path stays visually separate
+        ax.xaxis.tick_top()
+        ax.xaxis.set_label_position('top')
+        ax.tick_params(axis='x', top=True, labeltop=True, bottom=False, labelbottom=False)
+        ax.plot([0, disk_size], [axis_y, axis_y], 'k-', linewidth=3, zorder=1)
         
         # Mark key cylinder positions on the disk
         unique_positions = sorted(set(sequence))
         for pos in unique_positions:
-            ax.plot([pos, pos], [-0.1, 0.1], 'k-', linewidth=2)
-            ax.text(pos, -0.4, str(pos), ha='center', fontsize=9, fontweight='bold')
-        
-        # Draw the access sequence path
-        y_positions = []
-        for i in range(len(sequence)):
-            y_positions.append(0.3 + (i % 4) * 0.5)
+            ax.plot([pos, pos], [axis_y - 0.08, axis_y + 0.08], 'k-', linewidth=2)
+            ax.text(pos, axis_y + 0.16, str(pos), ha='center', va='bottom', fontsize=9, fontweight='bold')
         
         # Draw connecting lines between accesses
         for i in range(len(sequence) - 1):
@@ -392,12 +399,12 @@ class DiskSchedulerGUI:
                 ax.scatter(pos, y, s=200, c='red', marker='o', zorder=5, edgecolors='darkred', linewidth=1.5)
             
             # Add step number
-            ax.text(pos, y + 0.15, str(i), ha='center', fontsize=8, fontweight='bold', 
+            ax.text(pos, y - 0.18, str(i), ha='center', fontsize=8, fontweight='bold', 
                    bbox=dict(boxstyle='round,pad=0.3', facecolor='yellow', alpha=0.7))
         
         # Configure axes
         ax.set_xlim(-5, disk_size + 5)
-        ax.set_ylim(-1, max(y_positions) + 0.5)
+        ax.set_ylim(min(y_positions) - 0.7, axis_y + 0.45)
         ax.set_xlabel("Disk Cylinder Number", fontsize=12, fontweight='bold')
         ax.set_title(f"Disk Scheduling: {self.algorithm_var.get()}\n{', '.join(map(str, sequence[1:]))}", 
                     fontsize=14, fontweight='bold')
@@ -407,6 +414,7 @@ class DiskSchedulerGUI:
         ax.spines['left'].set_visible(False)
         ax.spines['right'].set_visible(False)
         ax.spines['top'].set_visible(False)
+        ax.spines['bottom'].set_visible(False)
         
         # Add legend
         from matplotlib.lines import Line2D
