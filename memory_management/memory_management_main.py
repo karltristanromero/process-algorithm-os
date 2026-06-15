@@ -285,6 +285,7 @@ class MemoryManagementApp:
         except Exception as e:
             messagebox.showerror("MVT Compaction Error", str(e))
 
+
     def reorder_mvt_queue(self):
         """ Helper sequence to automatically test waiting elements against dynamic holes. """
         algo = self.combo_mvt_algo.get()
@@ -300,15 +301,64 @@ class MemoryManagementApp:
                 self.mvt_manager.waiting_queue.remove(queued_proc)
                 self.log_message(self.txt_mvt_log, f"[Queue Release] {res}")
 
-# Part 4: Physical Canvas Rendering Engines (Vertical Box Track)
-    # Method update_mft_display_map():
-        # 1. Clear MFT canvas tracking elements
-        # 2. Render vertical text listings for the current Waiting Queue
-        # 3. Iterate through partition arrays and stack rectangle blocks vertically (Y coordinates)
-        # 4. Render process tags in occupied portions and red-hatched bars for internal fragmentation
-        # 5. Update header labels to display total free space continuously
 
-    # Method update_mvt_display_map():
+# Part 4: Physical Canvas Rendering Engines (Vertical Box Track)
+    def update_mft_display_map(self):
+        # 1. Clear MFT canvas tracking elements
+        self.mft_canvas.delete("all")
+        
+        total_free_space = 0
+        total_internal_fragmentation = 0
+        
+        # 2. Render vertical text listings for the current Waiting Queue
+        self.mft_canvas.create_text(650, 30, text="MFT Waiting Queue:", font=("Arial", 14, "bold"), anchor=tk.W)
+        if not self.mft_manager.waiting_queue:
+            self.mft_canvas.create_text(650, 60, text="[ Queue Empty ]", font=("Arial", 11, "italic"), fill="grey", anchor=tk.W)
+        else:
+            for idx, proc in enumerate(self.mft_manager.waiting_queue):
+                self.mft_canvas.create_text(650, 60 + (idx * 25), text=f"• {proc.process_id} ({proc.process_size}K)", font=("Arial", 11), fill="red", anchor=tk.W)
+                       
+        # 3. Iterate through partition arrays and stack rectangle blocks vertically (Y coordinates)
+        start_y = 50
+        x1, x2 = 250, 500  # Sets horizontal physical limits of the memory stack box column
+        canvas_scale = 10   # Pixels allocated per KB (64K max totals to 640 pixels tall)
+        
+        for partition in self.mft_manager.partitions:
+            height = partition.partition_size * canvas_scale
+            y1, y2 = start_y, start_y + height
+            
+            # Print individual block boundary capacities
+            self.mft_canvas.create_text(x1 - 15, y1, text=f"{partition.partition_id}\n({partition.partition_size}K)", font=("Arial", 9, "bold"), anchor=tk.E)
+        
+            # 4. Render process tags in occupied portions and red-hatched bars for internal fragmentation
+            if partition.occupied_process:
+                # Calculate active payload block size
+                proc_height = partition.occupied_process.process_size * canvas_scale
+                self.mft_canvas.create_rectangle(x1, y1, x2, y1 + proc_height, fill="#a6c8ff", outline="black", width=2)
+                self.mft_canvas.create_text(x1 + 125, y1 + (proc_height / 2), text=f"{partition.occupied_process.process_id} ({partition.occupied_process.process_size}K)", font=("Arial", 10, "bold"))
+                
+                # Render leftover internal fragmentation shard
+                if partition.internal_fragmentation > 0:
+                    self.mft_canvas.create_rectangle(x1, y1 + proc_height, x2, y2, fill="#ffcccc", outline="black", width=1, hatch="/")
+                    self.mft_canvas.create_text(x1 + 125, y1 + proc_height + ((height - proc_height) / 2), text=f"Internal Frag\n{partition.internal_fragmentation}K", font=("Arial", 9, "italic"), fill="red")
+                    total_internal_fragmentation += partition.internal_fragmentation
+            else:
+                # Fully unallocated empty slot hole
+                self.mft_canvas.create_rectangle(x1, y1, x2, y2, fill="#e2ffe2", outline="black", width=2)
+                self.mft_canvas.create_text(x1 + 125, y1 + (height / 2), text=f"FREE HOLE\n({partition.partition_size}K)", font=("Arial", 10, "bold"), fill="green")
+                total_free_space += partition.partition_size
+                
+            start_y += height
+            
+        # Draw final physical layout boundary reference line
+        self.mft_canvas.create_text(x1 - 15, start_y, text="Limit: 64K", font=("Arial", 9, "bold"), anchor=tk.E)
+        
+        # 5. Update header labels to display total free space continuously
+        self.lbl_mft_free_space.config(text=f"Total Unallocated Free Space: {total_free_space}K")
+        self.lbl_mft_internal_frag.config(text=f"Total Internal Fragmentation: {total_internal_fragmentation}K")
+
+
+    def update_mvt_display_map(self):
         # 1. Clear MVT canvas tracking elements
         # 2. Render vertical text listings for the current Waiting Queue
         # 3. Iterate through dynamic block arrays and stack slots vertically using start_address parameters
