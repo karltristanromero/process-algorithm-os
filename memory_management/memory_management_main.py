@@ -183,13 +183,53 @@ class MemoryManagementApp:
         
         
 # Part 3: Operational Controllers and Memory Routing Rules
-    # Method execute_mft_action(mode, action):
-        # 1. Query process context properties from router based on mode
-        # 2. Direct process size to selected fit strategy (First Fit, Best Fit, Best Available Fit)
-        # 3. If allocation fails, drop the process into the MFT waiting queue
-        # 4. If action is deallocate, free the partition block and retry waiting queue list
-        # 5. Refresh MFT canvas
-
+    def execute_mft_action(self, mode, action: str = None):
+        try:
+            # 1. Query process context properties from router based on mode
+            pid = self.entry_mft_pid.get().strip() if mode == "MANUAL" else None
+            size_val = int(self.entry_mft_size.get().strip()) if (mode == "MANUAL" and action == "ALLOCATE") else None
+            
+            command, process = process_user_choice(mode, action, pid, size_val)
+            algo = self.combo_mft_algo.get()
+            
+            # 2. Direct process size to selected fit strategy (First Fit, Best Fit, Best Available Fit)
+            if command == "ALLOCATE":
+                if algo == "First Fit":
+                    msg = first_fit_mft(process, self.mft_manager)
+                elif algo == "Best Fit":
+                    msg = best_fit_mft(process, self.mft_manager)
+                else:
+                    msg = best_available_fit_mft(process, self.mft_manager)
+            
+                # 3. If allocation fails, drop the process into the MFT waiting queue
+                if "Failed" in msg and process not in self.mft_manager.waiting_queue:
+                    self.mft_manager.waiting_queue.append(process)
+                self.log_message(self.txt_mft_log, msg)
+                
+            # 4. If action is deallocate, free the partition block and retry waiting queue list
+            elif command == "DEALLOCATE":
+                self.mft_manager.deallocate_process(process.process_id)
+                self.log_message(self.txt_mft_log, f"Deallocated {process.process_id} from fixed configuration memory map.")
+                
+                # Scan waiting list to see if freshly cleared spaces can support waiting items
+                for queued_proc in list(self.mft_manager.waiting_queue):
+                    if algo == "First Fit":
+                        res = first_fit_mft(queued_proc, self.mft_manager)
+                    elif algo == "Best Fit":
+                        res = best_fit_mft(queued_proc, self.mft_manager)
+                    else:
+                        res = best_available_fit_mft(queued_proc, self.mft_manager)
+                        
+                    if "Allocated" in res:
+                        self.mft_manager.waiting_queue.remove(queued_proc)
+                        self.log_message(self.txt_mft_log, f"[Queue Release] {res}")
+            
+            # 5. Refresh MFT canvas
+            self.update_mft_display_map()
+        
+        except Exception as e:
+            messagebox.showerror("MFT Operational Error", str(e))
+            
     # Method execute_mvt_action(mode, action):
         # 1. Query process context from router based on mode
         # 2. Route process payload to dynamic fit strategy (First Fit, Best Fit, Worst Fit)
