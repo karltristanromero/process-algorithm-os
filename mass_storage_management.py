@@ -296,6 +296,10 @@ class DiskSchedulerGUI:
         ttk.Label(results_frame, text="Sequence:").pack(anchor=tk.W)
         self.sequence_text = tk.Text(results_frame, height=6, width=28, font=('Courier', 9))
         self.sequence_text.pack(fill=tk.BOTH, expand=True)
+
+        ttk.Label(results_frame, text="Computation:").pack(anchor=tk.W, pady=(10, 0))
+        self.computation_text = tk.Text(results_frame, height=10, width=28, font=('Courier', 9))
+        self.computation_text.pack(fill=tk.BOTH, expand=True)
         
         # Right panel - Visualization
         right_frame = ttk.Frame(main_frame)
@@ -342,6 +346,19 @@ class DiskSchedulerGUI:
             self.sequence_text.delete(1.0, tk.END)
             self.sequence_text.insert(1.0, sequence_text)
             self.sequence_text.config(state=tk.DISABLED)
+
+            computation_lines = ["Computing for the total head movement:"]
+            running_total = 0
+            for previous, current in zip(sequence, sequence[1:]):
+                movement = abs(current - previous)
+                running_total += movement
+                computation_lines.append(f"from {previous} to {current} = {max(previous, current)} - {min(previous, current)} = {movement}")
+            computation_lines.append(f"Total head movement = {running_total} tracks")
+
+            self.computation_text.config(state=tk.NORMAL)
+            self.computation_text.delete(1.0, tk.END)
+            self.computation_text.insert(1.0, "\n".join(computation_lines))
+            self.computation_text.config(state=tk.DISABLED)
             
             # Draw visualization
             self.draw_visualization(sequence, disk_size, head_pos)
