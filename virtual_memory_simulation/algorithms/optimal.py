@@ -35,3 +35,13 @@ class Optimal(PageReplacementAlgorithm):
                     future = reference_string[i:]     # remaining references after current step
                     farthest_index = -1
                     victim = frames[0]
+
+                    for f in frames:
+                        if f not in future:
+                            # page never used again – ideal candidate for eviction
+                            victim = f
+                            break
+                        next_use = future.index(f)
+                        if next_use > farthest_index:
+                            farthest_index = next_use
+                            victim = f
