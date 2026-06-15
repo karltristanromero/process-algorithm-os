@@ -96,3 +96,12 @@ class VMSimulator:
         Display.legend()
  
         comparison = []
+
+        for key, (name, AlgoClass) in self.ALGORITHMS.items():
+            algo = AlgoClass(self.num_frames)
+            steps = algo.simulate(ref)
+            Display.print_frame_trace(name, steps, self.num_frames)
+            Display.print_stats(algo)
+            comparison.append((name, algo.fault_count, algo.hit_count, algo.hit_rate))
+ 
+        Display.print_comparison(comparison)
