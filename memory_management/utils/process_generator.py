@@ -29,10 +29,26 @@ def create_manual_process(process_id: str, process_size: int):
     # Create and return one Process object with the user's ID and size
     process_number = int(process_id[1:])
     process = process_pool[process_number]
+    if process.is_allocated:
+        raise ValueError(f"Process {process_id} is already inside the memory map.")
     process.process_size = process_size
-    
     return process
 
+def terminate_manual_process(process_id: str):
+    process_id = process_id.strip().upper()
+    
+    valid_ids = [f"P{i}" for i in range(1, 11)]
+    if process_id not in valid_ids:
+        raise ValueError("Invalid process ID. Please enter a process ID between P1 and P10.")
+        
+    process_number = int(process_id[1:])
+    process = process_pool[process_number]
+    
+    # Error block if process isn't even in memory yet
+    if not process.is_allocated:
+        raise ValueError(f"Process {process_id} cannot leave because it is not currently inside memory.")
+        
+    return process
 
 # Part 3: Automatic Random Event Generator
 def generate_random_process_event():
