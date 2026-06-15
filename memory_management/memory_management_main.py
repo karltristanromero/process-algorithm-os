@@ -229,13 +229,45 @@ class MemoryManagementApp:
         
         except Exception as e:
             messagebox.showerror("MFT Operational Error", str(e))
+         
             
-    # Method execute_mvt_action(mode, action):
-        # 1. Query process context from router based on mode
-        # 2. Route process payload to dynamic fit strategy (First Fit, Best Fit, Worst Fit)
-        # 3. If allocation fails, drop the process into the MVT waiting queue
-        # 4. If action is deallocate, invoke manager without compaction and reorder queue
-        # 5. Refresh MVT canvas
+    def execute_mvt_action(self, mode: str, action: str = None):
+        try:
+            # 1. Query process context from router based on mode
+            pid = self.entry_mvt_pid.get().strip() if mode == "MANUAL" else None
+            size_val = int(self.entry_mvt_size.get().strip()) if (mode == "MANUAL" and action == "ALLOCATE") else None
+            
+            command, process = process_user_choice(mode, action, pid, size_val)
+            algo = self.combo_mvt_algo.get()
+            
+            # 2. Route process payload to dynamic fit strategy (First Fit, Best Fit, Worst Fit)
+            if command == "ALLOCATE":
+                if algo == "First Fit":
+                    msg = first_fit_mvt(process, self.mvt_manager)
+                elif algo == "Best Fit":
+                    msg = best_fit_mvt(process, self.mvt_manager)
+                else:
+                    msg = worst_fit_mvt(process, self.mvt_manager)
+           
+                # 3. If allocation fails, drop the process into the MVT waiting queue
+                if "Failed" in msg and process not in self.mvt_manager.waiting_queue:
+                    self.mvt_manager.waiting_queue.append(process)
+                self.log_message(self.txt_mvt_log, msg)
+           
+            # 4. If action is deallocate, invoke manager without compaction and reorder queue
+            elif command == "DEALLOCATE":
+                self.mvt_manager.deallocate_process(process.process_id)
+                self.log_message(self.txt_mvt_log, f"Deallocated {process.process_id} from dynamic block configurations.")
+                
+                # Check waiting targets against newly coalesced spaces
+                self.reorder_mvt_queue()
+           
+            # 5. Refresh MVT canvas
+            self.update_mvt_display_map()
+            
+        except Exception as e:
+            messagebox.showerror("MVT Operational Error", str(e))
+
 
     # Method trigger_mvt_compaction():
         # 1. Invoke memory compaction sequence on dynamic manager
