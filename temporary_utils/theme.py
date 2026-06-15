@@ -19,11 +19,12 @@ COLORS = {
 }
 
 # Font specifications
+# Font specifications - Retro pixel/monospaced aesthetic
 FONTS = {
-    'default': ('Helvetica', 10),
-    'heading': ('Helvetica', 14, 'bold'),
-    'small': ('Helvetica', 8),
-    'metric': ('Helvetica', 12, 'bold')
+    'default': ('Courier', 11, 'bold'),
+    'heading': ('Courier', 16, 'bold'),
+    'small': ('Courier', 9, 'bold'),
+    'metric': ('Courier', 14, 'bold')
 }
 
 # Window dimensions
