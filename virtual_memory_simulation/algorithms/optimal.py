@@ -45,3 +45,10 @@ class Optimal(PageReplacementAlgorithm):
                         if next_use > farthest_index:
                             farthest_index = next_use
                             victim = f
+
+                    evicted = victim
+                    frames[frames.index(victim)] = page
+                
+                self.steps.append(SimStep(i, page, self.snapshot(frames), True, evicted))
+
+        return self.steps
