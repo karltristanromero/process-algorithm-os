@@ -20,7 +20,7 @@ def first_fit_mft(process, memory_manager):
             return f"Allocated {process.process_id} ({process.process_size}K) to {partition.partition_id}. Internal Fragmentation: {partition.internal_fragmentation}K."
         
     # If the loop finishes and no partition was found:
-    Check if the process is simply too big for ANY partition in the entire system configuration
+    # Check if the process is simply too big for ANY partition in the entire system configuration
     max_system_partition = max(partition.partition_size for partition in memory_manager.partitions)
     
     if process.process_size > max_system_partition:
