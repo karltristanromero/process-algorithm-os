@@ -47,3 +47,7 @@ def main():
         if again != "y":
             print("\n  Goodbye! Good luck on your finals!\n")
             break
+
+
+if __name__ == "__main__":
+    main()
