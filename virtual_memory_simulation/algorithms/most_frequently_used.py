@@ -21,5 +21,5 @@ class MFU(PageReplacementAlgorithm):
         self.fault_count = 0
         self.hit_count = 0
 
-        frames = {}
-        lru_order = []
+        frames = {}         # page -> frequency count
+        lru_order = []      # recency tracker for tie-breaking (oldest at front)
