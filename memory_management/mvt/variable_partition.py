@@ -55,3 +55,37 @@ class VariableMemoryManager:
 
         self.blocks = temporary_blocks
         return True
+
+    # Method 2: compact_memory (WITH COMPACTION)
+    def compact_memory(self):
+        """
+        Shuffles all active processes to the top of memory and combines all free holes into one large block.
+        """
+        # 1. Collect all running processes from the current blocks list
+        running_processes = [block.occupied_process for block in self.blocks if block.occupied_process is not None]
+        
+        # 2. Calculate the total memory currently used by these processes
+        # (This is handled implicitly as we iterate and advance the current_address pointer)
+        
+        # 3. Clear the entire blocks list array
+        self.blocks = []
+        current_address = 0
+
+        # 4. Pack all running processes tightly starting from address 0
+        for process in running_processes:
+            new_block = MemoryBlock(start_address=current_address, block_size=process.process_size)
+            new_block.occupied_process = process
+            
+            # Map tracking data coordinates for visual readout maps
+            process.partition_id = f"Dynamic Block ({current_address}K-{current_address + process.process_size}K)"
+            
+            self.blocks.append(new_block)
+            current_address += process.process_size
+
+        # 5. Take the leftover remaining space and create ONE big free block at the end
+        remaining_free_space = self.total_memory_size - current_address
+        if remaining_free_space > 0:
+            free_hole_block = MemoryBlock(start_address=current_address, block_size=remaining_free_space)
+            self.blocks.append(free_hole_block)
+            
+        return f"Compaction Complete! Consolidated {remaining_free_space}K into a single contiguous free block."
