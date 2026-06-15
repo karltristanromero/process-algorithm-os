@@ -90,3 +90,9 @@ class VMSimulator:
         steps = algo.simulate(ref)
         Display.print_frame_trace(name, steps, self.num_frames)
         Display.print_stats(algo)
+
+    def run_all(self, ref: list[int]):
+        Display.print_header(f"Running ALL Algorithms  |  Frames: {self.num_frames}")
+        Display.legend()
+ 
+        comparison = []
