@@ -48,3 +48,8 @@ class Display:
                 cell = str(val) if val is not None else "·"
                 print(f"{cell:^{w}}", end="")
             print()
+
+        print(f"{'─' * 6}", end="")
+        for _ in steps:
+            print(f"{'─' * w}", end="")
+        print()
