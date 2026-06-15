@@ -36,3 +36,8 @@ class PageReplacementAlgorithm(ABC):
     def hit_rate(self) -> float:
         total = self.fault_count + self.hit_count
         return (self.hit_count / total * 100) if total > 0 else 0.0
+    
+    @abstractmethod
+    def simulate(self, reference_string: list[int]) -> list[SimStep]:
+        '''Run the algorithm on a reference string. Returns the list of SimStep.'''
+        pass
