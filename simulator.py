@@ -77,3 +77,16 @@ class VMSimulator:
             if choice in self.ALGORITHMS or choice == "7":
                 return choice
             print("  ⚠  Please enter a number between 1 and 7.")
+
+    # ── Run methods ────────────────────────────────────────────────────────────
+
+    def run_one(self, algo_key: str, ref: list[int]):
+        name, AlgoClass = self.ALGORITHMS[algo_key]
+        algo = AlgoClass(self.num_frames)
+
+        Display.print_header(f"Algorithm: {name}  |  Frames: {self.num_frames}")
+        Display.legend()
+
+        steps = algo.simulate(ref)
+        Display.print_frame_trace(name, steps, self.num_frames)
+        Display.print_stats(algo)
