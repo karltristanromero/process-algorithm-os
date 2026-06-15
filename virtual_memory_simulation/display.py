@@ -53,3 +53,10 @@ class Display:
         for _ in steps:
             print(f"{'─' * w}", end="")
         print()
+
+        # Fault / Hit status row
+        print(f"  {'':4}", end="")
+        for s in steps:
+            marker = "F" if s.is_fault else "H"
+            print(f"{marker:^{w}}", end="")
+        print()
