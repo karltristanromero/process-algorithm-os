@@ -40,15 +40,33 @@ class MemoryManagementApp:
         self.update_mft_display_map()
         self.update_mvt_display_map()
 
-    # Method build_gui_layout():
-        # 1. Create a ttk.Notebook tab framework spanning the window viewport
-        # 2. Build MFT and MVT tab containers
-        # 3. For each tab, create a Header bar showing the unallocated free space all the time
-        # 4. Partition both tabs into Control Frames (Left) and Canvas Displays (Right)
-        # 5. Populate left columns with Form Entry grids (PID, Size, Algorithm selectors)
-        # 6. Add dynamic action trigger buttons (EXECUTE ALLOCATE, DEALLOCATE, RANDOM, COMPACTION)
-        # 7. Add scrolled text widgets to serve as scrolling system logs
+    def build_gui_layout(self):
+       # Crate a central notebook layout element spanning the whole viewport
+        self.notebook = ttk.Notebook(self.window_root)
+        self.notebook.pack(fill=tk.BOTH, expand=True, padx=15, pady=15)
+        
+        self.mft_tab = ttk.Frame(self.notebook)
+        self.mvt_tab = ttk.Frame(self.notebook)
+        
+        self.notebook.add(self.mft_tab, text="   MFT (Fixed Partitioning Mode)   ")
+        self.notebook.add(self.mvt_tab, text="   MVT (Variable Partitioning Mode)   ")
 
+        # 1. MFT INTERFACE GRID PANEL DESIGN
+        # Real-time Stats Header bar for MFT (Shows free space all the time)
+        # Split Bottom Layout into Control (Left) and Maps (Right)
+        # Manual input entry panels for MFT
+        # Automated random panels for MFT
+        # Text Console Output log panel for MFT
+        # Right Graphical Canvas Mapping for MFT
+        
+        # 2. MVT INTERFACE GRID PANEL DESIGN
+        # Real-time Stats Header bar for MVT (Shows free space all the time)
+        # Split Bottom Layout into Control (Left) and Maps (Right)
+        # Manual input entry panels for MVT
+        # Automated random panels for MVT + compaction trigger
+        # Text Console Output log panel for MVT
+        # Right Graphical Canvas Mapping for MVT
+        
 # Part 3: Operational Controllers and Memory Routing Rules
     # Method execute_mft_action(mode, action):
         # 1. Query process context properties from router based on mode
