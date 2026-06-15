@@ -18,4 +18,12 @@ class LRUApproximation(PageReplacementAlgorithm):
     def name(self):
         return 'LRU Approximation (Second-Chance)'
     
-    
+    def simulate(self, reference_string: list[int]) -> list[SimStep]:
+        self.steps = []
+        self.fault_count = 0
+        self.hit_count = 0
+
+        frames = []        # list of [page, reference_bit]
+        clock_hand = 0     # points to next eviction candidate
+
+        
