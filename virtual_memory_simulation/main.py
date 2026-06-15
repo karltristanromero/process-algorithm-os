@@ -21,3 +21,13 @@ virtual_memory_simulation/
 '''
 
 from simulator import VMSimulator
+
+
+def main():
+    print("\n" + "╔" + "═" * 56 + "╗")
+    print("║   Virtual Memory Page Replacement Simulator          ║")
+    print("║   Module 6 — Operating Systems                       ║")
+    print("╚" + "═" * 56 + "╝")
+    print(f"\n  Default number of frames: 4")
+
+    simulator = VMSimulator(num_frames=4)
