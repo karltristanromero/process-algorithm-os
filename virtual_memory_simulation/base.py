@@ -24,7 +24,7 @@ class PageReplacementAlgorithm(ABC):
 
     def __init__(self, num_frames: int = 4):
         self.num_frames = num_frames
-        self.steps = list[SimStep] = []
+        self.steps: list[SimStep] = []
         self.fault_count = 0
         self.hit_count = 0
 
