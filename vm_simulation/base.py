@@ -14,3 +14,7 @@ class SimStep:
         self.frames = frames        # snapshot of frame contents (None = empty slot)
         self.is_fault = is_fault 
         self.evicted = evicted      # page that was evicted (None if no eviction)
+
+    @property
+    def status(self):
+        return 'FAULT' if self.is_fault else 'HIT'
