@@ -1,9 +1,12 @@
+import random
+
 # Part 1: Define what a Process is
-# Create a class named Process
-    # Set up the process id (strictly "P1" through "P10")
-    # Set up the memory size needed (randomly chosen up to 64K)
-    # Set up a flag to track if it is currently inside memory (True/False)
-    # Set up a variable to track which memory block/partition ID it is inside
+class Process:
+    def __init__(self, process_id, process_size):
+        self.process_id = process_id        # Set up the process id (strictly "P1" through "P10")
+        self.process_size = process_size    # Set up the memory size needed (randomly chosen up to 64K)
+        self.is_allocated = False           # Set up a flag to track if it is currently inside memory (True/False)
+        self.partition_id = None            # Set up a variable to track which memory block/partition ID it is inside
 
 
 # Part 2: Manual Input Option (MFT / MVT Standard)
