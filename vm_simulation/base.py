@@ -27,3 +27,7 @@ class PageReplacementAlgorithm(ABC):
         self.steps = list[SimStep] = []
         self.fault_count = 0
         self.hit_count = 0
+
+    @property
+    def name(self) -> str:
+        raise NotImplementedError
