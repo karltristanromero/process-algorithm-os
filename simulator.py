@@ -37,3 +37,16 @@ class VMSimulator:
             return self._generate_random()
         else:
             return self._get_manual_input()
+        
+    def _get_manual_input(self) -> list[int]:
+        while True:
+            raw = input("\n Enter page numbers (space or comma separated):\n > ").strip()
+
+            try:
+                pages = [int(x) for x in raw.replace(",", " ").split() if x]
+                if len(pages) < 2:
+                    print("  ⚠  Please enter at least 2 page numbers.")
+                    continue
+                return pages
+            except ValueError:
+                print("  ⚠  Invalid input — please enter integers only.")
