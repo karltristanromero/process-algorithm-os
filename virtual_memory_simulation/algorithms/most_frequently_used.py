@@ -11,3 +11,15 @@ class MFU(PageReplacementAlgorithm):
     while a newly loaded page still needs time to be useful.
     Ties are broken by LRU order (least recently used among tied pages).
     '''
+
+    @property
+    def name(self):
+        return 'MFU'
+    
+    def simulate(self, reference_string: list[int]) -> list[SimStep]:
+        self.steps = []
+        self.fault_count = 0
+        self.hit_count = 0
+
+        frames = {}
+        lru_order = []
