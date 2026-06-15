@@ -12,3 +12,12 @@ class VMSimulator:
     Main controller for the Virtual Memory Page Replacement Simulator.
     Connects user input → algorithm selection → display output.
     """
+
+    ALGORITHMS = {
+        "1": ("FIFO",                          FIFO),
+        "2": ("Optimal",                       Optimal),
+        "3": ("LRU",                           LRU),
+        "4": ("LRU Approximation",             LRUApproximation),
+        "5": ("LFU",                           LFU),
+        "6": ("MFU",                           MFU),
+    }
