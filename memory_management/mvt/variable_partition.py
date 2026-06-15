@@ -1,6 +1,9 @@
-# Part 1: Define what a Dynamic Memory Block is (Remains the same)
-# Create a class named MemoryBlock
-    # Set up starting address, size, and occupied_process tracker
+# Part 1: Define what a Dynamic Memory Block is
+class MemoryBlock:
+    def __init__(self, start_address: int, block_size: int):
+        self.start_address = start_address                # Physical starting address boundary
+        self.block_size = block_size                      # Sizing constraint of this memory segment
+        self.occupied_process = None                      # Holds a Process object if allocated, None if it is a free hole
 
 # Part 2: Define the Variable Memory Manager Track
 # Create a class named VariableMemoryManager
