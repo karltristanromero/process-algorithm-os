@@ -52,4 +52,7 @@ class LRUApproximation(PageReplacementAlgorithm):
                     frames[clock_hand] = [page, 1]
                     clock_hand = (clock_hand + 1) % self.num_frames
 
-                
+                snapshot = self._snaphot([f[0] for f in frames])
+                self.steps.append(SimStep(i, page, snapshot, True, evicted))
+        
+        return self.steps
