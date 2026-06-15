@@ -87,3 +87,8 @@ class Display:
 
         sorted_results = sorted(results, key=lambda x: x[1])  # sort by fault count
         best_faults = sorted_results[0][1]
+
+        for name, faults, hits, rate in sorted_results:
+            marker = " ← best" if faults == best_faults else ""
+            print(f"  {name:<{col}} {faults:>8} {hits:>8} {rate:>9.1f}%{marker}")
+        print()
