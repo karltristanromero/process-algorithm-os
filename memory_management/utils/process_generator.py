@@ -22,9 +22,9 @@ def create_manual_process(process_id: str, process_size: int):
     if process_id not in valid_ids:
         raise ValueError("Invalid process ID. Please enter a process ID between P1 and P10.")
     
-    # Check if the user entered a valid size (greater than 0 and max 64K)
-    if process_size <= 0 or process_size > 64:
-        raise ValueError("Invalid process size. Please enter a size between 1K and 64K.")
+    # Check if the user entered a valid size (greater than 0 and max 32K)
+    if process_size <= 0 or process_size > 32:
+        raise ValueError("Invalid process size. Please enter a size between 1K and 32K.")
     
     # Create and return one Process object with the user's ID and size
     process_number = int(process_id[1:])
@@ -63,14 +63,14 @@ def generate_random_process_event():
     if allocated_processes:
         possible_actions.append("LEAVE")
     if not possible_actions:
-        return None
+        return None, None
     
     # Decide randomly to either make a process "ENTER" or "LEAVE"
     chosen_action = random.choice(possible_actions)
     
     if chosen_action == "ENTER":
         process = random.choice(unallocated_processes)      # Randomly pick ONE process from the outside pool (prevents duplication)
-        process.process_size = random.randint(1, 64)        # Assign it a random size up to 64K
+        process.process_size = random.randint(1, 32)        # Assign it a random size up to 32K
         return "ALLOCATE", process                          # Return the process with an "ALLOCATE" command string for MFT/MVT to handle
         
     elif chosen_action == "LEAVE":
