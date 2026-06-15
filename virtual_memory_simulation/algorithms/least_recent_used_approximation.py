@@ -38,3 +38,12 @@ class LRUApproximation(PageReplacementAlgorithm):
             else:
                 self.fault_count += 1
                 evicted = None
+
+                if len(frames) < self.num_frames:
+                    frames.append([page, 1])
+                    clock_hand = len(frames) % self.num_frames
+                else:
+                    # spin clock until a page with bit = 0 is found
+                    while frames[clock_hand][1] == 1:
+                        frames[clock_hand][1] = 0  # second chance – clear bit
+                        clock_hand = (clock_hand + 1) % self.num_frames
