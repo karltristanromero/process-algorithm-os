@@ -35,7 +35,7 @@ class LFU(PageReplacementAlgorithm):
                 evicted = None
 
                 if len(frames) < self.num_frames:
-                    frames[pages] = 1
+                    frames[page] = 1
                     lru_order.append(page)
                 else:
                     # evict the page with the lowest frequency
