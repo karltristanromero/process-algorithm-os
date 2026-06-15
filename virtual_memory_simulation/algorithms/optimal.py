@@ -29,4 +29,9 @@ class Optimal(PageReplacementAlgorithm):
                 self.fault_count += 1
                 evicted = None
 
-                
+                if len(frames) < self.num_frames:
+                    frames.append(page)
+                else:
+                    future = reference_string[i:]     # remaining references after current step
+                    farthest_index = -1
+                    victim = frames[0]
