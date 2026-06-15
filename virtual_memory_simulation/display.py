@@ -25,3 +25,6 @@ class Display:
         for _ in steps:
             print(f"{'─' * w}", end="")
         print()
+
+        # Algorithm name
+        print(f"  {algo_name}")
