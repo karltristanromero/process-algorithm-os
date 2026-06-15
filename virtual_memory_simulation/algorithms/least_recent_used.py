@@ -16,4 +16,9 @@ class LRU(PageReplacementAlgorithm):
     def name(self):
         return "LRU"
     
-    
+    def simulate(self, reference_string: list[int]) -> list[SimStep]:
+        self.steps = []
+        self.fault_count = 0
+        self.hit_count = 0
+
+        cache = OrderedDict()   # key = page, order = recency (end = most recent)
