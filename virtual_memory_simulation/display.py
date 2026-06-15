@@ -73,3 +73,14 @@ class Display:
         print(f"\n  Page faults : {algorithm.fault_count} / {total}")
         print(f"  Page hits   : {algorithm.hit_count} / {total}")
         print(f"  Hit rate    : {algorithm.hit_rate:.1f}%")
+
+    @classmethod
+    def print_comparison(cls, results: list[tuple]):
+        """
+        Prints a comparison summary table across all algorithms.
+        results: list of (name, fault_count, hit_count, hit_rate)
+        """
+        cls.print_header("COMPARISON SUMMARY")
+        col = 30
+        print(f"\n  {'Algorithm':<{col}} {'Faults':>8} {'Hits':>8} {'Hit Rate':>10}")
+        print(f"  {'─' * col} {'─' * 8} {'─' * 8} {'─' * 10}")
