@@ -21,3 +21,6 @@ class VMSimulator:
         "5": ("LFU",                           LFU),
         "6": ("MFU",                           MFU),
     }
+
+    def __init__(self, num_frames: int = 4):
+        self.num_frames = num_frames
