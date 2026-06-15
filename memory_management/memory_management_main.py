@@ -118,11 +118,69 @@ class MemoryManagementApp:
         
         # 2. MVT INTERFACE GRID PANEL DESIGN
         # Real-time Stats Header bar for MVT (Shows free space all the time)
+        self.mvt_stats_bar = ttk.LabelFrame(self.mvt_tab, text=" Real-Time MVT Memory Status Indicators ")
+        self.mvt_stats_bar.pack(fill=tk.X, padx=15, pady=10)
+        
+        self.lbl_mvt_free_space = ttk.Label(self.mvt_stats_bar, text="Total Unallocated Free Space: 64K", font=("Arial", 13, "bold"), foreground="green")
+        self.lbl_mvt_free_space.pack(side=tk.LEFT, padx=30, pady=10)
+        
+        self.lbl_mvt_external_frag = ttk.Label(self.mvt_stats_bar, text="Total External Fragmentation: 0K", font=("Arial", 13, "bold"), foreground="orange")
+        self.lbl_mvt_external_frag.pack(side=tk.LEFT, padx=30, pady=10)
+        
         # Split Bottom Layout into Control (Left) and Maps (Right)
+        mvt_body_frame = ttk.Frame(self.mvt_tab)
+        mvt_body_frame.pack(fill=tk.BOTH, expand=True, padx=15, pady=5)
+        
+        mvt_left_control = ttk.Frame(mvt_body_frame, width=450)
+        mvt_left_control.pack(side=tk.LEFT, fill=tk.Y, padx=10)
+        mvt_left_control.pack_propagate(False)
+        
+        mvt_right_display = ttk.Frame(mvt_body_frame)
+        mvt_right_display.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=10)
+        
         # Manual input entry panels for MVT
+        mvt_manual_box = ttk.LabelFrame(mvt_left_control, text=" Manual Process Control Board ")
+        mvt_manual_box.pack(fill=tk.X, pady=10, ipady=5)
+        
+        ttk.Label(mvt_manual_box, text="Process ID (P1-P10):").grid(row=0, column=0, padx=10, pady=8, sticky=tk.W)
+        self.entry_mvt_pid = ttk.Entry(mvt_manual_box, width=15)
+        self.entry_mvt_pid.grid(row=0, column=1, padx=10, pady=8, sticky=tk.W)
+        
+        ttk.Label(mvt_manual_box, text="Size (1K - 32K):").grid(row=1, column=0, padx=10, pady=8, sticky=tk.W)
+        self.entry_mvt_size = ttk.Entry(mvt_manual_box, width=15)
+        self.entry_mvt_size.grid(row=1, column=1, padx=10, pady=8, sticky=tk.W)
+        
+        ttk.Label(mvt_manual_box, text="Select Allocation Fit:").grid(row=2, column=0, padx=10, pady=8, sticky=tk.W)
+        self.combo_mvt_algo = ttk.Combobox(mvt_manual_box, values=["First Fit", "Best Fit", "Worst Fit"], state="readonly", width=18)
+        self.combo_mvt_algo.set("First Fit")
+        self.combo_mvt_algo.grid(row=2, column=1, padx=10, pady=8, sticky=tk.W)
+        
+        btn_mvt_alloc = ttk.Button(mvt_manual_box, text="EXECUTE ALLOCATE", command=lambda: self.execute_mvt_action("MANUAL", "ALLOCATE"))
+        btn_mvt_alloc.grid(row=3, column=0, padx=10, pady=12, sticky=tk.E)
+        
+        btn_mvt_dealloc = ttk.Button(mvt_manual_box, text="EXECUTE DEALLOCATE", command=lambda: self.execute_mvt_action("MANUAL", "DEALLOCATE"))
+        btn_mvt_dealloc.grid(row=3, column=1, padx=10, pady=12, sticky=tk.W)
+        
         # Automated random panels for MVT + compaction trigger
+        mvt_auto_box = ttk.LabelFrame(mvt_left_control, text=" Automated Dynamic Workload Board ")
+        mvt_auto_box.pack(fill=tk.X, pady=15, ipady=5)
+        
+        btn_mvt_random = ttk.Button(mvt_auto_box, text="INJECT NEXT RANDOM EVENT STEP", command=lambda: self.execute_mvt_action("RANDOM"))
+        btn_mvt_random.pack(padx=20, pady=10, fill=tk.X)
+        
+        btn_mvt_compact = ttk.Button(mvt_auto_box, text="EXECUTE MEMORY COMPACTION [WITH COMPACTION]", command=self.trigger_mvt_compaction)
+        btn_mvt_compact.pack(padx=20, pady=10, fill=tk.X)
+        
         # Text Console Output log panel for MVT
+        mvt_log_box = ttk.LabelFrame(mvt_left_control, text=" System Event Activity Log Readout ")
+        mvt_log_box.pack(fill=tk.BOTH, expand=True, pady=10)
+        self.txt_mvt_log = tk.Text(mvt_log_box, height=15, width=40, state="disabled", wrap=tk.WORD, bg="#f0f0f0")
+        self.txt_mvt_log.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+        
         # Right Graphical Canvas Mapping for MVT
+        self.mvt_canvas = tk.Canvas(mvt_right_display, bg="white", bd=2, relief=tk.SUNKEN)
+        self.mvt_canvas.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+        
         
 # Part 3: Operational Controllers and Memory Routing Rules
     # Method execute_mft_action(mode, action):
