@@ -29,7 +29,7 @@ class MemoryManagementApp:
         self.mft_manager = FixedMemoryManager(total_memory_size=64)
         self.mvt_manager = VariableMemoryManager(total_memory_size=64)
         
-        # Track waiting processes that cannot currently fit into active vlocks
+        # Track waiting processes inside manager tracks to preserve state references cleanly
         self.mft_manager.waiting_queue = []
         self.mvt_manager.waiting_queue = []
         
@@ -42,7 +42,7 @@ class MemoryManagementApp:
 
 
     def build_gui_layout(self):
-       # Crate a central notebook layout element spanning the whole viewport
+        # Create a central notebook layout element spanning the whole viewport
         self.notebook = ttk.Notebook(self.window_root)
         self.notebook.pack(fill=tk.BOTH, expand=True, padx=15, pady=15)
         
@@ -52,8 +52,9 @@ class MemoryManagementApp:
         self.notebook.add(self.mft_tab, text="   MFT (Fixed Partitioning Mode)   ")
         self.notebook.add(self.mvt_tab, text="   MVT (Variable Partitioning Mode)   ")
 
-
+        # ==========================================
         # 1. MFT INTERFACE GRID PANEL DESIGN
+        # ==========================================
         # Real-time Stats Header bar for MFT (Shows free space all the time)
         self.mft_stats_bar = ttk.LabelFrame(self.mft_tab, text=" Real-Time MFT Memory Status Indicators ")
         self.mft_stats_bar.pack(fill=tk.X, padx=15, pady=10)
@@ -115,8 +116,9 @@ class MemoryManagementApp:
         self.mft_canvas = tk.Canvas(mft_right_display, bg="white", bd=2, relief=tk.SUNKEN)
         self.mft_canvas.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
         
-        
+        # ==========================================
         # 2. MVT INTERFACE GRID PANEL DESIGN
+        # ==========================================
         # Real-time Stats Header bar for MVT (Shows free space all the time)
         self.mvt_stats_bar = ttk.LabelFrame(self.mvt_tab, text=" Real-Time MVT Memory Status Indicators ")
         self.mvt_stats_bar.pack(fill=tk.X, padx=15, pady=10)
@@ -181,7 +183,12 @@ class MemoryManagementApp:
         self.mvt_canvas = tk.Canvas(mvt_right_display, bg="white", bd=2, relief=tk.SUNKEN)
         self.mvt_canvas.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
         
-        
+    def log_message(self, text_widget, message_str: str):
+        text_widget.config(state="normal")
+        text_widget.insert(tk.END, message_str + "\n")
+        text_widget.see(tk.END)
+        text_widget.config(state="disabled")
+
 # Part 3: Operational Controllers and Memory Routing Rules
     def execute_mft_action(self, mode, action: str = None):
         try:
@@ -270,11 +277,6 @@ class MemoryManagementApp:
 
 
     def trigger_mvt_compaction(self):
-        """
-        # 1. Invoke memory compaction sequence on dynamic manager
-        # 2. Cycle through MVT waiting queue to pack newly unified free holes
-        # 3. Refresh MVT canvas
-        """
         try:
             msg = self.mvt_manager.compact_memory()
             self.log_message(self.txt_mvt_log, msg)
@@ -287,7 +289,6 @@ class MemoryManagementApp:
 
 
     def reorder_mvt_queue(self):
-        """ Helper sequence to automatically test waiting elements against dynamic holes. """
         algo = self.combo_mvt_algo.get()
         for queued_proc in list(self.mvt_manager.waiting_queue):
             if algo == "First Fit":
