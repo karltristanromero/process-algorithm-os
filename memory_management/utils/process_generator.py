@@ -9,6 +9,10 @@ class Process:
         self.partition_id = None                        # Set up a variable to track which memory block/partition ID it is inside
 
 
+# Global tracking pool for processes P1 through P10 to preserve state across calls
+process_pool = {i: Process(process_number=i) for i in range(1, 11)}
+
+
 # Part 2: Manual Input Option (MFT / MVT Standard)
 def create_manual_process(process_id: str, process_size: int):
     process_id = process_id.strip().upper()             # Clean the input string spaces and force uppercase
@@ -23,26 +27,40 @@ def create_manual_process(process_id: str, process_size: int):
         raise ValueError("Invalid process size. Please enter a size between 1K and 64K.")
     
     # Create and return one Process object with the user's ID and size
-    return Process(process_number=int(process_id[1:]), process_size=process_size)
+    process_number = int(process_id[1:])
+    process = process_pool[process_number]
+    process.process_size = process_size
+    
+    return process
 
 
-# Part 3: Automatic Random Event Generator (Strict MFT/MVT Logic)
-# Create a function to choose a random event (Enter or Leave)
+# Part 3: Automatic Random Event Generator
+def generate_random_process_event():
     # Track the current state of all 10 processes (P1-P10)
+    allocated_processes = [p for p in process_pool.values() if p.is_allocated]
+    unallocated_processes = [p for p in process_pool.values() if not p.is_allocated]
+
+    # Determine possible actions based on availability
+    possible_actions = []
+    if unallocated_processes:
+        possible_actions.append("ENTER")
+    if allocated_processes:
+        possible_actions.append("LEAVE")
+    if not possible_actions:
+        return None
     
     # Decide randomly to either make a process "ENTER" or "LEAVE"
+    chosen_action = random.choice(possible_actions)
     
-    # If the choice is "ENTER":
-        # Check if there is any process that has NOT entered yet (is_allocated == False)
-        # Randomly pick ONE process from the outside pool (prevents duplication)
-        # Assign it a random size up to 64K
-        # Return the process with an "ALLOCATE" command string for MFT/MVT to handle
+    if chosen_action == "ENTER":
+        process = random.choice(unallocated_processes)      # Randomly pick ONE process from the outside pool (prevents duplication)
+        process.process_size = random.randint(1, 64)        # Assign it a random size up to 64K
+        return "ALLOCATE", process                          # Return the process with an "ALLOCATE" command string for MFT/MVT to handle
         
-    # If the choice is "LEAVE":
-        # Check if any process is currently inside memory (is_allocated == True)
-        # If memory is empty, cancel and force an "ENTER" instead
+    elif chosen_action == "LEAVE":
         # Randomly pick ONE process currently inside memory
-        # Return the process with a "DEALLOCATE" command string so MFT can free the partition or MVT can free the hole
+        process = random.choice(allocated_processes)
+        return "DEALLOCATE", process                       # Return the process with a "DEALLOCATE"
 
 
 # Part 4: User Choice Router
