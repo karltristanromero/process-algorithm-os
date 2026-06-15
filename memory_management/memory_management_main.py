@@ -413,3 +413,9 @@ class MemoryManagementApp:
         # 6. Update header labels to display total free space continuously
         self.lbl_mvt_free_space.config(text=f"Total Unallocated Free Space: {total_free_space}K")
         self.lbl_mvt_external_frag.config(text=f"Total External Fragmentation: {total_external_fragmentation}K")
+        
+        
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = MemoryManagementApp(root)
+    root.mainloop()
