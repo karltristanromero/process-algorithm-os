@@ -19,3 +19,5 @@ virtual_memory_simulation/
     ├── least_frequently_used.py
     ├── most_frequently_used.py
 '''
+
+from simulator import VMSimulator
