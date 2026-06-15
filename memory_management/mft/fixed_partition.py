@@ -1,10 +1,10 @@
 # Part 1: Define what a Fixed Partition Block is
-# Create a class named PartitionBlock
-    # Set up a partition id
-    # Set up the total physical capacity of this block
-    # Set up a variable to hold a Process object if it is occupied
-    # Set up a tracking variable for internal fragmentation
-    # Set up a tracking variable for External fragmentation
+class PartitionBlock:
+    def __init__(self, partition_id: int, partition_size: int):
+        self.partition_id = f"Block {partition_id}"     # Set up a partition id
+        self.partition_size = partition_size            # Set up the total physical capacity of this block
+        self.occupied_process = None                    # Set up a variable to hold a Process object if it is occupied
+        self.internal_fragmentation = 0                 # Set up a tracking variable for internal fragmentation
 
 
 # Part 2: Define the Fixed Memory Manager Track
