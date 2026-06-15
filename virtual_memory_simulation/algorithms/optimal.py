@@ -21,4 +21,12 @@ class Optimal(PageReplacementAlgorithm):
 
         frames = []
 
-        
+        for i, page in enumerate(reference_string, 1):
+            if page in frames:
+                self.hit_count += 1
+                self.steps.append(SimStep(i, page, self.snapshot(frames), False))
+            else:
+                self.fault_count += 1
+                evicted = None
+
+                
