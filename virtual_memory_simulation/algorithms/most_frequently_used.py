@@ -35,3 +35,12 @@ class MFU(PageReplacementAlgorithm):
             else:
                 self.fault_count += 1
                 evicted = None
+
+                if len(frames) < self.num_frames:
+                    frames[page] = 1
+                    lru_order.append(page)
+                else:
+                    max_freq = max(frames.values())
+                    victim = next(p for p in lru_order if frames[p] == max_freq)
+
+                    
