@@ -48,3 +48,7 @@ class LFU(PageReplacementAlgorithm):
                     lru_order.remove(victim)
                     frames[page] = 1
                     lru_order.append(page)
+
+                self.steps.append(SimStep(i, page, self._snapshot(list(frames)), True, evicted))
+
+        return self.steps
