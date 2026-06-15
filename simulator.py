@@ -65,3 +65,15 @@ class VMSimulator:
                 return ref
             except ValueError:
                 print("  ⚠  Please enter valid integers.")
+
+    def choose_algorithm(self) -> str:
+        print("\n Select a page replacement algorithm:")
+        for key, (name, _) in self.ALGORITHMS.items():
+            print(f"    [{key}] {name}")
+        print("    [7] Compare All")
+
+        while True:
+            choice = input("\n  Your choice: ").strip()
+            if choice in self.ALGORITHMS or choice == "7":
+                return choice
+            print("  ⚠  Please enter a number between 1 and 7.")
