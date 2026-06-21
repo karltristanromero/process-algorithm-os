@@ -4,8 +4,10 @@ Preemptive Shortest Job First (SJF) Scheduler implementation.
 
 import tkinter as tk
 from tkinter import ttk, messagebox
+
 from scheduler_base import SchedulerBase
-from temporary_utils.theme import WINDOW_SIZES
+from temporary_utils.theme import COLORS, FONTS, WINDOW_SIZES
+from temporary_utils.layout_config import SIMULATION_PANE, ADD_PROCESS_LAYOUT
 
 
 class SJFPreemptive(SchedulerBase):
@@ -17,7 +19,7 @@ class SJFPreemptive(SchedulerBase):
         self.add_process_window = None  
 
     def setup_add_process_window(self):
-        """Set up the Add Process popup window using a unified retro typography theme."""
+        """Set up child modal popup matching the native button styling layout."""
         self.add_process_window = tk.Toplevel(self.root)
         self.add_process_window.title("Add Process")
         self.add_process_window.geometry(f"{WINDOW_SIZES['add_process'][0]}x{WINDOW_SIZES['add_process'][1]}")
@@ -27,65 +29,75 @@ class SJFPreemptive(SchedulerBase):
         self.add_process_window.grab_set()
 
         main_frame = tk.Frame(self.add_process_window, bg='#2b2b2b')
-        main_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
+        main_frame.pack(fill=tk.BOTH, expand=True, padx=ADD_PROCESS_LAYOUT['frame_padding'], pady=ADD_PROCESS_LAYOUT['frame_padding'])
 
-        title_label = tk.Label(main_frame, text="ADD NEW PROCESS", font=('Courier', 16, 'bold'), bg='#2b2b2b', fg='white')
+        title_label = tk.Label(main_frame, text="ADD NEW PROCESS", font=FONTS['heading'], bg='#2b2b2b', fg='white')
         title_label.pack(pady=(0, 20))
 
         input_frame = tk.Frame(main_frame, bg='#2b2b2b')
         input_frame.pack(fill=tk.X, pady=(0, 20))
 
-        # Input Rows with updated pixelated font attributes
-        tk.Label(input_frame, text="Arrival Time:", font=('Courier', 12, 'bold'), bg='#2b2b2b', fg='white').grid(row=0, column=0, sticky=tk.W, pady=5)
-        self.arrival_entry = tk.Entry(input_frame, font=('Courier', 12, 'bold'), width=20)
+        f_width = ADD_PROCESS_LAYOUT['entry_field_width']
+        
+        tk.Label(input_frame, text="Arrival Time:", font=FONTS['default'], bg='#2b2b2b', fg='white').grid(row=0, column=0, sticky=tk.W, pady=5)
+        self.arrival_entry = tk.Entry(input_frame, font=FONTS['default'], width=f_width)
         self.arrival_entry.grid(row=0, column=1, padx=(10, 0), pady=5, sticky=tk.W)
 
-        tk.Label(input_frame, text="Burst Time:", font=('Courier', 12, 'bold'), bg='#2b2b2b', fg='white').grid(row=1, column=0, sticky=tk.W, pady=5)
-        self.burst_entry = tk.Entry(input_frame, font=('Courier', 12, 'bold'), width=20)
+        tk.Label(input_frame, text="Burst Time:", font=FONTS['default'], bg='#2b2b2b', fg='white').grid(row=1, column=0, sticky=tk.W, pady=5)
+        self.burst_entry = tk.Entry(input_frame, font=FONTS['default'], width=f_width)
         self.burst_entry.grid(row=1, column=1, padx=(10, 0), pady=5, sticky=tk.W)
 
-        # Control panel buttons
         btn_frame = tk.Frame(main_frame, bg='#2b2b2b')
         btn_frame.pack(fill=tk.X, pady=(10, 0))
 
-        add_btn = tk.Button(btn_frame, text="Add Process", font=('Courier', 12, 'bold'), bg='#4caf50', fg='white', relief=tk.FLAT, padx=20, pady=10, command=self.add_process)
+        # Reusable matching button configuration matrix
+        child_btn_props = {
+            'font': FONTS['default'],
+            'bg': '#ffe6ad',
+            'fg': '#000000',
+            'relief': tk.SOLID,
+            'bd': 1,
+            'padx': 20,
+            'pady': 8,
+            'activebackground': '#ebd29b'
+        }
+
+        add_btn = tk.Button(btn_frame, text="Add Process", command=self.add_process, **child_btn_props)
         add_btn.pack(side=tk.LEFT, padx=(0, 10))
 
-        confirm_btn = tk.Button(btn_frame, text="Confirm", font=('Courier', 12, 'bold'), bg='#007acc', fg='white', relief=tk.FLAT, padx=20, pady=10, command=self.add_process_window.destroy)
+        confirm_btn = tk.Button(btn_frame, text="Confirm", command=self.add_process_window.destroy, **child_btn_props)
         confirm_btn.pack(side=tk.LEFT, padx=10)
 
-        # Tabular registry list layout segment
         table_frame = tk.Frame(main_frame, bg='#2b2b2b')
         table_frame.pack(fill=tk.BOTH, expand=True, pady=(20, 0))
 
-        tk.Label(table_frame, text="Process Registry List:", font=('Courier', 12, 'bold'), bg='#2b2b2b', fg='white').pack(anchor=tk.W, pady=(0, 5))
+        tk.Label(table_frame, text="Process Registry List:", font=FONTS['default'], bg='#2b2b2b', fg='white').pack(anchor=tk.W, pady=(0, 5))
 
-        # Inject styling elements into the default Treeview frame font mapping pipeline
         style = ttk.Style()
-        style.configure("Treeview.Heading", font=('Courier', 10, 'bold'))
-        style.configure("Treeview", font=('Courier', 10, 'bold'))
+        style.configure("Treeview.Heading", font=FONTS['small'])
+        style.configure("Treeview", font=FONTS['small'])
 
-        self.process_table = ttk.Treeview(table_frame, columns=('PID', 'Arrival Time', 'Burst Time'), show='headings', height=10)
+        self.process_table = ttk.Treeview(table_frame, columns=('PID', 'Arrival Time', 'Burst Time'), show='headings', height=ADD_PROCESS_LAYOUT['table_row_height'])
         self.process_table.heading('PID', text='Process ID')
         self.process_table.heading('Arrival Time', text='Arrival Time')
         self.process_table.heading('Burst Time', text='Burst Time')
-        self.process_table.column('PID', width=100)
-        self.process_table.column('Arrival Time', width=150)
-        self.process_table.column('Burst Time', width=150)
+        
+        self.process_table.column('PID', width=ADD_PROCESS_LAYOUT['col_pid_width'])
+        self.process_table.column('Arrival Time', width=ADD_PROCESS_LAYOUT['col_arrival_width'])
+        self.process_table.column('Burst Time', width=ADD_PROCESS_LAYOUT['col_burst_width'])
 
         scrollbar = ttk.Scrollbar(table_frame, orient=tk.VERTICAL, command=self.process_table.yview)
         self.process_table.configure(yscrollcommand=scrollbar.set)
         self.process_table.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
 
-        # Table processing items action tray
         table_btn_frame = tk.Frame(main_frame, bg='#2b2b2b')
         table_btn_frame.pack(fill=tk.X, pady=(10, 0))
 
-        edit_btn = tk.Button(table_btn_frame, text="Edit Selected", font=('Courier', 10, 'bold'), bg='#ff9800', fg='white', relief=tk.FLAT, padx=15, pady=5, command=self.edit_process)
+        edit_btn = tk.Button(table_btn_frame, text="Edit Selected", command=self.edit_process, **child_btn_props)
         edit_btn.pack(side=tk.LEFT, padx=(0, 5))
 
-        delete_btn = tk.Button(table_btn_frame, text="Delete Selected", font=('Courier', 10, 'bold'), bg='#f44336', fg='white', relief=tk.FLAT, padx=15, pady=5, command=self.delete_process)
+        delete_btn = tk.Button(table_btn_frame, text="Delete Selected", command=self.delete_process, **child_btn_props)
         delete_btn.pack(side=tk.LEFT, padx=5)
 
         self.refresh_process_table()
@@ -115,11 +127,9 @@ class SJFPreemptive(SchedulerBase):
             messagebox.showerror("Invalid Input", "Provide standard integers for parameters.")
 
     def edit_process(self):
-        """Open a single unified dialog frame to edit all process specs under a retro layout."""
+        """Open single unified dialog window styled with thin-bordered yellow properties."""
         selected = self.process_table.selection()
-        if not selected:
-            messagebox.showwarning("No Selection", "Please choose a target process entry.")
-            return
+        if not selected: return
 
         item = self.process_table.item(selected[0])
         pid, arrival_time, burst_time = item['values']
@@ -131,13 +141,13 @@ class SJFPreemptive(SchedulerBase):
         edit_win.configure(bg='#2b2b2b')
         edit_win.grab_set()
 
-        tk.Label(edit_win, text="Arrival Time:", font=('Courier', 11, 'bold'), bg='#2b2b2b', fg='white').grid(row=0, column=0, padx=15, pady=15, sticky=tk.W)
-        arr_entry = tk.Entry(edit_win, font=('Courier', 11, 'bold'))
+        tk.Label(edit_win, text="Arrival Time:", font=FONTS['default'], bg='#2b2b2b', fg='white').grid(row=0, column=0, padx=15, pady=15, sticky=tk.W)
+        arr_entry = tk.Entry(edit_win, font=FONTS['default'])
         arr_entry.insert(0, str(arrival_time))
         arr_entry.grid(row=0, column=1)
 
-        tk.Label(edit_win, text="Burst Time:", font=('Courier', 11, 'bold'), bg='#2b2b2b', fg='white').grid(row=1, column=0, padx=15, pady=15, sticky=tk.W)
-        burst_entry = tk.Entry(edit_win, font=('Courier', 11, 'bold'))
+        tk.Label(edit_win, text="Burst Time:", font=FONTS['default'], bg='#2b2b2b', fg='white').grid(row=1, column=0, padx=15, pady=15, sticky=tk.W)
+        burst_entry = tk.Entry(edit_win, font=FONTS['default'])
         burst_entry.insert(0, str(burst_time))
         burst_entry.grid(row=1, column=1)
 
@@ -155,7 +165,11 @@ class SJFPreemptive(SchedulerBase):
             except ValueError:
                 messagebox.showerror("Error", "Invalid metric specifications.")
 
-        save_btn = tk.Button(edit_win, text="Save Parameters", font=('Courier', 11, 'bold'), bg='#4caf50', fg='white', relief=tk.FLAT, padx=10, pady=5, command=save_changes)
+        save_btn = tk.Button(
+            edit_win, text="Save Parameters", font=FONTS['default'], 
+            bg='#ffe6ad', fg='#000000', relief=tk.SOLID, bd=1, 
+            padx=10, pady=5, command=save_changes
+        )
         save_btn.grid(row=2, column=0, columnspan=2, pady=10)
 
     def delete_process(self):

@@ -2,8 +2,6 @@
 
 # Asset paths - using relative paths for easy refactoring
 BACKGROUND = "temporary_assets/background.png"
-BUTTON_MAIN = "temporary_assets/button_main.png"
-STATIC_TEXT = "temporary_assets/static_text.png"
 
 # Color scheme - high contrast colors for process visualization
 COLORS = {
@@ -15,6 +13,7 @@ COLORS = {
     'success': '#4caf50',
     'warning': '#ff9800',
     'error': '#f44336',
+    'metrics_text': '#2e1b5b',
     'process_base': '#3f51b5'  # Base color for processes (will be varied)
 }
 

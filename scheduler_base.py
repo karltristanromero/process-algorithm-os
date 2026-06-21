@@ -1,148 +1,129 @@
 """
-Base scheduler class containing shared Tkinter setup and common UI elements
-for the CPU scheduling simulator.
+Base scheduler class utilizing a unified Master Canvas system with persistent
+widget tracking to prevent layout items from disappearing during canvas wipes.
 """
 
 import tkinter as tk
-from temporary_utils.theme import COLORS, FONTS
+from temporary_utils.theme import BACKGROUND, COLORS, FONTS
+from temporary_utils.layout_config import METRICS_LAYOUT, SIMULATION_PANE, BUTTONS_LAYOUT
 
 
 class SchedulerBase:
-    """Base class for scheduler windows with shared Tkinter configuration."""
+    """Base class for scheduler interfaces utilizing absolute master canvas layering."""
 
     def __init__(self, title, width, height):
         self.root = tk.Tk()
         self.root.title(title)
         
-        # Maximize the window automatically based on your system's resolution
-        try:
-            self.root.attributes('-zoomed', True)  # Native Linux/Fedora maximization
-        except Exception:
-            try:
-                self.root.state('zoomed')  # Windows/macOS Fallback
-            except Exception:
-                # Hard fallback to physical resolution dimensions
-                screen_w = self.root.winfo_screenwidth()
-                screen_h = self.root.winfo_screenheight()
-                self.root.geometry(f"{screen_w}x{screen_h}")
+        self.root.attributes('-fullscreen', True)
+        self.root.bind('<Escape>', lambda event: self.root.destroy())
 
-        self.root.configure(bg=COLORS['background'])
-
-        # Common variables
-        self.processes = []  # List to store process dictionaries
+        self.processes = []  
         self.canvas = None   
         self.metrics_labels = {}  
-        self.animation_running = False  # Track animation execution state
+        self.persistent_canvas_items = []  # Protection registry list for UI items
 
     def setup_main_window(self):
-        """Set up the main dashboard window layout."""
-        main_frame = tk.Frame(self.root, bg=COLORS['background'])
-        main_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
-
-        # Control Layout
-        control_frame = tk.Frame(main_frame, bg=COLORS['background'])
-        control_frame.pack(fill=tk.X, pady=(0, 20))
-
-        # Menu Button (Placeholder - Inactive)
-        self.menu_btn = tk.Button(
-            control_frame, text="Menu", font=FONTS['default'],
-            bg=COLORS['accent'], fg=COLORS['text_primary'],
-            relief=tk.FLAT, padx=20, pady=10
-        )
-        self.menu_btn.pack(side=tk.LEFT, padx=(0, 10))
-
-        # Start Button
-        self.start_btn = tk.Button(
-            control_frame, text="Start", font=FONTS['default'],
-            bg=COLORS['success'], fg=COLORS['text_primary'],
-            relief=tk.FLAT, padx=20, pady=10,
-            command=self.start_simulation  
-        )
-        self.start_btn.pack(side=tk.LEFT, padx=10)
-
-        # Add Process Button
-        self.add_process_btn = tk.Button(
-            control_frame, text="Add Process", font=FONTS['default'],
-            bg=COLORS['warning'], fg=COLORS['text_primary'],
-            relief=tk.FLAT, padx=20, pady=10,
-            command=self.open_add_process_window  
-        )
-        self.add_process_btn.pack(side=tk.LEFT, padx=10)
-
-        # Reset Button
-        self.reset_btn = tk.Button(
-            control_frame, text="Reset", font=FONTS['default'],
-            bg=COLORS['error'], fg=COLORS['text_primary'],
-            relief=tk.FLAT, padx=20, pady=10,
-            command=self.reset_simulation  
-        )
-        self.reset_btn.pack(side=tk.LEFT, padx=10)
-
-        # Live Metrics Block
-        metrics_frame = tk.Frame(main_frame, bg=COLORS['canvas'], relief=tk.RAISED, bd=2)
-        metrics_frame.pack(fill=tk.X, pady=(0, 20))
-
-        metrics_inner = tk.Frame(metrics_frame, bg=COLORS['canvas'])
-        metrics_inner.pack(fill=tk.X, padx=20, pady=10)
-
+        """Set up the master canvas view, eliminating blocking dark-gray frames entirely."""
+        self.bg_image = tk.PhotoImage(file=BACKGROUND)
+        
+        self.canvas = tk.Canvas(self.root, bg=COLORS['background'], highlightthickness=0, bd=0)
+        self.canvas.pack(fill=tk.BOTH, expand=True)
+        
+        # Layer 0: Draw background image (ID: 1)
+        bg_id = self.canvas.create_image(0, 0, image=self.bg_image, anchor=tk.NW)
+        self.persistent_canvas_items.append(bg_id)
+        
+        # =====================================================================
+        # 1. LIVE METRICS LAYER (Uses color token: COLORS['metrics_text'])
+        # =====================================================================
         metrics_config = [
-            ("Average TAT:", "--"),
-            ("Average WT:", "--"),
-            ("CPU Utilization:", "--%"),
-            ("Throughput:", "--")
+            ("AVG TAT:", "average_tat"),
+            ("AVG WT:", "average_wt"),
+            ("CPU Utilization:", "cpu_utilization"),
+            ("Throughput:", "throughput")
         ]
 
-        for i, (label_text, initial_value) in enumerate(metrics_config):
-            label = tk.Label(
-                metrics_inner, text=label_text, font=FONTS['metric'],
-                bg=COLORS['canvas'], fg=COLORS['text_secondary']
+        m_x = METRICS_LAYOUT['start_x']
+        m_y = METRICS_LAYOUT['start_y']
+        m_space = METRICS_LAYOUT['spacing_x']
+        v_offset = METRICS_LAYOUT['value_offset_x']
+
+        for i, (label_text, key_name) in enumerate(metrics_config):
+            current_x = m_x + (i * m_space)
+            
+            lbl_id = self.canvas.create_text(
+                current_x, m_y, text=label_text, font=FONTS['metric'],
+                fill=COLORS['metrics_text'], anchor=tk.W
             )
-            label.grid(row=0, column=i*2, sticky=tk.W, padx=(0, 5))
-
-            value_label = tk.Label(
-                metrics_inner, text=initial_value, font=FONTS['metric'],
-                bg=COLORS['canvas'], fg=COLORS['text_primary']
+            
+            initial_val = "--%" if key_name == "cpu_utilization" else "--"
+            value_id = self.canvas.create_text(
+                current_x + v_offset, m_y, text=initial_val, font=FONTS['metric'],
+                fill=COLORS['metrics_text'], anchor=tk.W
             )
-            value_label.grid(row=0, column=i*2+1, sticky=tk.W, padx=(0, 20))
-            self.metrics_labels[label_text.replace(":", "").replace(" ", "_").lower()] = value_label
+            
+            self.metrics_labels[key_name] = value_id
+            self.persistent_canvas_items.append(lbl_id)
+            self.persistent_canvas_items.append(value_id)
 
-        # Simulation Canvas Workspace
-        canvas_frame = tk.Frame(main_frame, bg=COLORS['canvas'], relief=tk.SUNKEN, bd=2)
-        canvas_frame.pack(fill=tk.BOTH, expand=True)
+        # =====================================================================
+        # 2. NATIVE CONTROL BUTTONS LAYER (Absolute Coordinate Positioning)
+        # =====================================================================
+        # FIX: Switched from relative offsets to a direct absolute pixel coordinate
+        btn_y = BUTTONS_LAYOUT['start_y']
+        btn_x_start = BUTTONS_LAYOUT['start_x']
+        btn_space = BUTTONS_LAYOUT['spacing_x']
 
-        self.canvas = tk.Canvas(canvas_frame, bg=COLORS['canvas'], highlightthickness=0)
-        self.canvas.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+        button_properties = {
+            'font': FONTS['default'],
+            'bg': '#ffe6ad',
+            'fg': '#000000',
+            'relief': tk.SOLID,
+            'bd': 1,
+            'padx': BUTTONS_LAYOUT['btn_padx'],  
+            'pady': BUTTONS_LAYOUT['btn_pady'],  
+            'activebackground': '#ebd29b',
+            'activeforeground': '#000000'
+        }
 
-    def setup_add_process_window(self):
-        pass
+        self.menu_btn = tk.Button(self.root, text="Menu", **button_properties)
+        self.start_btn = tk.Button(self.root, text="Start", command=self.start_simulation, **button_properties)
+        self.add_process_btn = tk.Button(self.root, text="Add Process", command=self.open_add_process_window, **button_properties)
+        self.reset_btn = tk.Button(self.root, text="Reset", command=self.reset_simulation, **button_properties)
+
+        # Embed buttons and preserve their canvas window container element IDs
+        for idx, btn in enumerate([self.menu_btn, self.start_btn, self.add_process_btn, self.reset_btn]):
+            w_id = self.canvas.create_window(btn_x_start + (idx * btn_space), btn_y, window=btn, anchor=tk.W)
+            self.persistent_canvas_items.append(w_id)
 
     def update_metrics(self, avg_tat=None, avg_wt=None, cpu_util=None, throughput=None):
-        """Update the live metrics display configuration."""
-        if avg_tat is not None:
-            self.metrics_labels['average_tat'].config(text=f"{avg_tat:.2f}")
-        if avg_wt is not None:
-            self.metrics_labels['average_wt'].config(text=f"{avg_wt:.2f}")
-        if cpu_util is not None:
-            self.metrics_labels['cpu_utilization'].config(text=f"{cpu_util:.1f}%")
-        if throughput is not None:
-            self.metrics_labels['throughput'].config(text=f"{throughput:.2f}")
+        """Update canvas text elements using item configurations."""
+        if avg_tat is not None: 
+            self.canvas.itemconfig(self.metrics_labels['average_tat'], text=f"{avg_tat:.2f}")
+        if avg_wt is not None: 
+            self.canvas.itemconfig(self.metrics_labels['average_wt'], text=f"{avg_wt:.2f}")
+        if cpu_util is not None: 
+            self.canvas.itemconfig(self.metrics_labels['cpu_utilization'], text=f"{cpu_util:.1f}%")
+        if throughput is not None: 
+            self.canvas.itemconfig(self.metrics_labels['throughput'], text=f"{throughput:.2f}")
 
     def reset_metrics(self):
-        for label in self.metrics_labels.values():
-            label.config(text="--")
+        """Reset canvas string displays back to default markers."""
+        for key, text_id in self.metrics_labels.items():
+            default_text = "--%" if key == "cpu_utilization" else "--"
+            self.canvas.itemconfig(text_id, text=default_text)
 
     def clear_canvas(self):
+        """FIX: Only deletes simulation blocks. Ignores persistent menu assets, labels, and buttons."""
         if self.canvas:
-            self.canvas.delete("all")
+            for item in self.canvas.find_all():
+                if item not in self.persistent_canvas_items:
+                    self.canvas.delete(item)
 
-    def start_simulation(self):
-        raise NotImplementedError
-
-    def reset_simulation(self):
-        raise NotImplementedError
-
-    def open_add_process_window(self):
-        raise NotImplementedError
+    def start_simulation(self): raise NotImplementedError
+    def reset_simulation(self): raise NotImplementedError
+    def open_add_process_window(self): raise NotImplementedError
 
     def run(self):
         self.root.mainloop()
