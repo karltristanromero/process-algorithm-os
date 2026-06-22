@@ -23,7 +23,7 @@ FONTS = {
     'default': ('Courier', 11, 'bold'),
     'heading': ('Courier', 16, 'bold'),
     'small': ('Courier', 9, 'bold'),
-    'metric': ('Courier', 14, 'bold')
+    'metric': ('Courier', 20, 'bold')
 }
 
 # Window dimensions

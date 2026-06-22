@@ -35,42 +35,34 @@ class SchedulerBase:
         self.persistent_canvas_items.append(bg_id)
         
         # =====================================================================
-        # 1. LIVE METRICS LAYER (Uses color token: COLORS['metrics_text'])
+        # 1. LIVE METRICS LAYER (Dynamic Results Only - Labels are baked into background.png)
         # =====================================================================
-        metrics_config = [
-            ("AVG TAT:", "average_tat"),
-            ("AVG WT:", "average_wt"),
-            ("CPU Utilization:", "cpu_utilization"),
-            ("Throughput:", "throughput")
-        ]
+        # All string literals for names have been removed. We only loop through keys
+        # to map the text modification IDs directly under your background artwork.
+        metrics_keys = ["average_tat", "average_wt", "cpu_utilization", "throughput"]
 
         m_x = METRICS_LAYOUT['start_x']
         m_y = METRICS_LAYOUT['start_y']
         m_space = METRICS_LAYOUT['spacing_x']
-        v_offset = METRICS_LAYOUT['value_offset_x']
+        v_offset_y = METRICS_LAYOUT['value_offset_y']
 
-        for i, (label_text, key_name) in enumerate(metrics_config):
+        for i, key_name in enumerate(metrics_keys):
             current_x = m_x + (i * m_space)
             
-            lbl_id = self.canvas.create_text(
-                current_x, m_y, text=label_text, font=FONTS['metric'],
-                fill=COLORS['metrics_text'], anchor=tk.W
-            )
-            
+            # Dynamic Value Text Layer (Positioned directly over your graphic slots)
             initial_val = "--%" if key_name == "cpu_utilization" else "--"
             value_id = self.canvas.create_text(
-                current_x + v_offset, m_y, text=initial_val, font=FONTS['metric'],
-                fill=COLORS['metrics_text'], anchor=tk.W
+                current_x, m_y + v_offset_y, text=initial_val, font=FONTS['metric'],
+                fill="#8c6f87", anchor=tk.W
             )
             
+            # Register value ID to protection arrays and backend tracking dicts
             self.metrics_labels[key_name] = value_id
-            self.persistent_canvas_items.append(lbl_id)
             self.persistent_canvas_items.append(value_id)
 
         # =====================================================================
-        # 2. NATIVE CONTROL BUTTONS LAYER (Absolute Coordinate Positioning)
+        # 2. NATIVE CONTROL BUTTONS LAYER (Absolute Large Sizing Realignment)
         # =====================================================================
-        # FIX: Switched from relative offsets to a direct absolute pixel coordinate
         btn_y = BUTTONS_LAYOUT['start_y']
         btn_x_start = BUTTONS_LAYOUT['start_x']
         btn_space = BUTTONS_LAYOUT['spacing_x']
@@ -81,8 +73,8 @@ class SchedulerBase:
             'fg': '#000000',
             'relief': tk.SOLID,
             'bd': 1,
-            'padx': BUTTONS_LAYOUT['btn_padx'],  
-            'pady': BUTTONS_LAYOUT['btn_pady'],  
+            'padx': BUTTONS_LAYOUT['main_btn_padx'],  
+            'pady': BUTTONS_LAYOUT['main_btn_pady'],  
             'activebackground': '#ebd29b',
             'activeforeground': '#000000'
         }

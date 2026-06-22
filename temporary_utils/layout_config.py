@@ -7,17 +7,17 @@ on the master canvas window layer.
 # 1. LIVE METRICS AREA COORDINATES (Top Section Group)
 # =====================================================================
 METRICS_LAYOUT = {
-    'start_x': 300,                  
-    'start_y': 700,                   
-    'spacing_x': 370,                
-    'value_offset_x': 160            
+    'start_x': 380,                  
+    'start_y': 720,                   
+    'spacing_x': 350,                
+    'value_offset_y': 40             # FIX: Vertical gap pushing metrics directly UNDER names
 }
 
 # =====================================================================
 # 2. SIMULATION CANVAS TRACK (Middle Section Group)
 # =====================================================================
 SIMULATION_PANE = {
-    'y_start_coordinate': 400,       
+    'y_start_coordinate': 900,       
     'process_block_height': 80,      
     'left_margin': 100,              
     'right_margin': 100,             
@@ -25,16 +25,16 @@ SIMULATION_PANE = {
 }
 
 # =====================================================================
-# 3. NATIVE BUTTONS CONTROL LAYOUT (Bottom Section Group)
+# 3. NATIVE BUTTONS CONTROL LAYOUT (Main Page Only)
 # =====================================================================
 BUTTONS_LAYOUT = {
-    'start_x': 30,                  # Horizontal starting point for the button row
-    'start_y': 1020,                 # FIX: Absolute vertical coordinate (places them cleanly at the bottom)
+    'start_x': 30,                  
+    'start_y': 1020,                 
     'spacing_x': 340,                
     
-    # MANUAL SIZE ADJUSTMENTS: Increase these to make buttons larger
-    'btn_padx': 35,                  
-    'btn_pady': 15                   
+    # FIX: Exclusive main window sizing constants (Independent from child popup)
+    'main_btn_padx': 40,             # Increased horizontal padding for larger layout
+    'main_btn_pady': 22              # Increased vertical padding for larger layout
 }
 
 # =====================================================================
