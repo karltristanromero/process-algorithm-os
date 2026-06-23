@@ -1,0 +1,128 @@
+================================================================================
+                    CMPE 202 - OPERATING SYSTEMS FINAL PROJECT
+                     TECHNICAL NOTES: MEMORY MANAGEMENT (MODULE 5)
+================================================================================
+
+1. CORE CONCEPTS
+--------------------------------------------------------------------------------
+* Memory Management: The process of controlling and coordinating computer memory, 
+  assigning blocks (partitions) to various running programs to optimize overall 
+  system performance.
+
+* Fragmentation: Wasted memory space that cannot be allocated to processes.
+  - Internal Fragmentation: Wasted space inside an allocated memory partition 
+    (occurs when process size is smaller than partition size).
+  - External Fragmentation: Wasted space outside partitions; total free memory 
+    is enough to satisfy a request, but it is non-contiguous (scattered).
+
+2. MFT: MULTIPROGRAMMING WITH A FIXED NUMBER OF TASKS (STATIC PARTITIONING)
+--------------------------------------------------------------------------------
+* Characteristics: 
+  - Memory is divided into fixed-sized, static partitions before execution.
+  - Number of partitions is permanent.
+  - High vulnerability to Internal Fragmentation.
+  - Limit on process size (cannot exceed the largest partition size).
+
+  a. First Fit:
+     - Logic: Scans the static partitions from the top and places the incoming 
+       process into the very first partition that is large enough to hold it.
+     - Pro: Fast execution; low overhead.
+     - Con: Blindsides later partitions; crowds the top of memory.
+     
+  b. Best Fit:
+     - Logic: Searches the entire list of partitions and places the process into 
+       the partition that leaves the smallest leftover space (minimum internal 
+       fragmentation).
+     - Pro: Wastes the least amount of space within that single chosen partition.
+     - Con: Slower; requires sorting or a complete search of all partitions.
+     
+  c. Best Available Fit (Variant):
+     - Logic: A variation that prioritizes assigning a process to the closest matching 
+       currently *unallocated* (available) partition, balancing strict sizing 
+       with modern hardware state tracking.
+
+3. MVT: MULTIPROGRAMMING WITH A VARIABLE NUMBER OF TASKS (DYNAMIC PARTITIONING)
+--------------------------------------------------------------------------------
+* Characteristics:
+  - Memory partitions are created dynamically on-the-fly based on the exact 
+    size requirement of the incoming process.
+  - No initial fixed partitions; memory begins as one large block (hole).
+  - Eliminates Internal Fragmentation entirely.
+  - Highly prone to External Fragmentation as processes load and terminate, 
+    leaving fragmented gaps in RAM.
+
+  a. First Fit:
+     - Logic: Allocates the process to the first available memory hole from the 
+       beginning of RAM that is large enough.
+     - Pro: Simplest and fastest allocation.
+  
+  b. Best Fit:
+     - Logic: Scans all available dynamic holes and allocates the process to the 
+       smallest hole that is still large enough to contain it.
+     - Pro: Preserves larger contiguous blocks of memory for upcoming heavy tasks.
+     - Con: Leaves behind tiny, useless external fragmentation holes ("shards").
+     
+  c. Worst Fit:
+     - Logic: Scans all available holes and allocates the process to the largest 
+       available dynamic hole.
+     - Pro: The leftover fragmented space is large enough to be highly useful 
+       for subsequent smaller processes.
+     - Con: Rapidly destroys massive contiguous memory blocks.
+
+4. PROCESS GENERATION MODES (SHARED UTILITIES)
+--------------------------------------------------------------------------------
+* The system accommodates two operational modes for process entry to allow for
+  both custom scenarios and standardized algorithmic stress testing:
+
+  a. Manual Generation Mode:
+     - Allows users to explicitly define test cases by inputting a distinct 
+       Process ID and specific memory size via the control panel.
+     - Essential for validating edge-case behavior and testing specific boundary 
+       conditions.
+
+  b. Automatic Generation Mode (`process_generator.py`):
+     - Automatically provisions a batch queue of multiple sequential simulated 
+       processes (e.g., P1 to P10) with randomized payload sizes.
+     - Uses a pseudo-random seed mechanism to ensure the exact same baseline 
+       workload is generated when testing across different allocation strategies 
+       (MFT vs. MVT, First Fit vs. Best Fit), establishing a fair test matrix.
+
+5. GUI IMPLEMENTATION GUIDELINES (TKINTER)
+--------------------------------------------------------------------------------
+* Target Resolution: 1920x1080 FHD layout.
+* Component Blueprint for Main.py:
+  1. Top Configuration Panel: Input fields for Total Memory Size, Number of 
+     Partitions (for MFT), and selection toggles between MFT and MVT.
+  2. Execution Control Panel: Input fields for Process ID and Process Size, 
+     with buttons to "Allocate" or "Deallocate/Terminate".
+  3. Visual Memory Map: A responsive, vertically stacked visual canvas that 
+     color-codes unallocated holes versus occupied memory spaces (e.g., Red).
+  4. Diagnostics Readout: Live calculation charts showing:
+     - Total Internal Fragmentation (MFT mode)
+     - Total External Fragmentation (MVT mode)
+     - Memory Utilization Percentage Index
+================================================================================
+
+process_algorithm_os/
+│
+└── memory_management/
+    ├── __init__.py                # Makes python treat this directory as a package
+    ├── memory_management_main.py                    # The central entry point (UI / terminal menu)
+    │
+    ├── utils/
+    │   ├── __init__.py
+    │   └── process_generator.py   # System for handling manual inputs and auto-generating random process queues
+    │
+    ├── mft/
+    │   ├── __init__.py
+    │   ├── fixed_partition.py     # Core logic for handling static partitions
+    │   ├── first_fit.py           # First Fit algorithm logic for MFT
+    │   ├── best_fit.py            # Best Fit algorithm logic for MFT
+    │   └── best_available_fit.py  # Best Available Fit variant logic
+    │
+    └── mvt/
+        ├── __init__.py
+        ├── variable_partition.py  # Core logic for dynamically creating partitions
+        ├── first_fit.py           # First Fit algorithm logic for MVT
+        ├── best_fit.py            # Best Fit algorithm logic for MVT
+        └── worst_fit.py           # Worst Fit algorithm logic for MVT
