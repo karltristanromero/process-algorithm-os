@@ -61,11 +61,11 @@ class SchedulerBase:
             self.persistent_canvas_items.append(value_id)
 
         # =====================================================================
-        # 2. NATIVE CONTROL BUTTONS LAYER (Absolute Large Sizing Realignment)
+        # 2. NATIVE CONTROL BUTTONS LAYER (Dynamic Floating Flow Layout)
         # =====================================================================
         btn_y = BUTTONS_LAYOUT['start_y']
-        btn_x_start = BUTTONS_LAYOUT['start_x']
-        btn_space = BUTTONS_LAYOUT['spacing_x']
+        current_x = BUTTONS_LAYOUT['start_x']   # This tracker shifts dynamically across the loop
+        btn_gap = BUTTONS_LAYOUT['button_gap']
 
         button_properties = {
             'font': FONTS['default'],
@@ -84,10 +84,14 @@ class SchedulerBase:
         self.add_process_btn = tk.Button(self.root, text="Add Process", command=self.open_add_process_window, **button_properties)
         self.reset_btn = tk.Button(self.root, text="Reset", command=self.reset_simulation, **button_properties)
 
-        # Embed buttons and preserve their canvas window container element IDs
-        for idx, btn in enumerate([self.menu_btn, self.start_btn, self.add_process_btn, self.reset_btn]):
-            w_id = self.canvas.create_window(btn_x_start + (idx * btn_space), btn_y, window=btn, anchor=tk.W)
+        # FIX: Loop calculates widget widths on-the-fly to ensure uniform small spacing
+        for btn in [self.menu_btn, self.start_btn, self.add_process_btn, self.reset_btn]:
+            # Draw the button at the current horizontal tracker location
+            w_id = self.canvas.create_window(current_x, btn_y, window=btn, anchor=tk.W)
             self.persistent_canvas_items.append(w_id)
+            
+            # Read the exact requested pixel width of the button and shift the tracker
+            current_x += btn.winfo_reqwidth() + btn_gap
 
     def update_metrics(self, avg_tat=None, avg_wt=None, cpu_util=None, throughput=None):
         """Update canvas text elements using item configurations."""

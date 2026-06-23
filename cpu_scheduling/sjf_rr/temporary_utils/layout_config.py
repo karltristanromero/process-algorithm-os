@@ -28,13 +28,14 @@ SIMULATION_PANE = {
 # 3. NATIVE BUTTONS CONTROL LAYOUT (Main Page Only)
 # =====================================================================
 BUTTONS_LAYOUT = {
-    'start_x': 30,                  
-    'start_y': 1020,                 
-    'spacing_x': 340,                
+    'start_x': 30,                  # Horizontal starting point for the button row
+    'start_y': 1025,                 # Absolute vertical coordinate at the bottom
     
-    # FIX: Exclusive main window sizing constants (Independent from child popup)
-    'main_btn_padx': 40,             # Increased horizontal padding for larger layout
-    'main_btn_pady': 22              # Increased vertical padding for larger layout
+    'button_gap': 15,               # FIX: The exact small space (in pixels) between buttons
+    
+    # MANUAL SIZE ADJUSTMENTS: Increase these to make buttons larger
+    'main_btn_padx': 60,             
+    'main_btn_pady': 22              
 }
 
 # =====================================================================
