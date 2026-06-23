@@ -9,7 +9,7 @@ on the master canvas window layer.
 METRICS_LAYOUT = {
     'start_x': 380,                  
     'start_y': 720,                   
-    'spacing_x': 350,                
+    'spacing_x': 330,                
     'value_offset_y': 40             # FIX: Vertical gap pushing metrics directly UNDER names
 }
 
@@ -17,10 +17,10 @@ METRICS_LAYOUT = {
 # 2. SIMULATION CANVAS TRACK (Middle Section Group)
 # =====================================================================
 SIMULATION_PANE = {
-    'y_start_coordinate': 900,       
+    'y_start_coordinate': 350,       
     'process_block_height': 80,      
     'left_margin': 100,              
-    'right_margin': 100,             
+    'right_margin': 130,             
     'timestamp_offset_y': 20,        
 }
 
