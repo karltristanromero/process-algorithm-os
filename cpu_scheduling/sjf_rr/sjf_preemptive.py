@@ -256,12 +256,18 @@ class SJFPreemptive(SchedulerBase):
         self.animate_execution_loop(execution_segments, processes, start_times, completion_times)
 
     def animate_execution_loop(self, segments, processes, *args, step=0):
-        """Animate process blocks along a single horizontal track using explicit step tracking."""
+        """Animate process blocks cleanly using SIMULATION_PANE coordinates and large timestamps."""
         self.root.update()
         canvas_width = max(self.canvas.winfo_width(), 1000)
         total_time = segments[-1][2] if segments else 1
-        time_scale = (canvas_width - 200) / total_time
-        process_height, y_start = 60, 100
+        
+        l_margin = SIMULATION_PANE['left_margin']
+        r_margin = SIMULATION_PANE['right_margin']
+        time_scale = (canvas_width - (l_margin + r_margin)) / total_time
+        
+        p_height = SIMULATION_PANE['process_block_height']
+        y_start = SIMULATION_PANE['y_start_coordinate']  
+        t_offset = SIMULATION_PANE['timestamp_offset_y']
 
         if step == 0:
             self.clear_canvas()
@@ -271,29 +277,20 @@ class SJFPreemptive(SchedulerBase):
             process = processes[proc_idx]
             y = y_start 
             
-            bar_x = 100 + s_time * time_scale
+            bar_x = l_margin + s_time * time_scale
             bar_w = (e_time - s_time) * time_scale
 
-            # Seamless process block
-            self.canvas.create_rectangle(bar_x, y + 5, bar_x + bar_w, y + 5 + process_height - 10, fill=process['color'], outline='white')
+            # Render process rectangle block
+            self.canvas.create_rectangle(bar_x, y + 5, bar_x + bar_w, y + 5 + p_height - 10, fill=process['color'], outline='white')
+            self.canvas.create_text(bar_x + bar_w / 2, y + 5 + (p_height - 10) / 2, text=process['pid'], fill='white', font=FONTS['default'])
             
-            # Internal ID text using your new pixelated font scheme
-            self.canvas.create_text(bar_x + bar_w / 2, y + 5 + (process_height - 10) / 2, text=process['pid'], fill='white', font=('Courier', 12, 'bold'))
-            
-            # High-contrast, large pixelated timestamps
-            self.canvas.create_text(bar_x, y + process_height + 15, text=str(s_time), fill='#ffcc00', font=('Courier', 14, 'bold'), anchor=tk.N)
-            self.canvas.create_text(bar_x + bar_w, y + process_height + 15, text=str(e_time), fill='#ffcc00', font=('Courier', 14, 'bold'), anchor=tk.N)
+            # FIX: Swapped font from 'small' to 'metric' for large yellow timestamps
+            self.canvas.create_text(bar_x, y + p_height + t_offset, text=str(s_time), fill='#ffcc00', font=FONTS['metric'], anchor=tk.N)
+            self.canvas.create_text(bar_x + bar_w, y + p_height + t_offset, text=str(e_time), fill='#ffcc00', font=FONTS['metric'], anchor=tk.N)
 
-            # FIX: Explicitly specify step as a keyword argument so it doesn't get swallowed by *args
-            if len(args) == 2:  # SJF
-                self.root.after(400, lambda: self.animate_execution_loop(segments, processes, args[0], args[1], step=step+1))
-            else:  # Round Robin
-                self.root.after(450, lambda: self.animate_execution_loop(segments, processes, args[0], step=step+1))
+            self.root.after(400, lambda: self.animate_execution_loop(segments, processes, args[0], args[1], step=step+1))
         else:
-            if len(args) == 2:
-                self.finalize_metrics_calculations(processes, args[1])
-            else:
-                self.finalize_metrics_calculations(processes, segments)
+            self.finalize_metrics_calculations(processes, args[1])
 
     def finalize_metrics_calculations(self, processes, completion_times):
         n = len(processes)
