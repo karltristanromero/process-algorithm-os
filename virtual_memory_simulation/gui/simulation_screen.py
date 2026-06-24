@@ -186,7 +186,7 @@ class SimulationScreen(tk.Frame):
             messagebox.showwarning("Empty input!", "Please enter a reference string. ")
             return None
         try:
-            pages = [int(x) for x in raw.replace("," or " ").split() if x]
+            pages = [int(x) for x in raw.replace(",", " ").split() if x]
             if len(pages) < 2:
                 messagebox.showwarning("Too short!", "Please enter at least 2 page numbers.")
                 return None
