@@ -76,7 +76,7 @@ class SimulationScreen(tk.Frame):
 
         # ── White panel ───────────────────────────────────────────
         panel = tk.Frame(self, bg=theme.COLOR_PANEL_BG)
-        panel.place(relx=0, rely=0, anchor="center", relwidth=1, relheight=1)
+        panel.place(relx=0.5, rely=0.56, anchor="center", relwidth=0.78, relheight=0.76)
 
         # ── Split: left input | right results ─────────────────────
         panel.columnconfigure(0, weight=1)
