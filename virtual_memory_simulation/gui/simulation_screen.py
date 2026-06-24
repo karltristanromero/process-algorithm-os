@@ -365,3 +365,14 @@ class CompareAllScreen(tk.Frame):
     def _draw_summary_placeholder(self):
         for w in self._summary_frame.winfo_children():
             w.destroy()
+
+        headers = ["Algorithm", "Faults", "Hits", "Hit Rate"]
+        for col, h in enumerate(headers):
+            tk.Label(
+                self._summary_frame, text=h,
+                font=theme.FONT_TABLE_HEADER,
+                bg=theme.COLOR_TABLE_HEADER,
+                fg="#FFFFFF",
+                relief="solid", bd=1,
+                padx=8, pady=4, width=20 if col == 0 else 8
+            ).grid(row=0, column=col, sticky="ew", padx=1)
