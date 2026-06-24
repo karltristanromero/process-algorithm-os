@@ -230,4 +230,10 @@ class CompareAllScreen(tk.Frame):
         self._build()
 
     def _build(self):
-        
+        # ── Background ────────────────────────────────────────────
+        bg_path = os.path.join(os.path.dirname(__file__), "SIMULATION_BG.png")
+        if os.path.exists(bg_path):
+            img = Image.open(bg_path).resize(
+                (theme.WINDOW_WIDTH, theme.WINDOW_HEIGHT), Image.LANZCOS)
+            self._bg_image = ImageTk.PhotoImage(img)
+            tk.Label(self, image=self._bg_image).place(x=0, y=0, relwidth=1, relheight=1)
