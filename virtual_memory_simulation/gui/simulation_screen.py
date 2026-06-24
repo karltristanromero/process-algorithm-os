@@ -389,3 +389,14 @@ class CompareAllScreen(tk.Frame):
         '''Results: list of (name, faults, hits, rate) sorted by faults asc.'''
         for w in self._summary_frame.winfo_children():
             w.destroy()
+
+        headers = ["Algorithm", "Faults", "Hit", "Hit Rate"]
+        widths = [24, 8, 8, 10]
+        for col, (h, w) in enumerate(zip(headers, widths)):
+            tk.Label(
+                self._summary_frame, text=h,
+                font=theme.FONT_TABLE_HEADER,
+                bg=theme.COLOR_TABLE_HEADER,
+                fg="#FFFFFF", relief="solid", bd=1,
+                padx=8, pady=4, width=w,
+            ).grid(row=0, column=col, sticky="ew", padx=1)
