@@ -48,3 +48,7 @@ class FrameTraceTable(tk.Frame):
     Scrollable frame trace table.
     Columns = reference steps, rows = frames + status row
     '''
+
+    def __init__(self, parent, **kwargs):
+        super().__init__(parent, bg=theme.COLOR_PANEL_BG, **kwargs)
+        self._build_scroll_container()
