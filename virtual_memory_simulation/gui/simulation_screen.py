@@ -64,3 +64,12 @@ class SimulationScreen(tk.Frame):
             self._bg_image = ImageTk.PhotoImage(img)
             tk.Label(self, image=self._bg_image).place(
                 x=0, y=0, relwidth=1, relheight=1)
+            
+        # ── Algorithm title (above panel, over BG) ────────────────
+        tk.Label(
+            self,
+            text=self._algo_name.upper(),
+            font=theme.FONT_TITLE_LARGE,
+            bg="#F5C842",
+            fg=theme.COLOR_TITLE
+        ).place(relx=0.5, rely=0.09, anchor="center")
