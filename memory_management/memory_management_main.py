@@ -2,6 +2,7 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 import random
+import os
 
 # Import core structural classes for memory management
 from utils.process_generator import process_pool, process_user_choice
@@ -42,7 +43,29 @@ class MemoryManagementApp:
 
 
     def build_gui_layout(self):
-        # Load your pixel art background asset file
+        # Calculate the absolute directory where this script file actually lives
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        
+        # Build perfect absolute file paths directly targeting the asset inside the same folder
+        bg_path_1 = os.path.join(script_dir, "bg1.png")
+        bg_path_2 = os.path.join(script_dir, "image_7a5c02.png")
+
+        # Load your pixel art background asset file smoothly
+        try:
+            self.bg_image = tk.PhotoImage(file=bg_path_1)
+        except Exception:
+            try:
+                self.bg_image = tk.PhotoImage(file=bg_path_2)
+            except Exception:
+                messagebox.showerror("Asset Error", f"Could not find bg1.png or image_7a5c02.png in:\n{script_dir}")
+                self.window_root.destroy()
+                return
+
+        # Create master canvas layout map
+        self.canvas = tk.Canvas(self.window_root, width=960, height=540, bd=0, highlightthickness=0)
+        self.canvas.pack(fill=tk.BOTH, expand=True)
+        
+        # # Load your pixel art background asset file
         try:
             self.bg_image = tk.PhotoImage(file="bg1.png")
         except Exception:
