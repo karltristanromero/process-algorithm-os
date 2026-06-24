@@ -88,8 +88,9 @@ class SimulationScreen(tk.Frame):
             row=0, column=0, sticky="nse", padx=(0, 0)
         )
 
-        self._build_input_panel(panel)
         self._build_results_panel(panel)
+        self._build_input_panel(panel)
+        
 
     # ── Left: Input Panel ──────────────────────────────────────────────────────
     def _build_input_panel(self, parent):
