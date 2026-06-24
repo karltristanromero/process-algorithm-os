@@ -330,3 +330,6 @@ class CompareAllScreen(tk.Frame):
 
             trace = FrameTraceTable(tab)
             trace.grid(row=0, column=0, sticky="nsew", padx=8, pady=(8, 4))
+
+            stats = StatsBar(tab)
+            stats.grid(row=1, column=0, sticky="ew", padx=8, pady=(0, 6))
