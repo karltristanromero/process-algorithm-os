@@ -135,3 +135,8 @@ class StatsBar(tk.Frame):
         self._fault_var.set(f"Page Faults: {faults} / {total}")
         self._hit_var.set(f"Page Hits: {hits} / {total}")
         self._rate_var.set(f"Hit Rate: {rate:.1f}%")
+
+    def reset(self):
+        self._fault_var.set("Faults: —")
+        self._hit_var.set("Hits: —")
+        self._rate_var.set("Hit Rate: —")
