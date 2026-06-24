@@ -46,3 +46,11 @@ class SimulationScreen(tk.Frame):
     Simulation screen for a single page replacement algorithm.
     Split layout: input panel (left) | results panel (right).
     '''
+
+    def __init__(self, parent, algo_key: str, on_back):
+        super().__init__(parent)
+        self.algo_key = algo_key
+        self.on_back = on_back
+        self._bg_image = None
+        self._algo_name, self._algo_class = ALGO_MAP[algo_key]
+        self._build()
