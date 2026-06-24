@@ -18,7 +18,6 @@ if sys.platform.startswith("win"):
             pass
 # ------------------------------------
 
-# Import structural classes for memory management
 from utils.process_generator import process_pool, process_user_choice
 from mft.fixed_partition import FixedMemoryManager
 from mft.first_fit import first_fit_mft
@@ -30,10 +29,8 @@ from mvt.first_fit import first_fit_mvt
 from mvt.best_fit import best_fit_mvt
 from mvt.worst_fit import worst_fit_mvt
 
-# IMPORT COORDINATES CONFIG COMPONENT ENGINE
 import gui_config as cfg
 
-# Modern theme colors
 class Theme:
     BG_PRIMARY = "#F5E3B5"
     BG_SECONDARY = "#CBB279"
@@ -55,7 +52,6 @@ class MemoryManagementApp:
         self.window_root = window_root
         self.window_root.title("Memory Management Simulator")
         
-        # FIXED DIMENSION MATRIX FRAMEWAY WITH TASKBAR OVERRIDE FULLSCREEN
         self.screen_width = cfg.WINDOW_SETUP["base_width"]
         self.screen_height = cfg.WINDOW_SETUP["base_height"]
         
@@ -70,7 +66,7 @@ class MemoryManagementApp:
         self.mvt_manager.waiting_queue = []
         
         self.auto_mode_running = False
-        self.auto_mode_interval = 1500  # Deliberate step speed
+        self.auto_mode_interval = 1500  
         self.event_log = []
         self.bg_image_ref = None  
         
@@ -80,14 +76,16 @@ class MemoryManagementApp:
     def _setup_styles(self):
         style = ttk.Style()
         style.theme_use('default')
+        
         style.configure("ModernCombo.TCombobox", 
-                       fieldbackground=Theme.BG_PRIMARY, 
-                       background=Theme.BG_SECONDARY, 
+                       fieldbackground="#FFFFFF", 
+                       background="#FFFFFF", 
                        arrowcolor=Theme.PRIMARY,
-                       padding=5)
+                       borderwidth=1,
+                       padding=2)
         style.map("ModernCombo.TCombobox",
-                 fieldbackground=[("readonly", Theme.BG_PRIMARY)],
-                 background=[("active", Theme.BG_SECONDARY)])
+                 fieldbackground=[("readonly", "#FFFFFF")],
+                 background=[("active", "#FFFFFF")])
 
     def build_gui_layout(self):
         script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -162,44 +160,35 @@ class MemoryManagementApp:
         self.event_log_widget.tag_configure("info", foreground=Theme.NEUTRAL)
 
         # =========================================================
-        # BOTTOM: INVISIBLE BACKGROUND BUTTONS (CANVAS TEXT ITEMS)
+        # BOTTOM FRAME: RESIZED TRANSPARENT CANVAS NAV TEXTS
         # =========================================================
-        # 1. Menu Button
         self.canvas.create_text(cfg.BOTTOM_MENU_LAYOUT["menu_label_x"], bottom_menu_y, text="⬅ MENU", font=cfg.BOTTOM_MENU_LAYOUT["font_nav"], fill=Theme.PRIMARY, anchor=tk.W, tags="btn_menu")
         self.canvas.tag_bind("btn_menu", "<Button-1>", lambda e: self.go_back_to_main_menu())
-        self.canvas.tag_bind("btn_menu", "<Enter>", lambda e: self.canvas.itemconfig("btn_menu", fill=Theme.ALLOCATED))
-        self.canvas.tag_bind("btn_menu", "<Leave>", lambda e: self.canvas.itemconfig("btn_menu", fill=Theme.PRIMARY))
 
-        # Static Text for Mode Labels
-        mode_label = tk.Label(self.window_root, text="MODE:", font=("Arial", 11, "bold"), fg=Theme.PRIMARY, bg="#FFFFFF")
-        # If your background isn't pure white, use create_text instead:
-        # self.canvas.create_text(cfg.BOTTOM_MENU_LAYOUT["mode_label_x"], bottom_menu_y, text="MODE:", font=("Arial", 11, "bold"), fill=Theme.PRIMARY, anchor=tk.W)
-        self.canvas.create_window(cfg.BOTTOM_MENU_LAYOUT["mode_label_x"], bottom_menu_y, window=mode_label, anchor=tk.W)
+        self.canvas.create_text(cfg.BOTTOM_MENU_LAYOUT["mode_label_x"], bottom_menu_y, text="MODE:", font=cfg.BOTTOM_MENU_LAYOUT["font_nav"], fill=Theme.PRIMARY, anchor=tk.W)
         
         self.combo_mode = ttk.Combobox(self.window_root, values=["MANUAL", "AUTO"], state="readonly", font=("Arial", 11, "bold"), style="ModernCombo.TCombobox")
         self.combo_mode.set("MANUAL")
-        self.canvas.create_window(cfg.BOTTOM_MENU_LAYOUT["combo_mode_x"], bottom_menu_y - 20, window=self.combo_mode, width=cfg.BOTTOM_MENU_LAYOUT["combo_mode_width"], height=cfg.BOTTOM_MENU_LAYOUT["row_height"], anchor=tk.NW)
+        self.canvas.create_window(cfg.BOTTOM_MENU_LAYOUT["combo_mode_x"], bottom_menu_y, window=self.combo_mode, width=cfg.BOTTOM_MENU_LAYOUT["combo_mode_width"], height=cfg.BOTTOM_MENU_LAYOUT["row_height"], anchor=tk.W)
         self.combo_mode.bind("<<ComboboxSelected>>", self.on_mode_changed)
 
-        algo_label = tk.Label(self.window_root, text="ALGO:", font=("Arial", 11, "bold"), fg=Theme.PRIMARY, bg="#FFFFFF")
-        self.canvas.create_window(cfg.BOTTOM_MENU_LAYOUT["algo_label_x"], bottom_menu_y, window=algo_label, anchor=tk.W)
+        self.canvas.create_text(cfg.BOTTOM_MENU_LAYOUT["algo_label_x"], bottom_menu_y, text="ALGO:", font=cfg.BOTTOM_MENU_LAYOUT["font_nav"], fill=Theme.PRIMARY, anchor=tk.W)
         
         self.combo_algo = ttk.Combobox(self.window_root, values=["MFT: First Fit", "MFT: Best Fit", "MFT: Best Available", "MVT: First Fit", "MVT: Best Fit", "MVT: Worst Fit"], state="readonly", font=("Arial", 11, "bold"), style="ModernCombo.TCombobox")
         self.combo_algo.set("MFT: First Fit")
-        self.canvas.create_window(cfg.BOTTOM_MENU_LAYOUT["combo_algo_x"], bottom_menu_y - 20, window=self.combo_algo, width=cfg.BOTTOM_MENU_LAYOUT["combo_algo_width"], height=cfg.BOTTOM_MENU_LAYOUT["row_height"], anchor=tk.NW)
+        self.canvas.create_window(cfg.BOTTOM_MENU_LAYOUT["combo_algo_x"], bottom_menu_y, window=self.combo_algo, width=cfg.BOTTOM_MENU_LAYOUT["combo_algo_width"], height=cfg.BOTTOM_MENU_LAYOUT["row_height"], anchor=tk.W)
         self.combo_algo.bind("<<ComboboxSelected>>", lambda e: self.refresh_display_matrix())
 
-        # 2. Start Button
         self.start_text_id = self.canvas.create_text(cfg.BOTTOM_MENU_LAYOUT["btn_start_x"], bottom_menu_y, text="▶ START", font=cfg.BOTTOM_MENU_LAYOUT["font_nav"], fill=Theme.SUCCESS, anchor=tk.W, tags="btn_start")
         self.canvas.tag_bind("btn_start", "<Button-1>", lambda e: self.toggle_auto_mode())
 
-        # 3. Reset Button
         self.canvas.create_text(cfg.BOTTOM_MENU_LAYOUT["btn_reset_x"], bottom_menu_y, text="🔄 RESET", font=cfg.BOTTOM_MENU_LAYOUT["font_nav"], fill=Theme.ERROR, anchor=tk.W, tags="btn_reset")
         self.canvas.tag_bind("btn_reset", "<Button-1>", lambda e: self.reset_system())
 
-        # 4. Compact Button
         self.compact_text_id = self.canvas.create_text(cfg.BOTTOM_MENU_LAYOUT["btn_compaction_x"], bottom_menu_y, text="🔨 COMPACT", font=cfg.BOTTOM_MENU_LAYOUT["font_nav"], fill=Theme.WARNING, anchor=tk.W, tags="btn_compact")
         self.canvas.tag_bind("btn_compact", "<Button-1>", lambda e: self.trigger_mvt_compaction())
+
+        self.status_text_id = self.canvas.create_text(100, bottom_menu_y + 40, text="System Ready", font=("Arial", 11, "italic"), fill=Theme.NEUTRAL, anchor=tk.NW)
 
     def on_window_resize(self, event):
         if event.widget == self.window_root:
@@ -215,6 +204,9 @@ class MemoryManagementApp:
             self.toggle_auto_mode()
         messagebox.showinfo("Menu Navigation", "Returning back to Main System Menu Shell...")
 
+    def update_status(self, message):
+        self.canvas.itemconfig(self.status_text_id, text=message, fill=Theme.PRIMARY)
+
     def on_mode_changed(self, event=None):
         mode = self.combo_mode.get()
         if mode == "MANUAL":
@@ -222,11 +214,13 @@ class MemoryManagementApp:
             self.canvas.itemconfigure(self.size_window_id, state="normal")
             self.canvas.itemconfigure(self.alloc_button_id, state="normal")
             self.canvas.itemconfigure(self.dealloc_button_id, state="normal")
+            self.update_status("MANUAL active - Handle single explicit job instructions sequentially.")
         else:
             self.canvas.itemconfigure(self.pid_window_id, state="hidden")
             self.canvas.itemconfigure(self.size_window_id, state="hidden")
             self.canvas.itemconfigure(self.alloc_button_id, state="hidden")
             self.canvas.itemconfigure(self.dealloc_button_id, state="hidden")
+            self.update_status("AUTO active - Single events execute one-by-one until Stopped.")
 
     def add_event_log(self, event_text, event_type="INFO"):
         self.event_log_widget.config(state="normal")
@@ -394,10 +388,14 @@ class MemoryManagementApp:
             self.canvas.delete("mem_element")
             self.update_mvt_display_map()
 
+    # =========================================================
+    # CORE LEFT SIDE SIMULATION DRAW ROUTINES
+    # =========================================================
     def update_mft_display_map(self):
         total_free_space = 0
         total_internal_frag = 0
         
+        # Waiting Queue column placement
         self.canvas.create_text(cfg.SIMULATION_PANE_LAYOUT["queue_title_x"], cfg.SIMULATION_PANE_LAYOUT["queue_title_y"], text="⏳ Waiting Queue:", font=cfg.SIMULATION_PANE_LAYOUT["font_title"], fill=Theme.PRIMARY, anchor=tk.W, tags="mem_element")
         if not self.mft_manager.waiting_queue:
             self.canvas.create_text(cfg.SIMULATION_PANE_LAYOUT["queue_title_x"], cfg.SIMULATION_PANE_LAYOUT["queue_list_start_y"], text="[ Queue Empty ]", font=("Courier", 16, "italic"), fill=Theme.NEUTRAL, anchor=tk.W, tags="mem_element")
@@ -406,16 +404,21 @@ class MemoryManagementApp:
                 y_pos = cfg.SIMULATION_PANE_LAYOUT["queue_list_start_y"] + (idx * cfg.SIMULATION_PANE_LAYOUT["queue_list_spacing_y"])
                 self.canvas.create_text(cfg.SIMULATION_PANE_LAYOUT["queue_title_x"], y_pos, text=f"• Job {proc.process_id} ({proc.process_size}K)", font=("Courier", 14, "bold"), fill=Theme.WAITING, anchor=tk.W, tags="mem_element")
 
+        # Memory visualization stack
         start_y = cfg.SIMULATION_PANE_LAYOUT["ram_column_start_y"]
         x1 = cfg.SIMULATION_PANE_LAYOUT["ram_column_x1"]
         x2 = cfg.SIMULATION_PANE_LAYOUT["ram_column_x2"]
         canvas_scale = cfg.SIMULATION_PANE_LAYOUT["ram_vertical_scale"]
         
+        # Address tracking accumulator initialization
+        current_accumulation_address = 0
+        
         for partition in self.mft_manager.partitions:
             height = partition.partition_size * canvas_scale
             y1, y2 = start_y, start_y + height
             
-            self.canvas.create_text(x1 - 20, start_y, text=f"{int(partition.partition_size)}K", font=cfg.SIMULATION_PANE_LAYOUT["font_address_label"], anchor=tk.E, fill=Theme.PRIMARY, tags="mem_element")
+            # Print physical boundary value at the top split line of the current partition
+            self.canvas.create_text(x1 - 20, start_y, text=f"{current_accumulation_address}K", font=cfg.SIMULATION_PANE_LAYOUT["font_address_label"], anchor=tk.E, fill=Theme.PRIMARY, tags="mem_element")
             
             if partition.occupied_process:
                 proc_height = partition.occupied_process.process_size * canvas_scale
@@ -430,9 +433,12 @@ class MemoryManagementApp:
                 self.canvas.create_rectangle(x1, y1, x2, y2, fill=Theme.FREE, outline=Theme.FREE_BORDER, width=2, tags="mem_element")
                 self.canvas.create_text(x1 + 125, y1 + (height / 2), text="✓ FREE", font=cfg.SIMULATION_PANE_LAYOUT["font_allocated_block"], fill=Theme.SUCCESS, tags="mem_element")
                 total_free_space += partition.partition_size
+                
             start_y += height
+            current_accumulation_address += int(partition.partition_size)
             
-        self.canvas.create_text(x1 - 20, start_y, text="64K", font=cfg.SIMULATION_PANE_LAYOUT["font_address_label"], anchor=tk.E, fill=Theme.PRIMARY, tags="mem_element")
+        # Print ultimate 64K termination ceiling address at the bottom line
+        self.canvas.create_text(x1 - 20, start_y, text=f"{current_accumulation_address}K", font=cfg.SIMULATION_PANE_LAYOUT["font_address_label"], anchor=tk.E, fill=Theme.PRIMARY, tags="mem_element")
 
         self.lbl_total_space.config(text=f"{total_free_space}K")
         self.lbl_external_frag.config(text="0K")
@@ -456,6 +462,7 @@ class MemoryManagementApp:
         x2 = cfg.SIMULATION_PANE_LAYOUT["ram_column_x2"]
         canvas_scale = cfg.SIMULATION_PANE_LAYOUT["ram_vertical_scale"]
         
+        # MVT handles start addresses dynamically inside its blocks loop directly
         for block in self.mvt_manager.blocks:
             height = block.block_size * canvas_scale
             y1, y2 = start_y, start_y + height

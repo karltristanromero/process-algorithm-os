@@ -70,10 +70,10 @@ BOTTOM_MENU_LAYOUT = {
 # 4. EVENT LOG STREAM INTERFACE
 # =========================================================
 EVENT_LOG_LAYOUT = {
-    "text_x": 100,
-    "text_y": 765,
-    "label_x": 100,
-    "label_y": 730,
+    "text_x": 200,
+    "text_y": 790,
+    "label_x": 200,
+    "label_y": 760,
     "text_width": 72,
     "text_height": 8,
     "font": ("Courier", 10, "bold")
