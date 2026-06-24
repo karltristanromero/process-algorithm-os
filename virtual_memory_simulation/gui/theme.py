@@ -40,3 +40,15 @@ def load_fonts():
     from tkinter import font as tkfont
  
     base = os.path.dirname(os.path.abspath(__file__))
+
+    # Register Press Start 2P if available
+    ps2p_path = os.path.join(base, "NTBrickSans.ttf")
+    if os.path.exists(ps2p_path):
+        try:
+            from ctypes import windll
+            windll.gdi32.AddFontResourceExW(ps2p_path, 0x10, 0)
+            pixel_font = "NT BRick Sans"
+        except Exception:
+            pixel_font = "Courier"
+    else:
+        pixel_font = "Courier"
