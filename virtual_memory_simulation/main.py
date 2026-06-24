@@ -39,3 +39,13 @@ sys.path.insert(0, os.path.dirname(__file__))
 import gui.theme as theme
 from gui.algorithm_select import AlgorithmSelectScreen
 from gui.simulation_screen import SimulationScreen, CompareAllScreen
+
+
+class App(tk.Tk):
+    '''
+    Root application window.
+    Manages screen switching between:
+        - AlgorithmSelectScreen
+        - SimulationScreen  (per algorithm)
+        - CompareAllScreen
+    '''
