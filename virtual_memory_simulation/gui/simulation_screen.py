@@ -327,3 +327,6 @@ class CompareAllScreen(tk.Frame):
             tab.rowconfigure(o, weight=1)
             tab.columnconfigure(0, weight=1)
             self._notebook.add(tab, text=name)
+
+            trace = FrameTraceTable(tab)
+            trace.grid(row=0, column=0, sticky="nsew", padx=8, pady=(8, 4))
