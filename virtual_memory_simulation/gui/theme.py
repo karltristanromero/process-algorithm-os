@@ -64,3 +64,11 @@ def load_fonts():
             nunito_font = "Helvetica"
     else:
         nunito_font = "Helvetica"
+
+    FONT_TITLE_LARGE  = (pixel_font,  20, "bold")
+    FONT_TITLE_SMALL  = (pixel_font,  10, "bold")
+    FONT_BTN          = (nunito_font, 14, "bold")
+    FONT_BODY         = (nunito_font, 13)
+    FONT_BODY_BOLD    = (nunito_font, 13, "bold")
+    FONT_TABLE        = (nunito_font, 11)
+    FONT_TABLE_HEADER = (nunito_font, 11, "bold")
