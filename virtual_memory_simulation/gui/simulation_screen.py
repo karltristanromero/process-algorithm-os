@@ -207,3 +207,6 @@ class SimulationScreen(tk.Frame):
         steps = algo.simulate(ref)
         self._trace_table.render(steps, NUM_FRAMES)
         self._stats_bar.update_stats(algo.fault_count, algo.hit_count, algo.hit_rate)
+
+    def reset(self):
+        
