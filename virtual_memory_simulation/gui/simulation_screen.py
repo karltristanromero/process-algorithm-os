@@ -384,3 +384,8 @@ class CompareAllScreen(tk.Frame):
             bg=theme.COLOR_PANEL_BG,
             fg="#AAAAAA"
         ).grid(row=1, column=0, columnspan=4, pady=8, padx=4, sticky="w")
+
+    def _draw_summary_results(self, results):
+        '''Results: list of (name, faults, hits, rate) sorted by faults asc.'''
+        for w in self._summary_frame.winfo_children():
+            w.destroy()
