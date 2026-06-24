@@ -218,3 +218,7 @@ class SimulationScreen(tk.Frame):
 #  Compare All Simulation Screen
 # ─────────────────────────────────────────────
 class CompareAllScreen(tk.Frame):
+    '''
+    Runs all 6 algorithms on the same reference string.
+    Use ttk.Notebook for tabbed individual traces + summary table at bottom.
+    '''
