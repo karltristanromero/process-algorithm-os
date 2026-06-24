@@ -268,3 +268,13 @@ class CompareAllScreen(tk.Frame):
                 bg=theme.COLOR_STATS_BG,
                 fg=theme.COLOR_TITLE
             ).pack(side=tk.LEFT, padx=(0, 8))
+
+            self._ref_entry = tk.Entry(
+                strip,
+                font=theme.FONT_BODY,
+                bg="#FAFAFA",
+                fg=theme.COLOR_TITLE,
+                relief="solid",
+                bd=1, width=30
+            )
+            self._ref_entry.pack(side=tk.LEFT, ipady=4, padx=(0, 10))
