@@ -163,3 +163,11 @@ class SimulationScreen(tk.Frame):
             bg=theme.COLOR_PANEL_BG,
             fg=theme.COLOR_TITLE
         ).grid(row=0, column=0, sticky="w", pady=(8, 6))
+
+        tk.Label(
+            right,
+            text="Legend:  F = Page Fault  |  H = Page Hit  |  · = Empty frame",
+            font=theme.FONT_TABLE,
+            bg=theme.COLOR_PANEL_BG,
+            fg="#888888"
+        ).grid(row=0, column=0, sticky="e", pady=(8, 6))
