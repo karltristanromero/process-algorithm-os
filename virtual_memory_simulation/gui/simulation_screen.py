@@ -222,3 +222,6 @@ class CompareAllScreen(tk.Frame):
     Runs all 6 algorithms on the same reference string.
     Use ttk.Notebook for tabbed individual traces + summary table at bottom.
     '''
+
+    def __init__(self, parent, on_back):
+        
