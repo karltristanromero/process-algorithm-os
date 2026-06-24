@@ -36,3 +36,13 @@ ALGO_MAP = {
 }
 
 NUM_FRAMES = 4
+
+
+# ─────────────────────────────────────────────
+#  Single Algorithm Simulation Screen
+# ─────────────────────────────────────────────
+class SimulationScreen(tk.Frame):
+    '''
+    Simulation screen for a single page replacement algorithm.
+    Split layout: input panel (left) | results panel (right).
+    '''
