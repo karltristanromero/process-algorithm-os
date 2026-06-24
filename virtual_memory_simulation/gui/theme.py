@@ -72,3 +72,11 @@ def load_fonts():
     FONT_BODY_BOLD    = (nunito_font, 13, "bold")
     FONT_TABLE        = (nunito_font, 11)
     FONT_TABLE_HEADER = (nunito_font, 11, "bold")
+
+# ── Button sizing ──────────────────────────────────────────────────────────────
+BTN_WIDTH        = 28
+BTN_PADX         = 18
+BTN_PADY         = 12
+BTN_RELIEF       = "flat"
+BTN_BORDER_WIDTH = 2
+BTN_CURSOR       = "hand2"
