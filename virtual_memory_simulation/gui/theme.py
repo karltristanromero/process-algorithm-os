@@ -29,3 +29,14 @@ FONT_BODY         = None
 FONT_BODY_BOLD    = None
 FONT_TABLE        = None
 FONT_TABLE_HEADER = None
+
+def load_fonts():
+    """Load custom fonts. Call once after the Tk root is created."""
+    global FONT_TITLE_LARGE, FONT_TITLE_SMALL
+    global FONT_BTN, FONT_BODY, FONT_BODY_BOLD
+    global FONT_TABLE, FONT_TABLE_HEADER
+ 
+    import os
+    from tkinter import font as tkfont
+ 
+    base = os.path.dirname(os.path.abspath(__file__))
