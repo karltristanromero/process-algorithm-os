@@ -289,3 +289,8 @@ class CompareAllScreen(tk.Frame):
                 bg=theme.COLOR_STATS_BG,
                 fg=theme.COLOR_TITLE
             ).pack(tk.LEFT, padx=12)
+
+            RoundedButton(strip, text="Simulate", width=10,
+                          command=self._simulate).pack(side=tk.LEFT, padx=4)
+            RoundedButton(strip, text="Reset", width=8,
+                          command=self._reset).pack(tk.LEFT, padx=4)
