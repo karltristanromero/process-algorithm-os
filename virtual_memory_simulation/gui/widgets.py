@@ -35,3 +35,6 @@ class RoundedButton(tk.Button):
         )
         self.bind("<Enter>", self._on_enter)
         self.bind("<Leave>", self._on_leave)
+
+    def _on_enter(self, _):
+        self.config(bg=theme.COLOR_BTN_HOVER)
