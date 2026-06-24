@@ -321,3 +321,9 @@ class CompareAllScreen(tk.Frame):
 
         self._tab_traces = {}     # algo_key -> FrameTraceTable
         self._tab_stats = {}      # algo_key -> StatsBar
+
+        for key, (name, _) in ALGO_MAP.items():
+            tab = tk.Frame(self._notebook, bg=theme.COLOR_PANEL_BG)
+            tab.rowconfigure(o, weight=1)
+            tab.columnconfigure(0, weight=1)
+            self._notebook.add(tab, text=name)
