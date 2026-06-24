@@ -56,3 +56,11 @@ class FrameTraceTable(tk.Frame):
     def _build_scroll_container(self):
         self.h_scroll = ttk.Scrollbar(self, orient=tk.HORIZONTAL)
         self.h_scroll.pack(side=tk.BOTTOM, fill=tk.X)
+
+        self.canvas = tk.Canvas(
+            self, bg=theme.COLOR_PANEL_BG,
+            highlightthickness=0,
+            xscrollcommand=self.h_scroll.set
+        )
+        self.canvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+        self.h_scroll.config(command=self.canvas.xview)
