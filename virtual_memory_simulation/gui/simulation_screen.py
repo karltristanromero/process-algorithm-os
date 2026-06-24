@@ -57,7 +57,7 @@ class SimulationScreen(tk.Frame):
 
     def _build(self):
         # ── Background ────────────────────────────────────────────
-        bg_path = os.path.join(os.path.dirname(__file__), "SIMULATION_BG.png")
+        bg_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "SIMULATION_BG.png")
         if os.path.exists(bg_path):
             img = Image.open(bg_path).resize(
                 (theme.WINDOW_WIDTH, theme.WINDOW_HEIGHT), Image.LANCZOS)
@@ -232,7 +232,7 @@ class CompareAllScreen(tk.Frame):
 
     def _build(self):
         # ── Background ────────────────────────────────────────────
-        bg_path = os.path.join(os.path.dirname(__file__), "SIMULATION_BG.png")
+        bg_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "SIMULATION_BG.png")
         if os.path.exists(bg_path):
             img = Image.open(bg_path).resize(
                 (theme.WINDOW_WIDTH, theme.WINDOW_HEIGHT), Image.LANZCOS)
