@@ -110,3 +110,12 @@ class SimulationScreen(tk.Frame):
             bg=theme.COLOR_PANEL_BG,
             fg=theme.COLOR_TITLE
         ).pack(anchor="w")
+
+        self._ref_entry = tk.Entry(
+            left, font=theme.FONT_BODY,
+            bg="#FAFAFA", fg=theme.COLOR_TITLE,
+            relief="solid", bd=1, width=24
+        )
+        self._ref_entry.pack(anchor="w", pady=(4, 8), ipady=5)
+
+        RoundedButton(left, text="Randomize", width=18, command=self._randomize).pack(anchor="w", pady=(0, 16))
