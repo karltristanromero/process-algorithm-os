@@ -36,3 +36,13 @@ class AlgorithmSelectScreen(tk.Frame):
         self.on_select = on_select
         self._bg_image = None       # keep reference to prevent GC
         self._build()
+
+    def _build(self):
+        # ── Background image ──────────────────────────────────────
+        bg_path = os.path.join(os.path.dirname(__file__), "ALGO_MENU_BG.png")
+        if os.path.exists(bg_path):
+            img = Image.open(bg_path).resize(
+                (theme.WINDOW_WIDTH, theme.WINDOW_HEIGHT), Image.LANCZOS)
+            self._bg_image = ImageTk.PhotoImage(img)
+            bg_label = tk.Label(self, image=self._bg_image)
+            bg_label.place(x=0, y=0, relwidth=1, relheight=1)
