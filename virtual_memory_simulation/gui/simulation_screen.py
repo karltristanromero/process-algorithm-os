@@ -77,3 +77,16 @@ class SimulationScreen(tk.Frame):
         # ── White panel ───────────────────────────────────────────
         panel = tk.Frame(self, bg=theme.COLOR_PANEL_BG)
         panel.place(relx=0.5, rely=0.56, anchor="center", relwidth=0.78, relheight=0.76)
+
+        # ── Split: left input | right results ─────────────────────
+        panel.columnconfigure(0, weight=1)
+        panel.columnconfigure(1, weight=3)
+        panel.rowconfigure(0, weight=1)
+
+        # Divider line between left and right
+        tk.Frame(panel, bg=theme.COLOR_BTN_BORDER, width=2).grid(
+            row=0, column=0, sticky="nse", padx=(0, 0)
+        )
+
+        self._build_input_panel(panel)
+        self._build_results_panel(panel)
