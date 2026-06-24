@@ -350,3 +350,6 @@ class CompareAllScreen(tk.Frame):
             bg=theme.COLOR_PANEL_BG,
             fg=theme.COLOR_TITLE
         ).grid(row=0, column=0, sticky="w", pady=(4, 2))
+
+        self._summary_frame = tk.Frame(summary_outer, bg=theme.COLOR_PANEL_BG)
+        self._summary_frame.grid(row=1, column=0, sticky="ew")
