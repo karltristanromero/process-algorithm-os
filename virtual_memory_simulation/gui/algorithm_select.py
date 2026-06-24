@@ -58,3 +58,12 @@ class AlgorithmSelectScreen(tk.Frame):
             relwidth=0.74,          # panel is 74% of the window width
             relheight=0.72          # panel is 72% of the window height
         )
+
+        # ── Title ─────────────────────────────────────────────────
+        tk.Label(
+            panel,
+            text="PICK AN ALGORITHM",
+            font=theme.FONT_TITLE_LARGE,
+            bg=theme.COLOR_PANEL_BG,
+            fg=theme.COLOR_TITLE
+        ).pack(pady=(28, 24))
