@@ -83,3 +83,8 @@ class FrameTraceTable(tk.Frame):
                 self.inner, text=str(text), font=font,
                 bg=bg, fg=fg, width=4, relief="solid", bd=1, anchor="center"
             ).grid(row=row, column=col, padx=1, pady=1, ipadx=4, ipady=4, sticky="nsew")
+
+        # Step numbers
+        cell(0, 0, "Step", theme.COLOR_TABLE_HEADER, "#FFFFFF", bold=True)
+        for i, s in enumerate(steps, 1):
+            cell(0, 1, s.step, theme.COLOR_TABLE_HEADER, "#FFFFFF", bold=True)
