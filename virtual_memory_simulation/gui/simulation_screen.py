@@ -297,4 +297,21 @@ class CompareAllScreen(tk.Frame):
             
     # ── Tabbed notebook ────────────────────────────────────────────────────────
     def _build_notebook(self, parent):
-        
+        # Style the notebook tabs to match theme
+        style = ttk.Style()
+        style.configure(
+            "Custom.TNotebook",
+            background=theme.COLOR_PANEL_BG
+        )
+        style.configure(
+            "Custom.TNotebook.Tab",
+            font=theme.FONT_BTN,
+            background=theme.COLOR_BTN_BG,
+            foreground=theme.COLOR_BTN_TEXT,
+            padding=[12, 6]
+        )
+        style.map(
+            "Custom.TNotebook.Tab",
+            background=[("selected", theme.COLOR_BTN_HOVER)],
+            foreground=[("selected", theme.COLOR_TITLE)]    
+        )
