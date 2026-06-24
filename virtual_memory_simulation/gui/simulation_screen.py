@@ -10,3 +10,16 @@ Compare All layout:
   Middle    : ttk.Notebook with one tab per algorithm (frame trace + stats each)
   Bottom    : comparison summary table + back button
 """
+
+import tkinter as tk
+from tkinter import ttk, messagebox
+import random
+import os
+from PIL import Image, ImageTk
+
+import gui.theme as theme
+from gui.widgets import RoundedButton, FrameTraceTable, StatsBar
+
+import sys
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+from algorithms import FIFO, Optimal, LRU, LRUApproximation, LFU, MFU
