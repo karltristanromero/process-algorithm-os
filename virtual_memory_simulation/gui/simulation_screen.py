@@ -278,3 +278,6 @@ class CompareAllScreen(tk.Frame):
                 bd=1, width=30
             )
             self._ref_entry.pack(side=tk.LEFT, ipady=4, padx=(0, 10))
+
+            RoundedButton(strip, text="Randomize", width=12,
+                          command=self._randomize).pack(side=tk.LEFT, padx=4)
