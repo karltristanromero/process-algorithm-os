@@ -85,3 +85,7 @@ class App(tk.Tk):
             )
         screen.place(x=0, y=0, width=theme.WINDOW_WIDTH, height=theme.WINDOW_HEIGHT)
         self._current_screen = screen
+
+if __name__ == "__main__":
+    app = App()
+    app.mainloop()
