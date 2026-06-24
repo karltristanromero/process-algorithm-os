@@ -88,3 +88,8 @@ class FrameTraceTable(tk.Frame):
         cell(0, 0, "Step", theme.COLOR_TABLE_HEADER, "#FFFFFF", bold=True)
         for i, s in enumerate(steps, 1):
             cell(0, 1, s.step, theme.COLOR_TABLE_HEADER, "#FFFFFF", bold=True)
+
+        # Reference string
+        cell(0, 1, "Ref", theme.COLOR_BTN_BG, theme.COLOR_TITLE, bold=True)
+        for i, s in enumerate(steps, 1):
+            cell(1, i, s.page, theme.COLOR_BTN_BG, theme.COLOR_TITLE)
