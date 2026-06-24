@@ -149,3 +149,10 @@ class SimulationScreen(tk.Frame):
             width=18,
             command=self.on_back
         ).pack(anchor="w", pady=6)
+
+    # ── Right: Results Panel ───────────────────────────────────────────────────
+    def _build_results_panel(self, parent):
+        right = tk.Frame(parent, bg=theme.COLOR_PANEL_BG, padx=16, pady=20)
+        right.grid(row=0, column=1, sticky="nsew")
+        right.rowconfigure(1, weight=1)
+        right.columnconfigure(0, weight=1)
