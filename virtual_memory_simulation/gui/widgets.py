@@ -76,3 +76,10 @@ class FrameTraceTable(tk.Frame):
             widget.destroy()
         if not steps:
             return
+        
+        def cell(row, col, text, bg, fg=theme.COLOR_TITLE, bold=False):
+            font = theme.FONT_TABLE_HEADER if bold else theme.FONT_TABLE
+            tk.Label(
+                self.inner, text=str(text), font=font,
+                bg=bg, fg=fg, width=4, relief="solid", bd=1, anchor="center"
+            ).grid(row=row, column=col, padx=1, pady=1, ipadx=4, ipady=4, sticky="nsew")
