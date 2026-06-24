@@ -246,3 +246,13 @@ class CompareAllScreen(tk.Frame):
             bg="#F5C842",
             fg=theme.COLOR_TITLE
         ).place(relx=0.5, rely=0.09, anchor="center")
+
+        # ── White panel ───────────────────────────────────────────
+        panel = tk.Frame(self, bg=theme.COLOR_PANEL_BG)
+        panel.place(relx=0.5, rely=0.56, anchor="center", relwidth=0.78, relheight=0.76)
+        panel.rowconfigure(1, weight=1)
+        panel.columnconfigure(0, weight=1)
+
+        self._build_input_strip(panel)
+        self._build_notebook(panel)
+        self._build_summary(panel)
