@@ -415,3 +415,19 @@ class CompareAllScreen(tk.Frame):
                     relief="solid", bd=1,
                     padx=8, pady=3, width=w
                 ).grid(row=r, column=col, sticky="ew", padx=1)
+    
+    # ── Actions ────────────────────────────────────────────────────────────────
+    def _parse_input(self):
+        raw = self._ref_entry.get().strip()
+        if not raw:
+            messagebox.showwarning("Empty input!", "Please enter a reference string.")
+            return None
+        try:
+            pages = [int(x) for x in raw.replace("," or " ").split() if x]
+            if len(pages) < 2:
+                messagebox.showwarning("Too short!", "Please enter at least 2 page numbers.")
+                return None
+            return pages
+        except ValueError:
+            messagebox.showerror("Invalid input!", "Please enter integers only.")
+            return None
