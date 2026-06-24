@@ -333,3 +333,6 @@ class CompareAllScreen(tk.Frame):
 
             stats = StatsBar(tab)
             stats.grid(row=1, column=0, sticky="ew", padx=8, pady=(0, 6))
+
+            self._tab_traces[key] = trace
+            self._tab_stats[key] = stats
