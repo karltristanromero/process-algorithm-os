@@ -95,3 +95,18 @@ class SimulationScreen(tk.Frame):
     def _build_input_panel(self, parent):
         left = tk.Frame(parent, bg=theme.COLOR_PANEL_BG, padx=20, pady=20)
         left.grid(row=0, column=0, sticky="nsew")
+
+        tk.Label(
+            left,
+            text="Reference String",
+            font=theme.COLOR_PANEL_BG,
+            fg=theme.COLOR_TITLE
+        ).pack(anchor="w", pady=(8, 4))
+
+        tk.Label(
+            left,
+            text="Enter numbers separated by spaces or commas:",
+            font=theme.FONT_BODY,
+            bg=theme.COLOR_PANEL_BG,
+            fg=theme.COLOR_TITLE
+        ).pack(anchor="w")
