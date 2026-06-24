@@ -431,3 +431,8 @@ class CompareAllScreen(tk.Frame):
         except ValueError:
             messagebox.showerror("Invalid input!", "Please enter integers only.")
             return None
+        
+    def _randomize(self):
+        pages = [random.randint(0, 9) for _ in range(15)]
+        self._ref_entry.delete(0, tk.END)
+        self._ref_entry.insert(0, " ".join(map(str, pages)))
