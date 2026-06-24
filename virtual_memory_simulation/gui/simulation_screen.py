@@ -376,3 +376,11 @@ class CompareAllScreen(tk.Frame):
                 relief="solid", bd=1,
                 padx=8, pady=4, width=20 if col == 0 else 8
             ).grid(row=0, column=col, sticky="ew", padx=1)
+
+        tk.Label(
+            self._summary_frame,
+            text="Run a simulation to see results here.",
+            font=theme.FONT_BODY,
+            bg=theme.COLOR_PANEL_BG,
+            fg="#AAAAAA"
+        ).grid(row=1, column=0, columnspan=4, pady=8, padx=4, sticky="w")
