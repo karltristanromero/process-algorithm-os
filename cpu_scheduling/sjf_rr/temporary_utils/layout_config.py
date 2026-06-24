@@ -35,7 +35,7 @@ BUTTONS_LAYOUT = {
     
     # MANUAL SIZE ADJUSTMENTS: Increase these to make buttons larger
     'main_btn_padx': 60,             
-    'main_btn_pady': 22              
+    'main_btn_pady': 22,          
 }
 
 # =====================================================================
@@ -48,4 +48,17 @@ ADD_PROCESS_LAYOUT = {
     'col_pid_width': 100,
     'col_arrival_width': 150,
     'col_burst_width': 150
+}
+
+MENU_LAYOUT = {
+    'col0_x': 610, # Absolute X coordinate for the left column
+    'col1_x': 1335, # Absolute X coordinate for the right column
+    'start_y': 443, # Absolute Y coordinate for the top row
+    'row_gap_y': 140, # Vertical pixel distance between successive rows
+
+    'menu_btn_padx': 48, # Horizontal interior element text clearance
+    'menu_btn_pady': 15, # Vertical interior element text clearance
+
+    'back_btn_x': 1290,              
+    'back_btn_y': 897    
 }
