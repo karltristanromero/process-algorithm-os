@@ -454,3 +454,10 @@ class CompareAllScreen(tk.Frame):
 
         results.sort(key=lambda x: x[1])
         self._draw_summary_results(results)
+
+    def _reset(self):
+        self._ref_entry.delete(0, tk.END)
+        for key in ALGO_MAP:
+            self._tab_traces[key].render([], NUM_FRAMES)
+            self._tab_stats[key].reset()
+        self._draw_summary_placeholder()
