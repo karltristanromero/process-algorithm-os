@@ -93,3 +93,12 @@ class FrameTraceTable(tk.Frame):
         cell(0, 1, "Ref", theme.COLOR_BTN_BG, theme.COLOR_TITLE, bold=True)
         for i, s in enumerate(steps, 1):
             cell(1, i, s.page, theme.COLOR_BTN_BG, theme.COLOR_TITLE)
+
+        # Frame rows
+        for f in range(num_frames):
+            cell(f+2, 0, f"F{f+1}", theme.COLOR_BTN_BG, theme.COLOR_TITLE, bold=True)
+            for i, s in enumerate(steps, 1):
+                val = s.frames[f]
+                txt = str(val) if val is not None else "·"
+                bg = theme.COLOR_TABLE_ALT if f % 2 == 0 else theme.COLOR_PANEL_BG
+                cell(f+2, i, txt, bg)
