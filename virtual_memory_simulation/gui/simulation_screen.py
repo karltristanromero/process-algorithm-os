@@ -212,3 +212,9 @@ class SimulationScreen(tk.Frame):
         self._ref_entry.delete(0, tk.END)
         self._trace_table.render([], NUM_FRAMES)
         self._stats_bar.reset()
+
+    
+# ─────────────────────────────────────────────
+#  Compare All Simulation Screen
+# ─────────────────────────────────────────────
+class CompareAllScreen(tk.Frame):
