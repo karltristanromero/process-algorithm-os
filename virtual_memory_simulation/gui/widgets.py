@@ -38,3 +38,6 @@ class RoundedButton(tk.Button):
 
     def _on_enter(self, _):
         self.config(bg=theme.COLOR_BTN_HOVER)
+
+    def _on_leave(self, _):
+        self.config(bg=theme.COLOR_BTN_BG)
