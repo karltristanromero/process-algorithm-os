@@ -41,7 +41,7 @@ def load_fonts():
  
     base = os.path.dirname(os.path.abspath(__file__))
 
-    # Register Press Start 2P if available
+    # Register NT Brick Sans if available
     ps2p_path = os.path.join(base, "NTBrickSans.ttf")
     if os.path.exists(ps2p_path):
         try:
