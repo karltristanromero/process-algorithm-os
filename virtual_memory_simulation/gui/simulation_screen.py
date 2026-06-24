@@ -361,3 +361,7 @@ class CompareAllScreen(tk.Frame):
         ).grid(row=2, column=0, sticky="e", pady=6)
 
         self._draw_summary_placeholder()
+
+    def _draw_summary_placeholder(self):
+        for w in self._summary_frame.winfo_children():
+            w.destroy()
