@@ -24,3 +24,15 @@ class AlgorithmSelectScreen(tk.Frame):
         ("Least Recently Used (LRU)",       "LRU"),
         ("Most Frequently Used (MFU)",      "MFU"),
     ]
+
+    def __init__(self, parent, on_select):
+        '''
+        parent      : the parent Tk/Frame container
+        on_select   : callback(algo_key: str) called when user picks an algorithm
+                      algo_key is one of: FIFO, OPTIMAL, LRU, LRU_APPROX, LFU, MFU, COMPARE_ALL 
+        '''
+
+        super().__init__(parent)
+        self.on_select = on_select
+        self._bg_image = None       # keep reference to prevent GC
+        self._build()
