@@ -55,3 +55,9 @@ class App(tk.Tk):
         self.title("Virtual Memory Page Replacement Simulator")
         self.geometry(f"{theme.WINDOW_WIDTH}x{theme.WINDOW_HEIGHT}")
         self.resizable(False, False)
+
+        # Load custom fonts after root is created
+        theme.load_fonts()
+
+        self._current_screen = None
+        self.show_algorithm_select()
