@@ -83,15 +83,15 @@ EVENT_LOG_LAYOUT = {
 # 5. CORE SIMULATION PANE (RAM Core Stack Columns)
 # =========================================================
 SIMULATION_PANE_LAYOUT = {
-    "queue_title_x": 500,
+    "queue_title_x": 610,
     "queue_title_y": 100,
     "queue_list_start_y": 150,
     "queue_list_spacing_y": 30,
     
     "ram_column_start_y": 100,
-    "ram_column_x1": 150,         # Left border coordinate of RAM block
-    "ram_column_x2": 400,         # Right border coordinate of RAM block
-    "ram_vertical_scale": 8.5,    # Balanced vertical multiplier for 1080p viewport
+    "ram_column_x1": 250,         # Left border coordinate of RAM block
+    "ram_column_x2": 500,         # Right border coordinate of RAM block
+    "ram_vertical_scale": 10,    # Balanced vertical multiplier for 1080p viewport
     
     "font_title": ("Courier", 22, "bold"),
     "font_address_label": ("Courier", 14, "bold"),
