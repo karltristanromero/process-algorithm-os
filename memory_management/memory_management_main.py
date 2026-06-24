@@ -70,52 +70,60 @@ class MemoryManagementApp:
         combobox_style.configure("TCombobox", fieldbackground="#F5E3B5", background="#CBB279", arrowcolor="#3D1E6D")
 
         # =========================================================
-        # 1. LIVE VALUE TEXT LABELS (SCALED FOR 1080p STATUS CARDS)
+        # 1. LIVE VALUE TEXT LABELS (MAPPED PERFECTLY TO CARDS)
         # =========================================================
-        self.lbl_total_space = tk.Label(self.window_root, text="64K", font=("Courier", 32, "bold"), fg="#2E7D32", bg="#F1D199")
-        self.canvas.create_window(1560, 250, window=self.lbl_total_space)
+        # Card 1: Total Space
+        self.lbl_total_space = tk.Label(self.window_root, text="64K", font=("Courier", 32, "bold"), fg="#2E7D32", bg="#F5E3B5")
+        self.canvas.create_window(1380, 160, window=self.lbl_total_space, anchor=tk.CENTER)
 
-        self.lbl_external_frag = tk.Label(self.window_root, text="0K", font=("Courier", 32, "bold"), fg="#E65100", bg="#F1D199")
-        self.canvas.create_window(1560, 530, window=self.lbl_external_frag)
+        # Card 2: External Fragmentation
+        self.lbl_external_frag = tk.Label(self.window_root, text="0K", font=("Courier", 32, "bold"), fg="#E65100", bg="#F5E3B5")
+        self.canvas.create_window(1380, 365, window=self.lbl_external_frag, anchor=tk.CENTER)
 
-        self.lbl_internal_frag = tk.Label(self.window_root, text="0K", font=("Courier", 32, "bold"), fg="#C62828", bg="#F1D199")
-        self.canvas.create_window(1560, 830, window=self.lbl_internal_frag)
-
-        # =========================================================
-        # 2. INTERACTIVE ENTRY TEXT FORMS
-        # =========================================================
-        self.entry_pid = tk.Entry(self.window_root, width=8, font=("Courier", 22, "bold"), bd=2, relief=tk.SOLID)
-        self.canvas.create_window(1560, 1090, window=self.entry_pid, anchor=tk.W)
-
-        self.entry_size = tk.Entry(self.window_root, width=8, font=("Courier", 22, "bold"), bd=2, relief=tk.SOLID)
-        self.canvas.create_window(1560, 1180, window=self.entry_size, anchor=tk.W)
+        # Card 3: Internal Fragmentation
+        self.lbl_internal_frag = tk.Label(self.window_root, text="0K", font=("Courier", 32, "bold"), fg="#C62828", bg="#F5E3B5")
+        self.canvas.create_window(1380, 570, window=self.lbl_internal_frag, anchor=tk.CENTER)
 
         # =========================================================
-        # 3. ACTION BUTTON HOOKS & BOTTOM SELECTION DROPDOWNS
+        # 2. INTERACTIVE ENTRY TEXT FORMS (INSIDE CARD 4)
         # =========================================================
-        # EXECUTE ALLOCATION INTERFACE LINK OVER THE 1ST BRICK
-        btn_alloc = tk.Button(self.window_root, text="EXEC ALLOC", font=("Arial", 16, "bold"), bg="#F5E3B5", fg="#3D1E6D", activebackground="#CBB279", bd=0, command=self.handle_allocation_trigger)
-        self.canvas.create_window(230, 1010, window=btn_alloc, width=260, height=50)
+        # PID Entry (Placed to the right side of the "PROCESS #" text alignment zone)
+        self.entry_pid = tk.Entry(self.window_root, width=6, font=("Courier", 20, "bold"), bd=2, relief=tk.SOLID, bg="#FFFFFF")
+        self.canvas.create_window(1480, 730, window=self.entry_pid, anchor=tk.W)
 
-        # MODE SELECTION DROPDOWN HOOK OVER THE 2ND BRICK
-        self.combo_mode = ttk.Combobox(self.window_root, values=["MANUAL", "RANDOM"], state="readonly", font=("Arial", 16, "bold"), style="TCombobox")
+        # Size Entry (Placed to the right side of the "PROCESS SIZE" text alignment zone)
+        self.entry_size = tk.Entry(self.window_root, width=6, font=("Courier", 20, "bold"), bd=2, relief=tk.SOLID, bg="#FFFFFF")
+        self.canvas.create_window(1480, 775, window=self.entry_size, anchor=tk.W)
+
+        # =========================================================
+        # 3. ACTION BUTTON HOOKS & BOTTOM SELECTION DROPDOWNS (THE BRICKS)
+        # =========================================================
+        # Brick 1 (Leftmost - Overrides manual "MENU" text hook with custom interaction)
+        btn_alloc = tk.Button(self.window_root, text="EXEC ALLOC", font=("Arial", 14, "bold"), bg="#F5E3B5", fg="#3D1E6D", activebackground="#CBB279", bd=0, command=self.handle_allocation_trigger)
+        self.canvas.create_window(98, 946, window=btn_alloc, width=175, height=65, anchor=tk.NW)
+
+        # Brick 2
+        self.combo_mode = ttk.Combobox(self.window_root, values=["MANUAL", "RANDOM"], state="readonly", font=("Arial", 14, "bold"), style="TCombobox")
         self.combo_mode.set("MANUAL")
-        self.canvas.create_window(570, 1010, window=self.combo_mode, width=260)
+        self.canvas.create_window(272, 946, window=self.combo_mode, width=155, height=65, anchor=tk.NW)
         self.combo_mode.bind("<<ComboboxSelected>>", self.toggle_input_fields_access)
 
-        # ALGORITHM SELECTION DROPDOWN HOOK OVER THE 3RD BRICK
-        self.combo_algo = ttk.Combobox(self.window_root, values=["MFT: First Fit", "MFT: Best Fit", "MFT: Best Available", "MVT: First Fit", "MVT: Best Fit", "MVT: Worst Fit"], state="readonly", font=("Arial", 14, "bold"), style="TCombobox")
+        # Brick 3 (Slightly wider center-lane brick for algos)
+        self.combo_algo = ttk.Combobox(self.window_root, values=["MFT: First Fit", "MFT: Best Fit", "MFT: Best Available", "MVT: First Fit", "MVT: Best Fit", "MVT: Worst Fit"], state="readonly", font=("Arial", 11, "bold"), style="TCombobox")
         self.combo_algo.set("MFT: First Fit")
-        self.canvas.create_window(910, 1010, window=self.combo_algo, width=260)
+        self.canvas.create_window(448, 946, window=self.combo_algo, width=245, height=65, anchor=tk.NW)
         self.combo_algo.bind("<<ComboboxSelected>>", lambda e: self.refresh_display_matrix())
 
-        # EXECUTE DEALLOCATION INTERFACE LINK OVER THE 4TH BRICK
-        btn_dealloc = tk.Button(self.window_root, text="EXEC DEALLOC", font=("Arial", 16, "bold"), bg="#F5E3B5", fg="#3D1E6D", activebackground="#CBB279", bd=0, command=self.handle_deallocation_trigger)
-        self.canvas.create_window(1250, 1010, window=btn_dealloc, width=260, height=50)
+        # Brick 4
+        btn_dealloc = tk.Button(self.window_root, text="EXEC DEALLOC", font=("Arial", 13, "bold"), bg="#F5E3B5", fg="#3D1E6D", activebackground="#CBB279", bd=0, command=self.handle_deallocation_trigger)
+        self.canvas.create_window(714, 946, window=btn_dealloc, width=160, height=65, anchor=tk.NW)
 
-        # MEMORY COMPACTION FLOATING CONTROL TRIGGER
+        # =========================================================
+        # 4. AUXILIARY UTILITIES (COMPACTION & FLOATING TOGGLES)
+        # =========================================================
+        # Memory compaction switch floating safely between UI bounds
         self.btn_compaction = tk.Button(self.window_root, text="COMPACT MEMORY", font=("Arial", 14, "bold"), bg="#FF9800", fg="white", activebackground="#F57C00", bd=2, command=self.trigger_mvt_compaction)
-        self.compaction_window_id = self.canvas.create_window(1560, 940, window=self.btn_compaction, state="hidden")
+        self.compaction_window_id = self.canvas.create_window(1380, 860, window=self.btn_compaction, width=240, height=45, anchor=tk.CENTER)
 
 
     def toggle_input_fields_access(self, event=None):
@@ -242,7 +250,7 @@ class MemoryManagementApp:
         # Vertical box geometry scaling vectors tracking down the 1080p display matrix bounds
         start_y = 100
         x1, x2 = 320, 560    # Sleek 240px wide RAM stack column
-        canvas_scale = 12.5  # Scales 64K down perfectly to fit an 800px vertical track smoothly
+        canvas_scale = 10.0  # Slightly padded down scale to perfectly center within 1080p frame limits
         
         for partition in self.mft_manager.partitions:
             height = partition.partition_size * canvas_scale
@@ -292,7 +300,7 @@ class MemoryManagementApp:
 
         start_y = 100
         x1, x2 = 320, 560
-        canvas_scale = 12.5
+        canvas_scale = 10.0
         
         for block in self.mvt_manager.blocks:
             height = block.block_size * canvas_scale
