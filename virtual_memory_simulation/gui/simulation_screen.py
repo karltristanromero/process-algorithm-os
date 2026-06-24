@@ -90,3 +90,8 @@ class SimulationScreen(tk.Frame):
 
         self._build_input_panel(panel)
         self._build_results_panel(panel)
+
+    # ── Left: Input Panel ──────────────────────────────────────────────────────
+    def _build_input_panel(self, parent):
+        left = tk.Frame(parent, bg=theme.COLOR_PANEL_BG, padx=20, pady=20)
+        left.grid(row=0, column=0, sticky="nsew")
