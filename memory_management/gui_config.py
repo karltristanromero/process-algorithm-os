@@ -17,10 +17,10 @@ WINDOW_SETUP = {
 # 1. STATISTICS DASHBOARD CARDS (Right side trackers)
 # =========================================================
 STATS_LAYOUT = {
-    "right_edge_offset": 300,  # Center X position for the text readouts
+    "right_edge_offset": 1350,  # Center X position for the text readouts
     "total_space_y": 200,
-    "external_frag_y": 380,
-    "internal_frag_y": 560,
+    "external_frag_y": 430,
+    "internal_frag_y": 650,
     "font": ("Courier", 32, "bold")
 }
 
@@ -28,21 +28,21 @@ STATS_LAYOUT = {
 # 2. INTERACTIVE ENTRY TEXT FIELDS & MANUAL CONTROLS
 # =========================================================
 INPUTS_LAYOUT = {
-    "right_edge_offset": 450,        # Base X anchor position for input entries
-    "button_x_offset": 130,          # Added to push buttons to the right of inputs
+    "right_edge_offset": 1350,        # Base X anchor position for input entries
+    "button_x_offset": 150,          # Added to push buttons to the right of inputs
     
     # ROW 1: Process ID Entry + ALLOCATE Button (Y matching)
-    "pid_y_offset": -240,            # 960 - 240 = 720px
-    "alloc_btn_y_offset": -245,      # -5px shift to align top edge nicely
+    "pid_y_offset": -160,            
+    "alloc_btn_y_offset": -177,      
     
     # ROW 2: Process Size Entry + DEALLOCATE Button (Y matching)
-    "size_y_offset": -180,           # 960 - 180 = 780px
-    "dealloc_btn_y_offset": -185,    # -5px shift to align top edge nicely
+    "size_y_offset": -110,           
+    "dealloc_btn_y_offset": -130,    
     
-    "entry_width": 8,
+    "entry_width": 10,
     "button_width": 110,             # Widened to fit text fully
     "button_height": 35,
-    "font_entry": ("Arial", 14, "bold"),
+    "font_entry": ("Arial", 15, "bold"),
     "font_button": ("Arial", 10, "bold")
 }
 
