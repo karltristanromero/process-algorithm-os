@@ -261,3 +261,10 @@ class CompareAllScreen(tk.Frame):
         def _build_input_strip(self, parent):
             strip = tk.Frame(parent, bg=theme.COLOR_STATS_BG, pady=10, padx=16)
             strip.grid(row=0, column=0, sticky="ew")
+
+            tk.Label(
+                strip,
+                text="Reference String:",
+                bg=theme.COLOR_STATS_BG,
+                fg=theme.COLOR_TITLE
+            ).pack(side=tk.LEFT, padx=(0, 8))
