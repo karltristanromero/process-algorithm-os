@@ -46,3 +46,15 @@ class AlgorithmSelectScreen(tk.Frame):
             self._bg_image = ImageTk.PhotoImage(img)
             bg_label = tk.Label(self, image=self._bg_image)
             bg_label.place(x=0, y=0, relwidth=1, relheight=1)
+
+        # ── White panel overlay ───────────────────────────────────
+        # Positioned to sit inside the white panel area of the BG image
+        # (scaled from 1920x1080 → 1440x810, roughly 75% scale)
+        panel = tk.Frame(self, bg=theme.COLOR_PANEL_BG, bd=0)
+        panel.place(
+            relx=0.5,               # horizontally centered (50% of window width)
+            rely=0.52,              # slightly below center (52% of window height)
+            anchor="center",        # the center of the panel sits at that point
+            relwidth=0.74,          # panel is 74% of the window width
+            relheight=0.72          # panel is 72% of the window height
+        )
