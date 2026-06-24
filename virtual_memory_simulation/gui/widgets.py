@@ -129,3 +129,9 @@ class StatsBar(tk.Frame):
         ]:
             tk.Label(self, textvariable=var, font=theme.FONT_BODY_BOLD,
                      bg=theme.COLOR_STATS_BG, fg=fg).pack(side=tk.LEFT, padx=24)
+            
+    def update_stats(self, faults, hits, rate):
+        total = faults + hits
+        self._fault_var.set(f"Page Faults: {faults} / {total}")
+        self._hit_var.set(f"Page Hits: {hits} / {total}")
+        self._rate_var.set(f"Hit Rate: {rate:.1f}%")
