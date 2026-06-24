@@ -61,3 +61,8 @@ class App(tk.Tk):
 
         self._current_screen = None
         self.show_algorithm_select()
+
+    def _clear(self):
+        if self._current_screen:
+            self._current_screen.destroy()
+            self._current_screen = None
