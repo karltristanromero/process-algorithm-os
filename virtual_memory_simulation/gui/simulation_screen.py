@@ -23,3 +23,16 @@ from gui.widgets import RoundedButton, FrameTraceTable, StatsBar
 import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from algorithms import FIFO, Optimal, LRU, LRUApproximation, LFU, MFU
+
+
+# ── Algorithm registry ─────────────────────────────────────────────────────────
+ALGO_MAP = {
+    "FIFO":         ("First In, First Out (FIFO)",      FIFO),
+    "OPTIMAL":      ("Optimal",                         Optimal),
+    "LRU":          ("Least Recently Used (LRU)",       LRU),
+    "LRU_APPROX":   ("LRU Approximation",               LRUApproximation),
+    "LFU":          ("Least Frequently Used (LFU)",     LFU),
+    "MFU":          ("Most Frequenly Used (MFU)",       MFU),
+}
+
+NUM_FRAMES = 4
