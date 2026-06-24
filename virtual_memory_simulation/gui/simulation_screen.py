@@ -174,3 +174,6 @@ class SimulationScreen(tk.Frame):
 
         self._trace_table = FrameTraceTable(right)
         self._trace_table.grid(row=1, column=0, sticky="nsew", pady=(0, 8))
+
+        self._stats_bar = StatsBar(right)
+        self._stats_bar.grid(row=2, column=0, sticky="ew")
