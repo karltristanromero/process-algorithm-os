@@ -336,3 +336,9 @@ class CompareAllScreen(tk.Frame):
 
             self._tab_traces[key] = trace
             self._tab_stats[key] = stats
+
+    # ── Summary table ──────────────────────────────────────────────────────────
+    def _build_summary(self, parent):
+        summary_outer = tk.Frame(parent, bg=theme.COLOR_PANEL_BG)
+        summary_outer.grid(row=2, column=0, sticky="ew", padx=8, pady=(4, 4))
+        summary_outer.columnconfigure(0, weight=1)
