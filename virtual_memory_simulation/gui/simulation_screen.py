@@ -126,3 +126,5 @@ class SimulationScreen(tk.Frame):
                  font=theme.FONT_BODY,
                  bg=theme.COLOR_PANEL_BG,
                  fg=theme.COLOR_TITLE).pack(anchor="w", pady=(0, 16))
+        
+        tk.Frame(left, bg=theme.COLOR_BTN_BORDER, height=1).pack(fill=tk.X, pady=8)
