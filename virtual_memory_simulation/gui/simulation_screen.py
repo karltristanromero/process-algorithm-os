@@ -193,3 +193,6 @@ class SimulationScreen(tk.Frame):
         except ValueError:
             messagebox.showerror("Invalid input!", "Please enter integers only.")
             return None
+        
+    def _randomize(self):
+        
