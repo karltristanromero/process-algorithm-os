@@ -54,3 +54,13 @@ class SimulationScreen(tk.Frame):
         self._bg_image = None
         self._algo_name, self._algo_class = ALGO_MAP[algo_key]
         self._build()
+
+    def _build(self):
+        # ── Background ────────────────────────────────────────────
+        bg_path = os.path.join(os.path.dirname(__file__), "SIMULATION_BG.png")
+        if os.path.exists(bg_path):
+            img = Image.open(bg_path).resize(
+                (theme.WINDOW_WIDTH, theme.WINDOW_HEIGHT), Image.LANCZOS)
+            self._bg_image = ImageTk.PhotoImage(img)
+            tk.Label(self, image=self._bg_image).place(
+                x=0, y=0, relwidth=1, relheight=1)
