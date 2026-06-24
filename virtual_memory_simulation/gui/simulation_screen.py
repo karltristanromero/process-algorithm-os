@@ -315,3 +315,6 @@ class CompareAllScreen(tk.Frame):
             background=[("selected", theme.COLOR_BTN_HOVER)],
             foreground=[("selected", theme.COLOR_TITLE)]    
         )
+
+        self._notebook = ttk.Notebook(parent, style="Custom.TNotebook")
+        self._notebook.grid(row=1, column=0, sticky="nsew", padx=8, pady=4)
