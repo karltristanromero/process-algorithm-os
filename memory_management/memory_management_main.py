@@ -20,402 +20,319 @@ from mvt.worst_fit import worst_fit_mvt
 class MemoryManagementApp:
     def __init__(self, window_root):
         self.window_root = window_root
-        self.window_root.title("Memory Management Simulator - MFT & MVT")
+        self.window_root.title("Memory Management Simulator - Retro Edition")
         
-        # Set window size
-        self.window_root.geometry("1920x1080")
+        # Set exact dimensions to match your background design scaling comfortably
+        self.window_root.geometry("960x540")
+        self.window_root.resizable(False, False)
         
         # Initialize core memory engines
         self.mft_manager = FixedMemoryManager(total_memory_size=64)
         self.mvt_manager = VariableMemoryManager(total_memory_size=64)
         
-        # Track waiting processes inside manager tracks to preserve state references cleanly
+        # Track waiting processes inside manager tracks
         self.mft_manager.waiting_queue = []
         self.mvt_manager.waiting_queue = []
         
-        # Build the layout grids
+        # Build the layout canvas board
         self.build_gui_layout()
         
-        # Initial draw of both workspace components to calculate starting free spaces
-        self.update_mft_display_map()
-        self.update_mvt_display_map()
+        # Initial draw of engine calculations onto the canvas view maps
+        self.refresh_display_matrix()
 
 
     def build_gui_layout(self):
-        # Create a central notebook layout element spanning the whole viewport
-        self.notebook = ttk.Notebook(self.window_root)
-        self.notebook.pack(fill=tk.BOTH, expand=True, padx=15, pady=15)
-        
-        self.mft_tab = ttk.Frame(self.notebook)
-        self.mvt_tab = ttk.Frame(self.notebook)
-        
-        self.notebook.add(self.mft_tab, text="   MFT (Fixed Partitioning Mode)   ")
-        self.notebook.add(self.mvt_tab, text="   MVT (Variable Partitioning Mode)   ")
-
-        # ==========================================
-        # 1. MFT INTERFACE GRID PANEL DESIGN
-        # ==========================================
-        # Real-time Stats Header bar for MFT (Shows free space all the time)
-        self.mft_stats_bar = ttk.LabelFrame(self.mft_tab, text=" Real-Time MFT Memory Status Indicators ")
-        self.mft_stats_bar.pack(fill=tk.X, padx=15, pady=10)
-        
-        self.lbl_mft_free_space = ttk.Label(self.mft_stats_bar, text="Total Unallocated Free Space: 64K", font=("Arial", 13, "bold"), foreground="green")
-        self.lbl_mft_free_space.pack(side=tk.LEFT, padx=30, pady=10)
-        
-        self.lbl_mft_internal_frag = ttk.Label(self.mft_stats_bar, text="Total Internal Fragmentation: 0K", font=("Arial", 13, "bold"), foreground="red")
-        self.lbl_mft_internal_frag.pack(side=tk.LEFT, padx=30, pady=10)
-        
-        # Split Bottom Layout into Control (Left) and Maps (Right)
-        mft_body_frame = ttk.Frame(self.mft_tab)
-        mft_body_frame.pack(fill=tk.BOTH, expand=True, padx=15, pady=5)
-        
-        mft_left_control = ttk.Frame(mft_body_frame, width=450)
-        mft_left_control.pack(side=tk.LEFT, fill=tk.Y, padx=10)
-        mft_left_control.pack_propagate(False)
-        
-        mft_right_display = ttk.Frame(mft_body_frame)
-        mft_right_display.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=10)
-        
-        # Manual input entry panels for MFT
-        mft_manual_box = ttk.LabelFrame(mft_left_control, text=" Manual Process Control Board ")
-        mft_manual_box.pack(fill=tk.X, pady=10, ipady=5)
-        
-        ttk.Label(mft_manual_box, text="Process ID (P1-P10):").grid(row=0, column=0, padx=10, pady=8, sticky=tk.W)
-        self.entry_mft_pid = ttk.Entry(mft_manual_box, width=15)
-        self.entry_mft_pid.grid(row=0, column=1, padx=10, pady=8, sticky=tk.W)
-        
-        ttk.Label(mft_manual_box, text="Size (1K - 32K):").grid(row=1, column=0, padx=10, pady=8, sticky=tk.W)
-        self.entry_mft_size = ttk.Entry(mft_manual_box, width=15)
-        self.entry_mft_size.grid(row=1, column=1, padx=10, pady=8, sticky=tk.W)
-        
-        ttk.Label(mft_manual_box, text="Select Allocation Fit:").grid(row=2, column=0, padx=10, pady=8, sticky=tk.W)
-        self.combo_mft_algo = ttk.Combobox(mft_manual_box, values=["First Fit", "Best Fit", "Best Available Fit"], state="readonly", width=18)
-        self.combo_mft_algo.set("First Fit")
-        self.combo_mft_algo.grid(row=2, column=1, padx=10, pady=8, sticky=tk.W)
-        
-        btn_mft_alloc = ttk.Button(mft_manual_box, text="EXECUTE ALLOCATE", command=lambda: self.execute_mft_action("MANUAL", "ALLOCATE"))
-        btn_mft_alloc.grid(row=3, column=0, padx=10, pady=12, sticky=tk.E)
-        
-        btn_mft_dealloc = ttk.Button(mft_manual_box, text="EXECUTE DEALLOCATE", command=lambda: self.execute_mft_action("MANUAL", "DEALLOCATE"))
-        btn_mft_dealloc.grid(row=3, column=1, padx=10, pady=12, sticky=tk.W)
-        
-        # Automated random panels for MFT
-        mft_auto_box = ttk.LabelFrame(mft_left_control, text=" Automated Dynamic Workload Board ")
-        mft_auto_box.pack(fill=tk.X, pady=15, ipady=10)
-        
-        btn_mft_random = ttk.Button(mft_auto_box, text="INJECT NEXT RANDOM EVENT STEP", command=lambda: self.execute_mft_action("RANDOM"))
-        btn_mft_random.pack(padx=20, pady=15, fill=tk.X)
-        
-        # Text Console Output log panel for MFT
-        mft_log_box = ttk.LabelFrame(mft_left_control, text=" System Event Activity Log Readout ")
-        mft_log_box.pack(fill=tk.BOTH, expand=True, pady=10)
-        self.txt_mft_log = tk.Text(mft_log_box, height=15, width=40, state="disabled", wrap=tk.WORD, bg="#f0f0f0")
-        self.txt_mft_log.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
-        
-        # Right Graphical Canvas Mapping for MFT
-        self.mft_canvas = tk.Canvas(mft_right_display, bg="white", bd=2, relief=tk.SUNKEN)
-        self.mft_canvas.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
-        
-        # ==========================================
-        # 2. MVT INTERFACE GRID PANEL DESIGN
-        # ==========================================
-        # Real-time Stats Header bar for MVT (Shows free space all the time)
-        self.mvt_stats_bar = ttk.LabelFrame(self.mvt_tab, text=" Real-Time MVT Memory Status Indicators ")
-        self.mvt_stats_bar.pack(fill=tk.X, padx=15, pady=10)
-        
-        self.lbl_mvt_free_space = ttk.Label(self.mvt_stats_bar, text="Total Unallocated Free Space: 64K", font=("Arial", 13, "bold"), foreground="green")
-        self.lbl_mvt_free_space.pack(side=tk.LEFT, padx=30, pady=10)
-        
-        self.lbl_mvt_external_frag = ttk.Label(self.mvt_stats_bar, text="Total External Fragmentation: 0K", font=("Arial", 13, "bold"), foreground="orange")
-        self.lbl_mvt_external_frag.pack(side=tk.LEFT, padx=30, pady=10)
-        
-        # Split Bottom Layout into Control (Left) and Maps (Right)
-        mvt_body_frame = ttk.Frame(self.mvt_tab)
-        mvt_body_frame.pack(fill=tk.BOTH, expand=True, padx=15, pady=5)
-        
-        mvt_left_control = ttk.Frame(mvt_body_frame, width=450)
-        mvt_left_control.pack(side=tk.LEFT, fill=tk.Y, padx=10)
-        mvt_left_control.pack_propagate(False)
-        
-        mvt_right_display = ttk.Frame(mvt_body_frame)
-        mvt_right_display.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=10)
-        
-        # Manual input entry panels for MVT
-        mvt_manual_box = ttk.LabelFrame(mvt_left_control, text=" Manual Process Control Board ")
-        mvt_manual_box.pack(fill=tk.X, pady=10, ipady=5)
-        
-        ttk.Label(mvt_manual_box, text="Process ID (P1-P10):").grid(row=0, column=0, padx=10, pady=8, sticky=tk.W)
-        self.entry_mvt_pid = ttk.Entry(mvt_manual_box, width=15)
-        self.entry_mvt_pid.grid(row=0, column=1, padx=10, pady=8, sticky=tk.W)
-        
-        ttk.Label(mvt_manual_box, text="Size (1K - 32K):").grid(row=1, column=0, padx=10, pady=8, sticky=tk.W)
-        self.entry_mvt_size = ttk.Entry(mvt_manual_box, width=15)
-        self.entry_mvt_size.grid(row=1, column=1, padx=10, pady=8, sticky=tk.W)
-        
-        ttk.Label(mvt_manual_box, text="Select Allocation Fit:").grid(row=2, column=0, padx=10, pady=8, sticky=tk.W)
-        self.combo_mvt_algo = ttk.Combobox(mvt_manual_box, values=["First Fit", "Best Fit", "Worst Fit"], state="readonly", width=18)
-        self.combo_mvt_algo.set("First Fit")
-        self.combo_mvt_algo.grid(row=2, column=1, padx=10, pady=8, sticky=tk.W)
-        
-        btn_mvt_alloc = ttk.Button(mvt_manual_box, text="EXECUTE ALLOCATE", command=lambda: self.execute_mvt_action("MANUAL", "ALLOCATE"))
-        btn_mvt_alloc.grid(row=3, column=0, padx=10, pady=12, sticky=tk.E)
-        
-        btn_mvt_dealloc = ttk.Button(mvt_manual_box, text="EXECUTE DEALLOCATE", command=lambda: self.execute_mvt_action("MANUAL", "DEALLOCATE"))
-        btn_mvt_dealloc.grid(row=3, column=1, padx=10, pady=12, sticky=tk.W)
-        
-        # Automated random panels for MVT + compaction trigger
-        mvt_auto_box = ttk.LabelFrame(mvt_left_control, text=" Automated Dynamic Workload Board ")
-        mvt_auto_box.pack(fill=tk.X, pady=15, ipady=5)
-        
-        btn_mvt_random = ttk.Button(mvt_auto_box, text="INJECT NEXT RANDOM EVENT STEP", command=lambda: self.execute_mvt_action("RANDOM"))
-        btn_mvt_random.pack(padx=20, pady=10, fill=tk.X)
-        
-        btn_mvt_compact = ttk.Button(mvt_auto_box, text="EXECUTE MEMORY COMPACTION [WITH COMPACTION]", command=self.trigger_mvt_compaction)
-        btn_mvt_compact.pack(padx=20, pady=10, fill=tk.X)
-        
-        # Text Console Output log panel for MVT
-        mvt_log_box = ttk.LabelFrame(mvt_left_control, text=" System Event Activity Log Readout ")
-        mvt_log_box.pack(fill=tk.BOTH, expand=True, pady=10)
-        self.txt_mvt_log = tk.Text(mvt_log_box, height=15, width=40, state="disabled", wrap=tk.WORD, bg="#f0f0f0")
-        self.txt_mvt_log.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
-        
-        # Right Graphical Canvas Mapping for MVT
-        self.mvt_canvas = tk.Canvas(mvt_right_display, bg="white", bd=2, relief=tk.SUNKEN)
-        self.mvt_canvas.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
-        
-    def log_message(self, text_widget, message_str: str):
-        text_widget.config(state="normal")
-        text_widget.insert(tk.END, message_str + "\n")
-        text_widget.see(tk.END)
-        text_widget.config(state="disabled")
-
-# Part 3: Operational Controllers and Memory Routing Rules
-    def execute_mft_action(self, mode, action: str = None):
+        # Load your pixel art background asset file
         try:
-            # 1. Query process context properties from router based on mode
-            pid = self.entry_mft_pid.get().strip() if mode == "MANUAL" else None
-            size_val = int(self.entry_mft_size.get().strip()) if (mode == "MANUAL" and action == "ALLOCATE") else None
+            self.bg_image = tk.PhotoImage(file="bg1.png")
+        except Exception:
+            # Fallback if there's a naming mismatch during testing
+            self.bg_image = tk.PhotoImage(file="image_7a5c02.png")
+
+        # Create master canvas layout map
+        self.canvas = tk.Canvas(self.window_root, width=960, height=540, bd=0, highlightthickness=0)
+        self.canvas.pack(fill=tk.BOTH, expand=True)
+        
+        # Place background asset image at base layer position
+        self.canvas.create_image(0, 0, image=self.bg_image, anchor=tk.NW)
+
+        # Config styles for TCombobox dropdown layers to fit the retro look
+        combobox_style = ttk.Style()
+        combobox_style.theme_use('default')
+        combobox_style.configure("TCombobox", fieldbackground="#F5E3B5", background="#CBB279", arrowcolor="#3D1E6D")
+
+        # ==========================================
+        # 1. LIVE VALUE LABELS OVER CARD OBJECTS
+        # ==========================================
+        self.lbl_total_space = tk.Label(self.window_root, text="64K", font=("Courier", 16, "bold"), fg="#2E7D32", bg="#F1D199")
+        self.canvas.create_window(780, 125, window=self.lbl_total_space)
+
+        self.lbl_external_frag = tk.Label(self.window_root, text="0K", font=("Courier", 16, "bold"), fg="#E65100", bg="#F1D199")
+        self.canvas.create_window(780, 265, window=self.lbl_external_frag)
+
+        self.lbl_internal_frag = tk.Label(self.window_root, text="0K", font=("Courier", 16, "bold"), fg="#C62828", bg="#F1D199")
+        self.canvas.create_window(780, 415, window=self.lbl_internal_frag)
+
+        # ==========================================
+        # 2. ENTRY INPUTS INSIDE PROCESS FORM CARD
+        # ==========================================
+        self.entry_pid = tk.Entry(self.window_root, width=6, font=("Courier", 11, "bold"), bd=1, relief=tk.SOLID, bg="#FFFFFF")
+        self.canvas.create_window(780, 545, window=self.entry_pid, anchor=tk.W)
+
+        self.entry_size = tk.Entry(self.window_root, width=6, font=("Courier", 11, "bold"), bd=1, relief=tk.SOLID, bg="#FFFFFF")
+        self.canvas.create_window(780, 590, window=self.entry_size, anchor=tk.W)
+
+        # ==========================================
+        # 3. INTERACTIVE CONTROL WIDGETS AT BOTTOM
+        # ==========================================
+        # MENU BUTTON LINK
+        btn_menu = tk.Button(self.window_root, text="EXEC ALLOC", font=("Arial", 9, "bold"), bg="#F5E3B5", fg="#3D1E6D", activebackground="#CBB279", bd=0, command=self.handle_allocation_trigger)
+        self.canvas.create_window(115, 505, window=btn_menu, width=130, height=25)
+
+        # CHOOSE MODE DROPDOWN
+        self.combo_mode = ttk.Combobox(self.window_root, values=["MANUAL", "RANDOM"], state="readonly", width=12, font=("Arial", 9, "bold"), style="TCombobox")
+        self.combo_mode.set("MANUAL")
+        self.canvas.create_window(285, 505, window=self.combo_mode, width=130)
+        self.combo_mode.bind("<<ComboboxSelected>>", self.toggle_input_fields_access)
+
+        # CHOOSE STRATEGY ALGORITHM DROPDOWN
+        self.combo_algo = ttk.Combobox(self.window_root, values=["MFT: First Fit", "MFT: Best Fit", "MFT: Best Available", "MVT: First Fit", "MVT: Best Fit", "MVT: Worst Fit"], state="readonly", width=16, font=("Arial", 8, "bold"), style="TCombobox")
+        self.combo_algo.set("MFT: First Fit")
+        self.canvas.create_window(455, 505, window=self.combo_algo, width=130)
+        self.combo_algo.bind("<<ComboboxSelected>>", lambda e: self.refresh_display_matrix())
+
+        # DEALLOCATE / RESET BUTTON TRIGGER
+        btn_reset = tk.Button(self.window_root, text="EXEC DEALLOC", font=("Arial", 9, "bold"), bg="#F5E3B5", fg="#3D1E6D", activebackground="#CBB279", bd=0, command=self.handle_deallocation_trigger)
+        self.canvas.create_window(625, 505, window=btn_reset, width=130, height=25)
+
+        # COMPACTION DYNAMIC FLOATING TRIGGER
+        self.btn_compaction = tk.Button(self.window_root, text="COMPACT MEMORY", font=("Arial", 8, "bold"), bg="#FF9800", fg="white", activebackground="#F57C00", bd=1, command=self.trigger_mvt_compaction)
+        # Hidden initially because MFT mode doesn't support compaction arrays
+        self.compaction_window_id = self.canvas.create_window(780, 470, window=self.btn_compaction, state="hidden")
+
+
+    def toggle_input_fields_access(self, event=None):
+        """ Locks process entry logs out completely if running an automated randomized loop step. """
+        mode = self.combo_mode.get()
+        if mode == "RANDOM":
+            self.entry_pid.configure(state="disabled")
+            self.entry_size.configure(state="disabled")
+        else:
+            self.entry_pid.configure(state="normal")
+            self.entry_size.configure(state="normal")
+
+
+    def handle_allocation_trigger(self):
+        """ Routes input properties to either MFT or MVT engine metrics depending on dropdown state selection. """
+        try:
+            mode = self.combo_mode.get()
+            algo = self.combo_algo.get()
             
-            command, process = process_user_choice(mode, action, pid, size_val)
-            algo = self.combo_mft_algo.get()
+            pid = self.entry_pid.get().strip() if mode == "MANUAL" else None
+            size_val = int(self.entry_size.get().strip()) if mode == "MANUAL" else None
             
-            # 2. Direct process size to selected fit strategy (First Fit, Best Fit, Best Available Fit)
-            if command == "ALLOCATE":
-                if algo == "First Fit":
+            command, process = process_user_choice(mode, "ALLOCATE", pid, size_val)
+            
+            if "MFT" in algo:
+                if "First Fit" in algo:
                     msg = first_fit_mft(process, self.mft_manager)
-                elif algo == "Best Fit":
+                elif "Best Fit" in algo:
                     msg = best_fit_mft(process, self.mft_manager)
                 else:
                     msg = best_available_fit_mft(process, self.mft_manager)
-            
-                # 3. If allocation fails, drop the process into the MFT waiting queue
+                    
                 if "Failed" in msg and process not in self.mft_manager.waiting_queue:
                     self.mft_manager.waiting_queue.append(process)
-                self.log_message(self.txt_mft_log, msg)
-                
-            # 4. If action is deallocate, free the partition block and retry waiting queue list
-            elif command == "DEALLOCATE":
-                self.mft_manager.deallocate_process(process.process_id)
-                self.log_message(self.txt_mft_log, f"Deallocated {process.process_id} from fixed configuration memory map.")
-                
-                # Scan waiting list to see if freshly cleared spaces can support waiting items
-                for queued_proc in list(self.mft_manager.waiting_queue):
-                    if algo == "First Fit":
-                        res = first_fit_mft(queued_proc, self.mft_manager)
-                    elif algo == "Best Fit":
-                        res = best_fit_mft(queued_proc, self.mft_manager)
-                    else:
-                        res = best_available_fit_mft(queued_proc, self.mft_manager)
-                        
-                    if "Allocated" in res:
-                        self.mft_manager.waiting_queue.remove(queued_proc)
-                        self.log_message(self.txt_mft_log, f"[Queue Release] {res}")
-            
-            # 5. Refresh MFT canvas
-            self.update_mft_display_map()
-        
-        except Exception as e:
-            messagebox.showerror("MFT Operational Error", str(e))
-         
-            
-    def execute_mvt_action(self, mode: str, action: str = None):
-        try:
-            # 1. Query process context from router based on mode
-            pid = self.entry_mvt_pid.get().strip() if mode == "MANUAL" else None
-            size_val = int(self.entry_mvt_size.get().strip()) if (mode == "MANUAL" and action == "ALLOCATE") else None
-            
-            command, process = process_user_choice(mode, action, pid, size_val)
-            algo = self.combo_mvt_algo.get()
-            
-            # 2. Route process payload to dynamic fit strategy (First Fit, Best Fit, Worst Fit)
-            if command == "ALLOCATE":
-                if algo == "First Fit":
+                print(f"[MFT Log]: {msg}")
+            else:
+                if "First Fit" in algo:
                     msg = first_fit_mvt(process, self.mvt_manager)
-                elif algo == "Best Fit":
+                elif "Best Fit" in algo:
                     msg = best_fit_mvt(process, self.mvt_manager)
                 else:
                     msg = worst_fit_mvt(process, self.mvt_manager)
-           
-                # 3. If allocation fails, drop the process into the MVT waiting queue
+                    
                 if "Failed" in msg and process not in self.mvt_manager.waiting_queue:
                     self.mvt_manager.waiting_queue.append(process)
-                self.log_message(self.txt_mvt_log, msg)
-           
-            # 4. If action is deallocate, invoke manager without compaction and reorder queue
-            elif command == "DEALLOCATE":
-                self.mvt_manager.deallocate_process(process.process_id)
-                self.log_message(self.txt_mvt_log, f"Deallocated {process.process_id} from dynamic block configurations.")
+                print(f"[MVT Log]: {msg}")
                 
-                # Check waiting targets against newly coalesced spaces
-                self.reorder_mvt_queue()
-           
-            # 5. Refresh MVT canvas
-            self.update_mvt_display_map()
-            
+            self.refresh_display_matrix()
         except Exception as e:
-            messagebox.showerror("MVT Operational Error", str(e))
+            messagebox.showerror("Allocation Error", str(e))
+
+
+    def handle_deallocation_trigger(self):
+        """ Identifies active running processes, safely clears them, and cycles waiting entries. """
+        try:
+            mode = self.combo_mode.get()
+            algo = self.combo_algo.get()
+            pid = self.entry_pid.get().strip() if mode == "MANUAL" else None
+            
+            command, process = process_user_choice(mode, "DEALLOCATE", pid, None)
+            
+            if "MFT" in algo:
+                self.mft_manager.deallocate_process(process.process_id)
+                # Cycle MFT waiting queue tracks
+                for queued_proc in list(self.mft_manager.waiting_queue):
+                    if "First Fit" in algo:
+                        res = first_fit_mft(queued_proc, self.mft_manager)
+                    elif "Best Fit" in algo:
+                        res = best_fit_mft(queued_proc, self.mft_manager)
+                    else:
+                        res = best_available_fit_mft(queued_proc, self.mft_manager)
+                    if "Allocated" in res:
+                        self.mft_manager.waiting_queue.remove(queued_proc)
+            else:
+                self.mvt_manager.deallocate_process(process.process_id)
+                self.reorder_mvt_queue()
+                
+            self.refresh_display_matrix()
+        except Exception as e:
+            messagebox.showerror("Deallocation Error", str(e))
 
 
     def trigger_mvt_compaction(self):
         try:
             msg = self.mvt_manager.compact_memory()
-            self.log_message(self.txt_mvt_log, msg)
-            
-            # Attempt to allocate elements now that scattered external fragments are merged
             self.reorder_mvt_queue()
-            self.update_mvt_display_map()
+            self.refresh_display_matrix()
+            messagebox.showinfo("Compaction Sequence", msg)
         except Exception as e:
-            messagebox.showerror("MVT Compaction Error", str(e))
+            messagebox.showerror("Compaction Error", str(e))
 
 
     def reorder_mvt_queue(self):
-        algo = self.combo_mvt_algo.get()
+        algo = self.combo_algo.get()
         for queued_proc in list(self.mvt_manager.waiting_queue):
-            if algo == "First Fit":
+            if "First Fit" in algo:
                 res = first_fit_mvt(queued_proc, self.mvt_manager)
-            elif algo == "Best Fit":
+            elif "Best Fit" in algo:
                 res = best_fit_mvt(queued_proc, self.mvt_manager)
             else:
                 res = worst_fit_mvt(queued_proc, self.mvt_manager)
-                
             if "Allocated" in res:
                 self.mvt_manager.waiting_queue.remove(queued_proc)
-                self.log_message(self.txt_mvt_log, f"[Queue Release] {res}")
 
 
-# Part 4: Physical Canvas Rendering Engines (Vertical Box Track)
-    def update_mft_display_map(self):
-        # 1. Clear MFT canvas tracking elements
-        self.mft_canvas.delete("all")
+    def refresh_display_matrix(self):
+        """ Evaluates selected engine algorithm type to draw corresponding column layers. """
+        algo = self.combo_algo.get()
         
-        total_free_space = 0
-        total_internal_fragmentation = 0
+        # Clear out previous memory stick rectangles to redraw cleanly
+        self.canvas.delete("mem_element")
         
-        # 2. Render vertical text listings for the current Waiting Queue
-        self.mft_canvas.create_text(650, 30, text="MFT Waiting Queue:", font=("Arial", 14, "bold"), anchor=tk.W)
-        if not self.mft_manager.waiting_queue:
-            self.mft_canvas.create_text(650, 60, text="[ Queue Empty ]", font=("Arial", 11, "italic"), fill="grey", anchor=tk.W)
+        if "MFT" in algo:
+            self.canvas.itemconfigure(self.compaction_window_id, state="hidden")
+            self.update_mft_display_map()
         else:
-            for idx, proc in enumerate(self.mft_manager.waiting_queue):
-                self.mft_canvas.create_text(650, 60 + (idx * 25), text=f"• {proc.process_id} ({proc.process_size}K)", font=("Arial", 11), fill="red", anchor=tk.W)
-                       
-        # 3. Iterate through partition arrays and stack rectangle blocks vertically (Y coordinates)
+            self.canvas.itemconfigure(self.compaction_window_id, state="normal")
+            self.update_mvt_display_map()
+
+
+    def update_mft_display_map(self):
+        total_free_space = 0
+        total_internal_frag = 0
+        
+        # Render Waiting Queue listings inside the left canvas frame area
+        self.canvas.create_text(320, 50, text="Waiting Queue:", font=("Courier", 11, "bold"), fill="#3D1E6D", anchor=tk.W, tags="mem_element")
+        if not self.mft_manager.waiting_queue:
+            self.canvas.create_text(320, 75, text="[ Empty ]", font=("Courier", 10, "italic"), fill="grey", anchor=tk.W, tags="mem_element")
+        else:
+            for idx, proc in enumerate(self.mft_manager.waiting_queue[:12]): # Constraint bounds limit to 12 items visually
+                self.canvas.create_text(320, 75 + (idx * 18), text=f"• {proc.process_id} ({proc.process_size}K)", font=("Courier", 9, "bold"), fill="#C62828", anchor=tk.W, tags="mem_element")
+
+        # Set vertical geometry positions inside blank lane bounds
         start_y = 50
-        x1, x2 = 250, 500  # Sets horizontal physical limits of the memory stack box column
-        canvas_scale = 10   # Pixels allocated per KB (64K max totals to 640 pixels tall)
+        x1, x2 = 160, 280   # Sleek centered column dimension metrics
+        canvas_scale = 6.2  # Dynamic vertical fit scalar to cleanly scale 64K to 400 pixels maximum height
         
         for partition in self.mft_manager.partitions:
             height = partition.partition_size * canvas_scale
             y1, y2 = start_y, start_y + height
             
-            # Print individual block boundary capacities
-            self.mft_canvas.create_text(x1 - 15, y1, text=f"{partition.partition_id}\n({partition.partition_size}K)", font=("Arial", 9, "bold"), anchor=tk.E)
-        
-            # 4. Render process tags in occupied portions and red-hatched bars for internal fragmentation
+            # Print boundaries beside the module blocks
+            self.canvas.create_text(x1 - 10, start_y, text=f"{int(partition.partition_size)}K", font=("Courier", 8, "bold"), anchor=tk.E, tags="mem_element")
+            
             if partition.occupied_process:
-                # Calculate active payload block size
                 proc_height = partition.occupied_process.process_size * canvas_scale
-                self.mft_canvas.create_rectangle(x1, y1, x2, y1 + proc_height, fill="#a6c8ff", outline="black", width=2)
-                self.mft_canvas.create_text(x1 + 125, y1 + (proc_height / 2), text=f"{partition.occupied_process.process_id} ({partition.occupied_process.process_size}K)", font=("Arial", 10, "bold"))
                 
-                # Render leftover internal fragmentation shard
+                # Render primary process block element
+                self.canvas.create_rectangle(x1, y1, x2, y1 + proc_height, fill="#007ACC", outline="#005A9C", width=1, tags="mem_element")
+                self.canvas.create_text(x1 + 60, y1 + (proc_height / 2), text=partition.occupied_process.process_id, font=("Arial", 8, "bold"), fill="white", tags="mem_element")
+                
+                # Render unallocated remainder as internal fragmentation hazard
                 if partition.internal_fragmentation > 0:
-                    self.mft_canvas.create_rectangle(x1, y1 + proc_height, x2, y2, fill="#ffcccc", outline="black", width=1)
-                    self.mft_canvas.create_text(x1 + 125, y1 + proc_height + ((height - proc_height) / 2), text=f"Internal Frag\n{partition.internal_fragmentation}K", font=("Arial", 9, "italic"), fill="red")
-                    total_internal_fragmentation += partition.internal_fragmentation
+                    self.canvas.create_rectangle(x1, y1 + proc_height, x2, y2, fill="#FF5252", outline="#D32F2F", width=1, tags="mem_element")
+                    self.canvas.create_text(x1 + 60, y1 + proc_height + ((height - proc_height) / 2), text="FRAG", font=("Arial", 7, "bold"), fill="white", tags="mem_element")
+                    total_internal_frag += partition.internal_fragmentation
             else:
-                # Fully unallocated empty slot hole
-                self.mft_canvas.create_rectangle(x1, y1, x2, y2, fill="#e2ffe2", outline="black", width=2)
-                self.mft_canvas.create_text(x1 + 125, y1 + (height / 2), text=f"FREE HOLE\n({partition.partition_size}K)", font=("Arial", 10, "bold"), fill="green")
+                # Open system hole slot space
+                self.canvas.create_rectangle(x1, y1, x2, y2, fill="#E8F5E9", outline="#81C784", width=1, tags="mem_element")
+                self.canvas.create_text(x1 + 60, y1 + (height / 2), text="FREE", font=("Arial", 8, "bold"), fill="#2E7D32", tags="mem_element")
                 total_free_space += partition.partition_size
                 
             start_y += height
             
-        # Draw final physical layout boundary reference line
-        self.mft_canvas.create_text(x1 - 15, start_y, text="Limit: 64K", font=("Arial", 9, "bold"), anchor=tk.E)
-        
-        # 5. Update header labels to display total free space continuously
-        self.lbl_mft_free_space.config(text=f"Total Unallocated Free Space: {total_free_space}K")
-        self.lbl_mft_internal_frag.config(text=f"Total Internal Fragmentation: {total_internal_fragmentation}K")
+        self.canvas.create_text(x1 - 10, start_y, text="64K", font=("Courier", 8, "bold"), anchor=tk.E, tags="mem_element")
+
+        # Push calculations to card dashboard views
+        self.lbl_total_space.config(text=f"{total_free_space}K")
+        self.lbl_external_frag.config(text="0K") # Fixed partition models do not exhibit external fragmentation attributes
+        self.lbl_internal_frag.config(text=f"{total_internal_frag}K")
 
 
     def update_mvt_display_map(self):
-        # 1. Clear MVT canvas tracking elements
-        self.mvt_canvas.delete("all")
-        
         total_free_space = 0
-        total_external_fragmentation = 0
+        total_external_frag = 0
         free_hole_segments_count = 0
         
-        # 2. Render vertical text listings for the current Waiting Queue
-        self.mvt_canvas.create_text(650, 30, text="MVT Waiting Queue:", font=("Arial", 14, "bold"), anchor=tk.W)
+        # Render Waiting Queue listings inside the left canvas frame area
+        self.canvas.create_text(320, 50, text="Waiting Queue:", font=("Courier", 11, "bold"), fill="#3D1E6D", anchor=tk.W, tags="mem_element")
         if not self.mvt_manager.waiting_queue:
-            self.mvt_canvas.create_text(650, 60, text="[ Queue Empty ]", font=("Arial", 11, "italic"), fill="grey", anchor=tk.W)
+            self.canvas.create_text(320, 75, text="[ Empty ]", font=("Courier", 10, "italic"), fill="grey", anchor=tk.W, tags="mem_element")
         else:
-            for idx, proc in enumerate(self.mvt_manager.waiting_queue):
-                self.mvt_canvas.create_text(650, 60 + (idx * 25), text=f"• {proc.process_id} ({proc.process_size}K)", font=("Arial", 11), fill="red", anchor=tk.W)
-        
-        # 3. Iterate through dynamic block arrays and stack slots vertically using start_address parameters
+            for idx, proc in enumerate(self.mvt_manager.waiting_queue[:12]):
+                self.canvas.create_text(320, 75 + (idx * 18), text=f"• {proc.process_id} ({proc.process_size}K)", font=("Courier", 9, "bold"), fill="#C62828", anchor=tk.W, tags="mem_element")
+
+        # Set vertical layout coordinate tracks
         start_y = 50
-        x1, x2 = 250, 500  # Vertical matching axis lanes
-        canvas_scale = 10
+        x1, x2 = 160, 280
+        canvas_scale = 6.2
         
         for block in self.mvt_manager.blocks:
             height = block.block_size * canvas_scale
             y1, y2 = start_y, start_y + height
             
-            # Map tracking addresses alongside the column walls
-            self.mvt_canvas.create_text(x1 - 15, y1, text=f"Addr: {block.start_address}K", font=("Arial", 9, "bold"), anchor=tk.E)
+            # Print physical boundary memory tracking addresses
+            self.canvas.create_text(x1 - 10, y1, text=f"{block.start_address}K", font=("Courier", 8, "bold"), anchor=tk.E, tags="mem_element")
             
-            # 4. Render blue boxes for packed processes and green-hatched bars for empty holes
             if block.occupied_process:
-                self.mvt_canvas.create_rectangle(x1, y1, x2, y2, fill="#cce5ff", outline="black", width=2)
-                self.mvt_canvas.create_text(x1 + 125, y1 + (height / 2), text=f"{block.occupied_process.process_id}\n({block.block_size}K)", font=("Arial", 10, "bold"))
+                self.canvas.create_rectangle(x1, y1, x2, y2, fill="#007ACC", outline="#005A9C", width=1, tags="mem_element")
+                self.canvas.create_text(x1 + 60, y1 + (height / 2), text=f"{block.occupied_process.process_id}\n({block.block_size}K)", font=("Arial", 8, "bold"), fill="white", tags="mem_element")
             else:
-                self.mvt_canvas.create_rectangle(x1, y1, x2, y2, fill="#e2ffe2", outline="black", width=2)
-                self.mvt_canvas.create_text(x1 + 125, y1 + (height / 2), text=f"FREE HOLE\n({block.block_size}K)", font=("Arial", 10, "bold"), fill="green")
+                self.canvas.create_rectangle(x1, y1, x2, y2, fill="#E1F5FE", outline="#4FC3F7", width=1, tags="mem_element")
+                self.canvas.create_text(x1 + 60, y1 + (height / 2), text=f"HOLE\n{block.block_size}K", font=("Arial", 8, "bold"), fill="#0288D1", tags="mem_element")
                 total_free_space += block.block_size
                 free_hole_segments_count += 1
                 
             start_y += height
             
-        # Draw terminating wall bound limit indicator
-        self.mvt_canvas.create_text(x1 - 15, start_y, text="Addr: 64K\n(Limit)", font=("Arial", 9, "bold"), anchor=tk.E)
+        self.canvas.create_text(x1 - 10, start_y, text="64K", font=("Courier", 8, "bold"), anchor=tk.E, tags="mem_element")
 
-        # 5. Evaluate scattered spaces to calculate external fragmentation metrics
+        # Evaluate external fragments metrics
         active_allocations = any(b.occupied_process is not None for b in self.mvt_manager.blocks)
         if active_allocations and free_hole_segments_count > 1:
-            total_external_fragmentation = total_free_space
+            total_external_frag = total_free_space
         elif active_allocations and free_hole_segments_count == 1:
-            # If a single hole remains but it is trapped behind processes
             if self.mvt_manager.blocks[-1].occupied_process is not None:
-                total_external_fragmentation = total_free_space
+                total_external_frag = total_free_space
 
-        # 6. Update header labels to display total free space continuously
-        self.lbl_mvt_free_space.config(text=f"Total Unallocated Free Space: {total_free_space}K")
-        self.lbl_mvt_external_frag.config(text=f"Total External Fragmentation: {total_external_fragmentation}K")
-        
-        
+        # Push structural data summaries to card metrics
+        self.lbl_total_space.config(text=f"{total_free_space}K")
+        self.lbl_external_frag.config(text=f"{total_external_frag}K")
+        self.lbl_internal_frag.config(text="0K") # Variable dynamic partitions feature zero internal fragmentation waste
+
+
 if __name__ == "__main__":
     root = tk.Tk()
     app = MemoryManagementApp(root)
