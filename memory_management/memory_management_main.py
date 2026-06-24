@@ -23,9 +23,11 @@ class MemoryManagementApp:
         self.window_root = window_root
         self.window_root.title("Memory Management Simulator - 1080p Retro Edition")
         
-        # Enforce exact 1080p canvas scaling limits
-        self.window_root.geometry("1920x1080")
-        self.window_root.resizable(False, False)
+        # Enforce exact 1080p canvas scaling limits via Fullscreen mode
+        self.window_root.attributes('-fullscreen', True)
+        
+        # Bind Escape key to easily close the fullscreen app
+        self.window_root.bind("<Escape>", lambda e: self.window_root.destroy())
         
         # Initialize core partition simulators
         self.mft_manager = FixedMemoryManager(total_memory_size=64)
