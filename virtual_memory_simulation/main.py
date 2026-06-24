@@ -66,3 +66,9 @@ class App(tk.Tk):
         if self._current_screen:
             self._current_screen.destroy()
             self._current_screen = None
+
+    def show_algorithm_select(self):
+        self._clear()
+        screen = AlgorithmSelectScreen(self, on_select=self._on_algo_selected)
+        screen.place(x=0, y=0, width=theme.WINDOW_WIDTH, height=theme.WINDOW_HEIGHT)
+        self._current_screen = screen
