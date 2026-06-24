@@ -67,3 +67,7 @@ class AlgorithmSelectScreen(tk.Frame):
             bg=theme.COLOR_PANEL_BG,
             fg=theme.COLOR_TITLE
         ).pack(pady=(28, 24))
+
+        # ── 2-column button grid ──────────────────────────────────
+        grid_frame = tk.Frame(panel, bg=theme.COLOR_PANEL_BG)
+        grid_frame.pack(pady=(0, 16))
