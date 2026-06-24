@@ -128,3 +128,24 @@ class SimulationScreen(tk.Frame):
                  fg=theme.COLOR_TITLE).pack(anchor="w", pady=(0, 16))
         
         tk.Frame(left, bg=theme.COLOR_BTN_BORDER, height=1).pack(fill=tk.X, pady=8)
+
+        RoundedButton(
+            left,
+            text="Simulate",
+            width=18,
+            command=self._simulate
+        ).pack(anchor="w", pady=(8, 6))
+
+        RoundedButton(
+            left,
+            text="Reset",
+            width=18,
+            command=self._reset
+        ).pack(anchor="w", pady=6)
+
+        RoundedButton(
+            left,
+            text="Back",
+            width=18,
+            command=self.on_back
+        ).pack(anchor="w", pady=6)
