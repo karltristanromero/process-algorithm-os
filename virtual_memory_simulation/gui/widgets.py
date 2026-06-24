@@ -64,3 +64,9 @@ class FrameTraceTable(tk.Frame):
         )
         self.canvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
         self.h_scroll.config(command=self.canvas.xview)
+
+        self.inner = tk.Frame(self.canvas, bg=theme.COLOR_PANEL_BG)
+        self.canvas.create_window((0, 0), window=self.inner, anchor="nw")
+        self.inner.bind("<Configure>", lambda e: self.canvas.configure(
+            scrollregion=self.canvas.bbox("all")
+        ))
