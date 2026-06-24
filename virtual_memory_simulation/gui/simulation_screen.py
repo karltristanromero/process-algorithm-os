@@ -324,7 +324,7 @@ class CompareAllScreen(tk.Frame):
 
         for key, (name, _) in ALGO_MAP.items():
             tab = tk.Frame(self._notebook, bg=theme.COLOR_PANEL_BG)
-            tab.rowconfigure(o, weight=1)
+            tab.rowconfigure(0, weight=1)
             tab.columnconfigure(0, weight=1)
             self._notebook.add(tab, text=name)
 
