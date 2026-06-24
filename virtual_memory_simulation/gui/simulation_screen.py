@@ -400,3 +400,18 @@ class CompareAllScreen(tk.Frame):
                 fg="#FFFFFF", relief="solid", bd=1,
                 padx=8, pady=4, width=w,
             ).grid(row=0, column=col, sticky="ew", padx=1)
+
+        best_faults = results[0][1]
+        for r, (name, faults, hits, rate) in enumerate(results, 1):
+            bg = theme.COLOR_BEST if faults == best_faults else (
+                theme.COLOR_TABLE_ALT if r % 2 == 0 else theme.COLOR_PANEL_BG
+            )
+            vals = [name, faults, hits, f"{rate:.1f}%"]
+            for col, (val, w) in enumerate(zip(vals, widths)):
+                tk.Label(
+                    self._summary_frame, text=str(val),
+                    font=theme.FONT_TABLE,
+                    bg=bg, fg=theme.COLOR_TITLE,
+                    relief="solid", bd=1,
+                    padx=8, pady=3, width=w
+                ).grid(row=r, column=col, sticky="ew", padx=1)
