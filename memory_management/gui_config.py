@@ -32,12 +32,12 @@ INPUTS_LAYOUT = {
     "button_x_offset": 150,          # Added to push buttons to the right of inputs
     
     # ROW 1: Process ID Entry + ALLOCATE Button (Y matching)
-    "pid_y_offset": -160,            
-    "alloc_btn_y_offset": -177,      
+    "pid_y_offset": -150,            
+    "alloc_btn_y_offset": -167,      
     
     # ROW 2: Process Size Entry + DEALLOCATE Button (Y matching)
-    "size_y_offset": -110,           
-    "dealloc_btn_y_offset": -130,    
+    "size_y_offset": -100,           
+    "dealloc_btn_y_offset": -120,    
     
     "entry_width": 10,
     "button_width": 110,             # Widened to fit text fully
@@ -50,21 +50,20 @@ INPUTS_LAYOUT = {
 # 3. BOTTOM MENU NAVIGATION BAR
 # =========================================================
 BOTTOM_MENU_LAYOUT = {
-    "y_offset_from_bottom": 960,     # Explicit target bottom menu row Y anchor
+    "y_offset_from_bottom": 1025,     # Adjusted for text item centering baselines
     "menu_label_x": 100,
-    "mode_label_x": 260,
-    "combo_mode_x": 330,
-    "algo_label_x": 480,
-    "combo_algo_x": 540,
-    "btn_start_x": 790,
-    "btn_reset_x": 920,
-    "btn_compaction_x": 1050,
+    "mode_label_x": 430,
+    "combo_mode_x": 500,
+    "algo_label_x": 720,
+    "combo_algo_x": 780,
+    "btn_start_x": 1140,
+    "btn_reset_x": 1480,
+    "btn_compaction_x": 1060,
     
     "row_height": 45,
     "combo_mode_width": 120,
     "combo_algo_width": 220,
-    "action_btn_width": 110,
-    "compaction_btn_width": 140
+    "font_nav": ("Arial", 14, "bold")
 }
 
 # =========================================================

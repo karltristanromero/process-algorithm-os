@@ -7,8 +7,6 @@ import sys
 from PIL import Image, ImageTk
 
 # --- OS SCALE & DPI AWARENESS FIX ---
-# Forces Windows to bypass virtual stretching so a 1920x1080 canvas 
-# renders at a sharp 1:1 pixel scale regardless of OS display settings.
 if sys.platform.startswith("win"):
     try:
         import ctypes
@@ -57,9 +55,11 @@ class MemoryManagementApp:
         self.window_root = window_root
         self.window_root.title("Memory Management Simulator")
         
-        # FIXED DIMENSION MATRIX FRAMEWAY
+        # FIXED DIMENSION MATRIX FRAMEWAY WITH TASKBAR OVERRIDE FULLSCREEN
         self.screen_width = cfg.WINDOW_SETUP["base_width"]
         self.screen_height = cfg.WINDOW_SETUP["base_height"]
+        
+        self.window_root.attributes("-fullscreen", True)
         self.window_root.geometry(f"{self.screen_width}x{self.screen_height}+0+0")
         
         self.window_root.bind("<Escape>", lambda e: self.window_root.destroy())
@@ -70,9 +70,9 @@ class MemoryManagementApp:
         self.mvt_manager.waiting_queue = []
         
         self.auto_mode_running = False
-        self.auto_mode_interval = 1500  # Deliberate one-by-one sequential step speed
+        self.auto_mode_interval = 1500  # Deliberate step speed
         self.event_log = []
-        self.bg_image_ref = None  # Image data tracker reference
+        self.bg_image_ref = None  
         
         self.build_gui_layout()
         self.refresh_display_matrix()
@@ -93,7 +93,6 @@ class MemoryManagementApp:
         script_dir = os.path.dirname(os.path.abspath(__file__))
         bg_path = os.path.join(script_dir, "bg1.png")
 
-        # Load and maintain persistent master reference to raw asset file
         try:
             self.bg_pil_master = Image.open(bg_path)
         except Exception:
@@ -105,19 +104,14 @@ class MemoryManagementApp:
                 self.window_root.destroy()
                 return
 
-        # Initialize canvas block container
         self.canvas = tk.Canvas(self.window_root, width=self.screen_width, height=self.screen_height, bd=0, highlightthickness=0)
         self.canvas.pack(fill=tk.BOTH, expand=True)
 
-        # Place initial unscaled image holder item
         self.bg_canvas_item = self.canvas.create_image(0, 0, anchor=tk.NW)
-
-        # Bind configuration layout resize listener
         self.window_root.bind("<Configure>", self.on_window_resize)
 
         self._setup_styles()
 
-        # Dynamic variable calculations fetched straight from centralized config dictionary map
         bottom_edge = self.screen_height - cfg.WINDOW_SETUP["bottom_control_panel_height"]
         
         right_card_x = cfg.STATS_LAYOUT["right_edge_offset"]
@@ -141,14 +135,12 @@ class MemoryManagementApp:
         # =========================================================
         # RIGHT SIDE: SIDE-BY-SIDE TRANSACTION ENTRY CONTROLS
         # =========================================================
-        # ROW 1: Process ID Input Box + ALLOCATE Button
         self.entry_pid = tk.Entry(self.window_root, width=cfg.INPUTS_LAYOUT["entry_width"], font=cfg.INPUTS_LAYOUT["font_entry"], bd=2, relief=tk.GROOVE)
         self.pid_window_id = self.canvas.create_window(right_inputs_x, bottom_edge + cfg.INPUTS_LAYOUT["pid_y_offset"], window=self.entry_pid, anchor=tk.W)
 
         btn_manual_alloc = tk.Button(self.window_root, text="ALLOCATE", font=cfg.INPUTS_LAYOUT["font_button"], bg=Theme.BG_PRIMARY, fg=Theme.PRIMARY, relief=tk.RAISED, bd=2, cursor="hand2", command=self.handle_allocation_trigger)
         self.alloc_button_id = self.canvas.create_window(right_inputs_x + btn_x_shift, bottom_edge + cfg.INPUTS_LAYOUT["alloc_btn_y_offset"], window=btn_manual_alloc, width=cfg.INPUTS_LAYOUT["button_width"], height=cfg.INPUTS_LAYOUT["button_height"], anchor=tk.NW)
 
-        # ROW 2: Process Size Input Box + DEALLOCATE Button
         self.entry_size = tk.Entry(self.window_root, width=cfg.INPUTS_LAYOUT["entry_width"], font=cfg.INPUTS_LAYOUT["font_entry"], bd=2, relief=tk.GROOVE)
         self.size_window_id = self.canvas.create_window(right_inputs_x, bottom_edge + cfg.INPUTS_LAYOUT["size_y_offset"], window=self.entry_size, anchor=tk.W)
 
@@ -170,45 +162,49 @@ class MemoryManagementApp:
         self.event_log_widget.tag_configure("info", foreground=Theme.NEUTRAL)
 
         # =========================================================
-        # BOTTOM: DOCK ACTION CONTROL LANE
+        # BOTTOM: INVISIBLE BACKGROUND BUTTONS (CANVAS TEXT ITEMS)
         # =========================================================
-        btn_main_menu = tk.Button(self.window_root, text="⬅ MENU", font=("Arial", 11, "bold"), bg=Theme.PRIMARY, fg="white", relief=tk.RAISED, bd=2, command=self.go_back_to_main_menu)
-        self.canvas.create_window(cfg.BOTTOM_MENU_LAYOUT["menu_label_x"], bottom_menu_y, window=btn_main_menu, width=120, height=cfg.BOTTOM_MENU_LAYOUT["row_height"], anchor=tk.NW)
+        # 1. Menu Button
+        self.canvas.create_text(cfg.BOTTOM_MENU_LAYOUT["menu_label_x"], bottom_menu_y, text="⬅ MENU", font=cfg.BOTTOM_MENU_LAYOUT["font_nav"], fill=Theme.PRIMARY, anchor=tk.W, tags="btn_menu")
+        self.canvas.tag_bind("btn_menu", "<Button-1>", lambda e: self.go_back_to_main_menu())
+        self.canvas.tag_bind("btn_menu", "<Enter>", lambda e: self.canvas.itemconfig("btn_menu", fill=Theme.ALLOCATED))
+        self.canvas.tag_bind("btn_menu", "<Leave>", lambda e: self.canvas.itemconfig("btn_menu", fill=Theme.PRIMARY))
 
-        mode_label = tk.Label(self.window_root, text="MODE:", font=("Arial", 11, "bold"), fg=Theme.PRIMARY)
-        self.canvas.create_window(cfg.BOTTOM_MENU_LAYOUT["mode_label_x"], bottom_menu_y + 10, window=mode_label, anchor=tk.NW)
+        # Static Text for Mode Labels
+        mode_label = tk.Label(self.window_root, text="MODE:", font=("Arial", 11, "bold"), fg=Theme.PRIMARY, bg="#FFFFFF")
+        # If your background isn't pure white, use create_text instead:
+        # self.canvas.create_text(cfg.BOTTOM_MENU_LAYOUT["mode_label_x"], bottom_menu_y, text="MODE:", font=("Arial", 11, "bold"), fill=Theme.PRIMARY, anchor=tk.W)
+        self.canvas.create_window(cfg.BOTTOM_MENU_LAYOUT["mode_label_x"], bottom_menu_y, window=mode_label, anchor=tk.W)
         
         self.combo_mode = ttk.Combobox(self.window_root, values=["MANUAL", "AUTO"], state="readonly", font=("Arial", 11, "bold"), style="ModernCombo.TCombobox")
         self.combo_mode.set("MANUAL")
-        self.canvas.create_window(cfg.BOTTOM_MENU_LAYOUT["combo_mode_x"], bottom_menu_y, window=self.combo_mode, width=cfg.BOTTOM_MENU_LAYOUT["combo_mode_width"], height=cfg.BOTTOM_MENU_LAYOUT["row_height"], anchor=tk.NW)
+        self.canvas.create_window(cfg.BOTTOM_MENU_LAYOUT["combo_mode_x"], bottom_menu_y - 20, window=self.combo_mode, width=cfg.BOTTOM_MENU_LAYOUT["combo_mode_width"], height=cfg.BOTTOM_MENU_LAYOUT["row_height"], anchor=tk.NW)
         self.combo_mode.bind("<<ComboboxSelected>>", self.on_mode_changed)
 
-        algo_label = tk.Label(self.window_root, text="ALGO:", font=("Arial", 11, "bold"), fg=Theme.PRIMARY)
-        self.canvas.create_window(cfg.BOTTOM_MENU_LAYOUT["algo_label_x"], bottom_menu_y + 10, window=algo_label, anchor=tk.NW)
+        algo_label = tk.Label(self.window_root, text="ALGO:", font=("Arial", 11, "bold"), fg=Theme.PRIMARY, bg="#FFFFFF")
+        self.canvas.create_window(cfg.BOTTOM_MENU_LAYOUT["algo_label_x"], bottom_menu_y, window=algo_label, anchor=tk.W)
         
         self.combo_algo = ttk.Combobox(self.window_root, values=["MFT: First Fit", "MFT: Best Fit", "MFT: Best Available", "MVT: First Fit", "MVT: Best Fit", "MVT: Worst Fit"], state="readonly", font=("Arial", 11, "bold"), style="ModernCombo.TCombobox")
         self.combo_algo.set("MFT: First Fit")
-        self.canvas.create_window(cfg.BOTTOM_MENU_LAYOUT["combo_algo_x"], bottom_menu_y, window=self.combo_algo, width=cfg.BOTTOM_MENU_LAYOUT["combo_algo_width"], height=cfg.BOTTOM_MENU_LAYOUT["row_height"], anchor=tk.NW)
+        self.canvas.create_window(cfg.BOTTOM_MENU_LAYOUT["combo_algo_x"], bottom_menu_y - 20, window=self.combo_algo, width=cfg.BOTTOM_MENU_LAYOUT["combo_algo_width"], height=cfg.BOTTOM_MENU_LAYOUT["row_height"], anchor=tk.NW)
         self.combo_algo.bind("<<ComboboxSelected>>", lambda e: self.refresh_display_matrix())
 
-        self.btn_start = tk.Button(self.window_root, text="START", font=("Arial", 11, "bold"), bg=Theme.SUCCESS, fg="white", relief=tk.RAISED, bd=2, command=self.toggle_auto_mode)
-        self.start_button_id = self.canvas.create_window(cfg.BOTTOM_MENU_LAYOUT["btn_start_x"], bottom_menu_y, window=self.btn_start, width=cfg.BOTTOM_MENU_LAYOUT["action_btn_width"], height=cfg.BOTTOM_MENU_LAYOUT["row_height"], anchor=tk.NW)
+        # 2. Start Button
+        self.start_text_id = self.canvas.create_text(cfg.BOTTOM_MENU_LAYOUT["btn_start_x"], bottom_menu_y, text="▶ START", font=cfg.BOTTOM_MENU_LAYOUT["font_nav"], fill=Theme.SUCCESS, anchor=tk.W, tags="btn_start")
+        self.canvas.tag_bind("btn_start", "<Button-1>", lambda e: self.toggle_auto_mode())
 
-        btn_reset = tk.Button(self.window_root, text="RESET", font=("Arial", 11, "bold"), bg=Theme.ERROR, fg="white", relief=tk.RAISED, bd=2, command=self.reset_system)
-        self.reset_button_id = self.canvas.create_window(cfg.BOTTOM_MENU_LAYOUT["btn_reset_x"], bottom_menu_y, window=btn_reset, width=cfg.BOTTOM_MENU_LAYOUT["action_btn_width"], height=cfg.BOTTOM_MENU_LAYOUT["row_height"], anchor=tk.NW)
+        # 3. Reset Button
+        self.canvas.create_text(cfg.BOTTOM_MENU_LAYOUT["btn_reset_x"], bottom_menu_y, text="🔄 RESET", font=cfg.BOTTOM_MENU_LAYOUT["font_nav"], fill=Theme.ERROR, anchor=tk.W, tags="btn_reset")
+        self.canvas.tag_bind("btn_reset", "<Button-1>", lambda e: self.reset_system())
 
-        self.btn_compaction = tk.Button(self.window_root, text="🔨 COMPACT", font=("Arial", 11, "bold"), bg=Theme.WARNING, fg="white", relief=tk.RAISED, bd=2, command=self.trigger_mvt_compaction)
-        self.compaction_window_id = self.canvas.create_window(cfg.BOTTOM_MENU_LAYOUT["btn_compaction_x"], bottom_menu_y, window=self.btn_compaction, width=cfg.BOTTOM_MENU_LAYOUT["compaction_btn_width"], height=cfg.BOTTOM_MENU_LAYOUT["row_height"], anchor=tk.NW)
-
-        self.status_label = tk.Label(self.window_root, text="System Ready", font=("Arial", 10, "italic"), fg=Theme.NEUTRAL)
-        self.canvas.create_window(100, bottom_menu_y + 60, window=self.status_label, anchor=tk.NW)
+        # 4. Compact Button
+        self.compact_text_id = self.canvas.create_text(cfg.BOTTOM_MENU_LAYOUT["btn_compaction_x"], bottom_menu_y, text="🔨 COMPACT", font=cfg.BOTTOM_MENU_LAYOUT["font_nav"], fill=Theme.WARNING, anchor=tk.W, tags="btn_compact")
+        self.canvas.tag_bind("btn_compact", "<Button-1>", lambda e: self.trigger_mvt_compaction())
 
     def on_window_resize(self, event):
-        """ Dynamically scales and redraws the background image asset to track the window dimension frame configurations. """
         if event.widget == self.window_root:
             new_width = event.width
             new_height = event.height
-
             if new_width > 0 and new_height > 0:
                 resized_pil = self.bg_pil_master.resize((new_width, new_height), Image.Resampling.LANCZOS)
                 self.bg_image_ref = ImageTk.PhotoImage(resized_pil)
@@ -219,9 +215,6 @@ class MemoryManagementApp:
             self.toggle_auto_mode()
         messagebox.showinfo("Menu Navigation", "Returning back to Main System Menu Shell...")
 
-    def update_status(self, message):
-        self.status_label.config(text=message, fg=Theme.PRIMARY)
-
     def on_mode_changed(self, event=None):
         mode = self.combo_mode.get()
         if mode == "MANUAL":
@@ -229,13 +222,11 @@ class MemoryManagementApp:
             self.canvas.itemconfigure(self.size_window_id, state="normal")
             self.canvas.itemconfigure(self.alloc_button_id, state="normal")
             self.canvas.itemconfigure(self.dealloc_button_id, state="normal")
-            self.update_status("MANUAL active - Handle single explicit job instructions sequentially.")
         else:
             self.canvas.itemconfigure(self.pid_window_id, state="hidden")
             self.canvas.itemconfigure(self.size_window_id, state="hidden")
             self.canvas.itemconfigure(self.alloc_button_id, state="hidden")
             self.canvas.itemconfigure(self.dealloc_button_id, state="hidden")
-            self.update_status("AUTO active - Single events execute one-by-one until Stopped.")
 
     def add_event_log(self, event_text, event_type="INFO"):
         self.event_log_widget.config(state="normal")
@@ -256,12 +247,12 @@ class MemoryManagementApp:
             return
         if not self.auto_mode_running:
             self.auto_mode_running = True
-            self.btn_start.config(text="STOP", bg=Theme.WARNING)
+            self.canvas.itemconfig(self.start_text_id, text="⏹ STOP", fill=Theme.WARNING)
             self.add_event_log("Automated clock distribution loop initialized.", "INFO")
             self.run_auto_step()
         else:
             self.auto_mode_running = False
-            self.btn_start.config(text="START", bg=Theme.SUCCESS)
+            self.canvas.itemconfig(self.start_text_id, text="▶ START", fill=Theme.SUCCESS)
             self.add_event_log("Automated clock loop paused.", "INFO")
 
     def run_auto_step(self):
@@ -306,12 +297,12 @@ class MemoryManagementApp:
             self.window_root.after(self.auto_mode_interval, self.run_auto_step)
         except Exception as e:
             self.auto_mode_running = False
-            self.btn_start.config(text="START", bg=Theme.SUCCESS)
+            self.canvas.itemconfig(self.start_text_id, text="▶ START", fill=Theme.SUCCESS)
             messagebox.showerror("Simulation Loop Thread Exception", str(e))
 
     def reset_system(self):
         if self.auto_mode_running: self.auto_mode_running = False
-        self.btn_start.config(text="START", bg=Theme.SUCCESS)
+        self.canvas.itemconfig(self.start_text_id, text="▶ START", fill=Theme.SUCCESS)
         if messagebox.askyesno("Reset", "Purge active memory maps?"):
             for partition in self.mft_manager.partitions:
                 partition.occupied_process = None
@@ -344,7 +335,7 @@ class MemoryManagementApp:
             else:
                 msg = first_fit_mvt(process, self.mvt_manager) if "First Fit" in algo else (best_fit_mvt(process, self.mvt_manager) if "Best Fit" in algo else worst_fit_mvt(process, self.mvt_manager))
                 if "Failed" in msg and process not in self.mvt_manager.waiting_queue:
-                    self.mft_manager.waiting_queue.append(process)
+                    self.mvt_manager.waiting_queue.append(process)
                     self.add_event_log(f"Manual Job {process.process_id} pushed to queue.", "WARNING")
                 elif "Allocated" in msg:
                     self.add_event_log(f"Manual Job {process.process_id} allocated.", "ALLOCATE")
@@ -394,22 +385,19 @@ class MemoryManagementApp:
             if "Allocated" in res: self.mvt_manager.waiting_queue.remove(queued_proc)
 
     def refresh_display_matrix(self):
-        self.canvas.delete("mem_element")
         if "MFT" in self.combo_algo.get():
-            self.canvas.itemconfigure(self.compaction_window_id, state="hidden")
+            self.canvas.itemconfigure("btn_compact", state="hidden")
+            self.canvas.delete("mem_element")
             self.update_mft_display_map()
         else:
-            self.canvas.itemconfigure(self.compaction_window_id, state="normal")
+            self.canvas.itemconfigure("btn_compact", state="normal")
+            self.canvas.delete("mem_element")
             self.update_mvt_display_map()
 
-    # =========================================================
-    # CORE LEFT SIDE SIMULATION DRAW ROUTINES
-    # =========================================================
     def update_mft_display_map(self):
         total_free_space = 0
         total_internal_frag = 0
         
-        # Waiting Queue column placement
         self.canvas.create_text(cfg.SIMULATION_PANE_LAYOUT["queue_title_x"], cfg.SIMULATION_PANE_LAYOUT["queue_title_y"], text="⏳ Waiting Queue:", font=cfg.SIMULATION_PANE_LAYOUT["font_title"], fill=Theme.PRIMARY, anchor=tk.W, tags="mem_element")
         if not self.mft_manager.waiting_queue:
             self.canvas.create_text(cfg.SIMULATION_PANE_LAYOUT["queue_title_x"], cfg.SIMULATION_PANE_LAYOUT["queue_list_start_y"], text="[ Queue Empty ]", font=("Courier", 16, "italic"), fill=Theme.NEUTRAL, anchor=tk.W, tags="mem_element")
@@ -418,7 +406,6 @@ class MemoryManagementApp:
                 y_pos = cfg.SIMULATION_PANE_LAYOUT["queue_list_start_y"] + (idx * cfg.SIMULATION_PANE_LAYOUT["queue_list_spacing_y"])
                 self.canvas.create_text(cfg.SIMULATION_PANE_LAYOUT["queue_title_x"], y_pos, text=f"• Job {proc.process_id} ({proc.process_size}K)", font=("Courier", 14, "bold"), fill=Theme.WAITING, anchor=tk.W, tags="mem_element")
 
-        # Memory visualization stack
         start_y = cfg.SIMULATION_PANE_LAYOUT["ram_column_start_y"]
         x1 = cfg.SIMULATION_PANE_LAYOUT["ram_column_x1"]
         x2 = cfg.SIMULATION_PANE_LAYOUT["ram_column_x2"]
