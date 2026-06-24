@@ -89,5 +89,5 @@ class AlgorithmSelectScreen(tk.Frame):
             panel,
             text="Compare All Algorithms",
             width=40,
-            command=lambda: self.on_select("COMPARE ALL")
+            command=lambda: self.on_select("COMPARE_ALL")
         ).pack(pady=(4, 20))
