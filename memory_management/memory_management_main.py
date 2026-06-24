@@ -21,71 +21,56 @@ from mvt.worst_fit import worst_fit_mvt
 class MemoryManagementApp:
     def __init__(self, window_root):
         self.window_root = window_root
-        self.window_root.title("Memory Management Simulator - Retro Edition")
+        self.window_root.title("Memory Management Simulator - Retro Arcade Edition")
         
-        # Set exact dimensions to match your background design scaling comfortably
+        # Explicit bounds matching your pixel art aspect ratio scale
         self.window_root.geometry("960x540")
         self.window_root.resizable(False, False)
         
-        # Initialize core memory engines
+        # Initialize core partition simulators
         self.mft_manager = FixedMemoryManager(total_memory_size=64)
         self.mvt_manager = VariableMemoryManager(total_memory_size=64)
         
-        # Track waiting processes inside manager tracks
+        # Sync waiting queues tracking pools
         self.mft_manager.waiting_queue = []
         self.mvt_manager.waiting_queue = []
         
-        # Build the layout canvas board
+        # Compile interface overlay
         self.build_gui_layout()
         
-        # Initial draw of engine calculations onto the canvas view maps
+        # Execute initial calculations draw
         self.refresh_display_matrix()
 
 
     def build_gui_layout(self):
-        # Calculate the absolute directory where this script file actually lives
+        # Resolve absolute directory to prevent execution file path crashes
         script_dir = os.path.dirname(os.path.abspath(__file__))
-        
-        # Build perfect absolute file paths directly targeting the asset inside the same folder
         bg_path_1 = os.path.join(script_dir, "bg1.png")
         bg_path_2 = os.path.join(script_dir, "image_7a5c02.png")
 
-        # Load your pixel art background asset file smoothly
+        # Load file reference with dynamic failback
         try:
             self.bg_image = tk.PhotoImage(file=bg_path_1)
         except Exception:
             try:
                 self.bg_image = tk.PhotoImage(file=bg_path_2)
             except Exception:
-                messagebox.showerror("Asset Error", f"Could not find bg1.png or image_7a5c02.png in:\n{script_dir}")
+                messagebox.showerror("Asset Error", f"Missing background asset images inside directory:\n{script_dir}")
                 self.window_root.destroy()
                 return
 
-        # Create master canvas layout map
+        # Single canvas to overlay elements cleanly without frames breaking backgrounds
         self.canvas = tk.Canvas(self.window_root, width=960, height=540, bd=0, highlightthickness=0)
         self.canvas.pack(fill=tk.BOTH, expand=True)
-        
-        # # Load your pixel art background asset file
-        try:
-            self.bg_image = tk.PhotoImage(file="bg1.png")
-        except Exception:
-            # Fallback if there's a naming mismatch during testing
-            self.bg_image = tk.PhotoImage(file="image_7a5c02.png")
-
-        # Create master canvas layout map
-        self.canvas = tk.Canvas(self.window_root, width=960, height=540, bd=0, highlightthickness=0)
-        self.canvas.pack(fill=tk.BOTH, expand=True)
-        
-        # Place background asset image at base layer position
         self.canvas.create_image(0, 0, image=self.bg_image, anchor=tk.NW)
 
-        # Config styles for TCombobox dropdown layers to fit the retro look
+        # Dropdown Combobox retro theme overrides
         combobox_style = ttk.Style()
         combobox_style.theme_use('default')
         combobox_style.configure("TCombobox", fieldbackground="#F5E3B5", background="#CBB279", arrowcolor="#3D1E6D")
 
         # ==========================================
-        # 1. LIVE VALUE LABELS OVER CARD OBJECTS
+        # 1. LIVE VALUE TEXT LABELS (OVER CARDS)
         # ==========================================
         self.lbl_total_space = tk.Label(self.window_root, text="64K", font=("Courier", 16, "bold"), fg="#2E7D32", bg="#F1D199")
         self.canvas.create_window(780, 125, window=self.lbl_total_space)
@@ -97,47 +82,45 @@ class MemoryManagementApp:
         self.canvas.create_window(780, 415, window=self.lbl_internal_frag)
 
         # ==========================================
-        # 2. ENTRY INPUTS INSIDE PROCESS FORM CARD
+        # 2. ENTRY TEXT INPUT FIELDS
         # ==========================================
-        self.entry_pid = tk.Entry(self.window_root, width=6, font=("Courier", 11, "bold"), bd=1, relief=tk.SOLID, bg="#FFFFFF")
+        self.entry_pid = tk.Entry(self.window_root, width=6, font=("Courier", 11, "bold"), bd=1, relief=tk.SOLID)
         self.canvas.create_window(780, 545, window=self.entry_pid, anchor=tk.W)
 
-        self.entry_size = tk.Entry(self.window_root, width=6, font=("Courier", 11, "bold"), bd=1, relief=tk.SOLID, bg="#FFFFFF")
+        self.entry_size = tk.Entry(self.window_root, width=6, font=("Courier", 11, "bold"), bd=1, relief=tk.SOLID)
         self.canvas.create_window(780, 590, window=self.entry_size, anchor=tk.W)
 
         # ==========================================
-        # 3. INTERACTIVE CONTROL WIDGETS AT BOTTOM
+        # 3. ACTION CONTROLS & BOTTOM DROPDOWNS
         # ==========================================
-        # MENU BUTTON LINK
-        btn_menu = tk.Button(self.window_root, text="EXEC ALLOC", font=("Arial", 9, "bold"), bg="#F5E3B5", fg="#3D1E6D", activebackground="#CBB279", bd=0, command=self.handle_allocation_trigger)
-        self.canvas.create_window(115, 505, window=btn_menu, width=130, height=25)
+        # EXECUTE ALLOCATION OVER THE 1ST BRICK
+        btn_alloc = tk.Button(self.window_root, text="EXEC ALLOC", font=("Arial", 9, "bold"), bg="#F5E3B5", fg="#3D1E6D", activebackground="#CBB279", bd=0, command=self.handle_allocation_trigger)
+        self.canvas.create_window(115, 505, window=btn_alloc, width=130, height=25)
 
-        # CHOOSE MODE DROPDOWN
-        self.combo_mode = ttk.Combobox(self.window_root, values=["MANUAL", "RANDOM"], state="readonly", width=12, font=("Arial", 9, "bold"), style="TCombobox")
+        # MODE SELECTION DROPDOWN OVER 2ND BRICK
+        self.combo_mode = ttk.Combobox(self.window_root, values=["MANUAL", "RANDOM"], state="readonly", font=("Arial", 9, "bold"), style="TCombobox")
         self.combo_mode.set("MANUAL")
         self.canvas.create_window(285, 505, window=self.combo_mode, width=130)
         self.combo_mode.bind("<<ComboboxSelected>>", self.toggle_input_fields_access)
 
-        # CHOOSE STRATEGY ALGORITHM DROPDOWN
-        self.combo_algo = ttk.Combobox(self.window_root, values=["MFT: First Fit", "MFT: Best Fit", "MFT: Best Available", "MVT: First Fit", "MVT: Best Fit", "MVT: Worst Fit"], state="readonly", width=16, font=("Arial", 8, "bold"), style="TCombobox")
+        # ALGORITHM COMPILATION DROPDOWN OVER 3RD BRICK
+        self.combo_algo = ttk.Combobox(self.window_root, values=["MFT: First Fit", "MFT: Best Fit", "MFT: Best Available", "MVT: First Fit", "MVT: Best Fit", "MVT: Worst Fit"], state="readonly", font=("Arial", 8, "bold"), style="TCombobox")
         self.combo_algo.set("MFT: First Fit")
         self.canvas.create_window(455, 505, window=self.combo_algo, width=130)
         self.combo_algo.bind("<<ComboboxSelected>>", lambda e: self.refresh_display_matrix())
 
-        # DEALLOCATE / RESET BUTTON TRIGGER
-        btn_reset = tk.Button(self.window_root, text="EXEC DEALLOC", font=("Arial", 9, "bold"), bg="#F5E3B5", fg="#3D1E6D", activebackground="#CBB279", bd=0, command=self.handle_deallocation_trigger)
-        self.canvas.create_window(625, 505, window=btn_reset, width=130, height=25)
+        # EXECUTE DEALLOCATION OVER 4TH BRICK
+        btn_dealloc = tk.Button(self.window_root, text="EXEC DEALLOC", font=("Arial", 9, "bold"), bg="#F5E3B5", fg="#3D1E6D", activebackground="#CBB279", bd=0, command=self.handle_deallocation_trigger)
+        self.canvas.create_window(625, 505, window=btn_dealloc, width=130, height=25)
 
-        # COMPACTION DYNAMIC FLOATING TRIGGER
+        # FLOATING MEMORY COMPACTION BUTTON
         self.btn_compaction = tk.Button(self.window_root, text="COMPACT MEMORY", font=("Arial", 8, "bold"), bg="#FF9800", fg="white", activebackground="#F57C00", bd=1, command=self.trigger_mvt_compaction)
-        # Hidden initially because MFT mode doesn't support compaction arrays
         self.compaction_window_id = self.canvas.create_window(780, 470, window=self.btn_compaction, state="hidden")
 
 
     def toggle_input_fields_access(self, event=None):
-        """ Locks process entry logs out completely if running an automated randomized loop step. """
-        mode = self.combo_mode.get()
-        if mode == "RANDOM":
+        """ Prevents field spamming when randomized workload triggers are selected. """
+        if self.combo_mode.get() == "RANDOM":
             self.entry_pid.configure(state="disabled")
             self.entry_size.configure(state="disabled")
         else:
@@ -146,7 +129,6 @@ class MemoryManagementApp:
 
 
     def handle_allocation_trigger(self):
-        """ Routes input properties to either MFT or MVT engine metrics depending on dropdown state selection. """
         try:
             mode = self.combo_mode.get()
             algo = self.combo_algo.get()
@@ -166,7 +148,6 @@ class MemoryManagementApp:
                     
                 if "Failed" in msg and process not in self.mft_manager.waiting_queue:
                     self.mft_manager.waiting_queue.append(process)
-                print(f"[MFT Log]: {msg}")
             else:
                 if "First Fit" in algo:
                     msg = first_fit_mvt(process, self.mvt_manager)
@@ -177,7 +158,6 @@ class MemoryManagementApp:
                     
                 if "Failed" in msg and process not in self.mvt_manager.waiting_queue:
                     self.mvt_manager.waiting_queue.append(process)
-                print(f"[MVT Log]: {msg}")
                 
             self.refresh_display_matrix()
         except Exception as e:
@@ -185,7 +165,6 @@ class MemoryManagementApp:
 
 
     def handle_deallocation_trigger(self):
-        """ Identifies active running processes, safely clears them, and cycles waiting entries. """
         try:
             mode = self.combo_mode.get()
             algo = self.combo_algo.get()
@@ -195,7 +174,6 @@ class MemoryManagementApp:
             
             if "MFT" in algo:
                 self.mft_manager.deallocate_process(process.process_id)
-                # Cycle MFT waiting queue tracks
                 for queued_proc in list(self.mft_manager.waiting_queue):
                     if "First Fit" in algo:
                         res = first_fit_mft(queued_proc, self.mft_manager)
@@ -219,7 +197,7 @@ class MemoryManagementApp:
             msg = self.mvt_manager.compact_memory()
             self.reorder_mvt_queue()
             self.refresh_display_matrix()
-            messagebox.showinfo("Compaction Sequence", msg)
+            messagebox.showinfo("Compaction Complete", msg)
         except Exception as e:
             messagebox.showerror("Compaction Error", str(e))
 
@@ -238,13 +216,10 @@ class MemoryManagementApp:
 
 
     def refresh_display_matrix(self):
-        """ Evaluates selected engine algorithm type to draw corresponding column layers. """
-        algo = self.combo_algo.get()
-        
-        # Clear out previous memory stick rectangles to redraw cleanly
+        # Flush dynamic block visuals tagged as 'mem_element'
         self.canvas.delete("mem_element")
         
-        if "MFT" in algo:
+        if "MFT" in self.combo_algo.get():
             self.canvas.itemconfigure(self.compaction_window_id, state="hidden")
             self.update_mft_display_map()
         else:
@@ -256,40 +231,38 @@ class MemoryManagementApp:
         total_free_space = 0
         total_internal_frag = 0
         
-        # Render Waiting Queue listings inside the left canvas frame area
+        # Redraw the Waiting Queue text readout list inside the left container canvas empty zones
         self.canvas.create_text(320, 50, text="Waiting Queue:", font=("Courier", 11, "bold"), fill="#3D1E6D", anchor=tk.W, tags="mem_element")
         if not self.mft_manager.waiting_queue:
             self.canvas.create_text(320, 75, text="[ Empty ]", font=("Courier", 10, "italic"), fill="grey", anchor=tk.W, tags="mem_element")
         else:
-            for idx, proc in enumerate(self.mft_manager.waiting_queue[:12]): # Constraint bounds limit to 12 items visually
+            for idx, proc in enumerate(self.mft_manager.waiting_queue[:12]):
                 self.canvas.create_text(320, 75 + (idx * 18), text=f"• {proc.process_id} ({proc.process_size}K)", font=("Courier", 9, "bold"), fill="#C62828", anchor=tk.W, tags="mem_element")
 
-        # Set vertical geometry positions inside blank lane bounds
+        # Vertical axis tracking setup
         start_y = 50
-        x1, x2 = 160, 280   # Sleek centered column dimension metrics
-        canvas_scale = 6.2  # Dynamic vertical fit scalar to cleanly scale 64K to 400 pixels maximum height
+        x1, x2 = 160, 280   
+        canvas_scale = 6.2  # Coordinates perfectly match 64K boundaries inside the 400px vertical whitespace lane
         
         for partition in self.mft_manager.partitions:
             height = partition.partition_size * canvas_scale
             y1, y2 = start_y, start_y + height
             
-            # Print boundaries beside the module blocks
             self.canvas.create_text(x1 - 10, start_y, text=f"{int(partition.partition_size)}K", font=("Courier", 8, "bold"), anchor=tk.E, tags="mem_element")
             
             if partition.occupied_process:
                 proc_height = partition.occupied_process.process_size * canvas_scale
                 
-                # Render primary process block element
+                # Render allocated active block
                 self.canvas.create_rectangle(x1, y1, x2, y1 + proc_height, fill="#007ACC", outline="#005A9C", width=1, tags="mem_element")
                 self.canvas.create_text(x1 + 60, y1 + (proc_height / 2), text=partition.occupied_process.process_id, font=("Arial", 8, "bold"), fill="white", tags="mem_element")
                 
-                # Render unallocated remainder as internal fragmentation hazard
+                # Render wasted internal fragmentation remainder
                 if partition.internal_fragmentation > 0:
                     self.canvas.create_rectangle(x1, y1 + proc_height, x2, y2, fill="#FF5252", outline="#D32F2F", width=1, tags="mem_element")
                     self.canvas.create_text(x1 + 60, y1 + proc_height + ((height - proc_height) / 2), text="FRAG", font=("Arial", 7, "bold"), fill="white", tags="mem_element")
                     total_internal_frag += partition.internal_fragmentation
             else:
-                # Open system hole slot space
                 self.canvas.create_rectangle(x1, y1, x2, y2, fill="#E8F5E9", outline="#81C784", width=1, tags="mem_element")
                 self.canvas.create_text(x1 + 60, y1 + (height / 2), text="FREE", font=("Arial", 8, "bold"), fill="#2E7D32", tags="mem_element")
                 total_free_space += partition.partition_size
@@ -298,9 +271,9 @@ class MemoryManagementApp:
             
         self.canvas.create_text(x1 - 10, start_y, text="64K", font=("Courier", 8, "bold"), anchor=tk.E, tags="mem_element")
 
-        # Push calculations to card dashboard views
+        # Config card value readouts
         self.lbl_total_space.config(text=f"{total_free_space}K")
-        self.lbl_external_frag.config(text="0K") # Fixed partition models do not exhibit external fragmentation attributes
+        self.lbl_external_frag.config(text="0K")
         self.lbl_internal_frag.config(text=f"{total_internal_frag}K")
 
 
@@ -309,7 +282,6 @@ class MemoryManagementApp:
         total_external_frag = 0
         free_hole_segments_count = 0
         
-        # Render Waiting Queue listings inside the left canvas frame area
         self.canvas.create_text(320, 50, text="Waiting Queue:", font=("Courier", 11, "bold"), fill="#3D1E6D", anchor=tk.W, tags="mem_element")
         if not self.mvt_manager.waiting_queue:
             self.canvas.create_text(320, 75, text="[ Empty ]", font=("Courier", 10, "italic"), fill="grey", anchor=tk.W, tags="mem_element")
@@ -317,7 +289,6 @@ class MemoryManagementApp:
             for idx, proc in enumerate(self.mvt_manager.waiting_queue[:12]):
                 self.canvas.create_text(320, 75 + (idx * 18), text=f"• {proc.process_id} ({proc.process_size}K)", font=("Courier", 9, "bold"), fill="#C62828", anchor=tk.W, tags="mem_element")
 
-        # Set vertical layout coordinate tracks
         start_y = 50
         x1, x2 = 160, 280
         canvas_scale = 6.2
@@ -326,7 +297,6 @@ class MemoryManagementApp:
             height = block.block_size * canvas_scale
             y1, y2 = start_y, start_y + height
             
-            # Print physical boundary memory tracking addresses
             self.canvas.create_text(x1 - 10, y1, text=f"{block.start_address}K", font=("Courier", 8, "bold"), anchor=tk.E, tags="mem_element")
             
             if block.occupied_process:
@@ -342,7 +312,7 @@ class MemoryManagementApp:
             
         self.canvas.create_text(x1 - 10, start_y, text="64K", font=("Courier", 8, "bold"), anchor=tk.E, tags="mem_element")
 
-        # Evaluate external fragments metrics
+        # Evaluate variable partition metrics
         active_allocations = any(b.occupied_process is not None for b in self.mvt_manager.blocks)
         if active_allocations and free_hole_segments_count > 1:
             total_external_frag = total_free_space
@@ -350,10 +320,9 @@ class MemoryManagementApp:
             if self.mvt_manager.blocks[-1].occupied_process is not None:
                 total_external_frag = total_free_space
 
-        # Push structural data summaries to card metrics
         self.lbl_total_space.config(text=f"{total_free_space}K")
         self.lbl_external_frag.config(text=f"{total_external_frag}K")
-        self.lbl_internal_frag.config(text="0K") # Variable dynamic partitions feature zero internal fragmentation waste
+        self.lbl_internal_frag.config(text="0K")
 
 
 if __name__ == "__main__":
