@@ -102,3 +102,12 @@ class FrameTraceTable(tk.Frame):
                 txt = str(val) if val is not None else "·"
                 bg = theme.COLOR_TABLE_ALT if f % 2 == 0 else theme.COLOR_PANEL_BG
                 cell(f+2, i, txt, bg)
+
+        # Fault/Hit row
+        sr = num_frames + 2
+        cell(sr, 0, "F/H", theme.COLOR_PANEL_BG, theme.COLOR_TITLE, bold=True)
+        for i, s in enumerate(steps, 1):
+            if s.is_fault:
+                cell(sr, i, "F", "#FDECEA", theme.COLOR_FAULT, bold=True)
+            else:
+                cell(sr, i, "H", "#EAF5EA", theme.COLOR_HIT, bold=True)
