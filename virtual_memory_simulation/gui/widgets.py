@@ -41,3 +41,10 @@ class RoundedButton(tk.Button):
 
     def _on_leave(self, _):
         self.config(bg=theme.COLOR_BTN_BG)
+
+
+class FrameTraceTable(tk.Frame):
+    '''
+    Scrollable frame trace table.
+    Columns = reference steps, rows = frames + status row
+    '''
