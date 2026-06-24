@@ -25,15 +25,16 @@ class SchedulerBase:
 
     def setup_main_window(self):
         """Set up the master canvas view, eliminating blocking dark-gray frames entirely."""
-        self.bg_image = tk.PhotoImage(file=BACKGROUND)
+        # FIX: Pull dynamically from the current instance value
+        self.bg_image = tk.PhotoImage(file=self.background_path)
         
         self.canvas = tk.Canvas(self.root, bg=COLORS['background'], highlightthickness=0, bd=0)
         self.canvas.pack(fill=tk.BOTH, expand=True)
         
-        # Layer 0: Draw background image (ID: 1)
+        # Layer 0: Draw background image
         bg_id = self.canvas.create_image(0, 0, image=self.bg_image, anchor=tk.NW)
         self.persistent_canvas_items.append(bg_id)
-        
+               
         # =====================================================================
         # 1. LIVE METRICS LAYER (Dynamic Results Only - Labels are baked into background.png)
         # =====================================================================

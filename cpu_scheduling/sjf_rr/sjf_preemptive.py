@@ -8,15 +8,15 @@ from tkinter import ttk, messagebox
 from scheduler_base import SchedulerBase
 from temporary_utils.theme import COLORS, FONTS, WINDOW_SIZES
 from temporary_utils.layout_config import SIMULATION_PANE, ADD_PROCESS_LAYOUT
-
+from temporary_utils.theme import BG_SJF_PREEMPTIVE
 
 class SJFPreemptive(SchedulerBase):
-    """Preemptive Shortest Job First Scheduler."""
-
     def __init__(self, title, width, height):
         super().__init__(title, width, height)
+        # FIX: Point strictly to the Preemptive SJF artwork asset
+        self.background_path = BG_SJF_PREEMPTIVE
         self.process_table = None  
-        self.add_process_window = None  
+        self.add_process_window = None
 
     def setup_add_process_window(self):
         """Set up child modal popup matching the native button styling layout."""

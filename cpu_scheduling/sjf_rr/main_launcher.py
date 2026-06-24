@@ -39,9 +39,4 @@ def rr_play():
 
 
 if __name__ == "__main__":
-    # For testing purposes - in practice, these would be called from elsewhere
-    print("CPU Scheduling Simulator")
-    print("Available modes:")
-    print("1. sjf_pe_play() - Preemptive SJF")
-    print("2. sjf_non_pe_play() - Non-Preemptive SJF")
-    print("3. rr_play() - Round Robin")
+    pass

@@ -9,16 +9,16 @@ from tkinter import ttk, messagebox
 from scheduler_base import SchedulerBase
 from temporary_utils.theme import COLORS, FONTS, WINDOW_SIZES
 from temporary_utils.layout_config import SIMULATION_PANE, ADD_PROCESS_LAYOUT
-
+from temporary_utils.theme import BG_ROUND_ROBIN
 
 class RoundRobin(SchedulerBase):
-    """Round Robin Scheduler with integrated layout controls."""
-
     def __init__(self, title, width, height):
         super().__init__(title, width, height)
-        self.time_quantum = 2  # Global configuration state variable
+        # FIX: Point strictly to the Round Robin artwork asset
+        self.background_path = BG_ROUND_ROBIN
+        self.time_quantum = 2  
         self.process_table = None  
-        self.add_process_window = None  
+        self.add_process_window = None
 
     def setup_add_process_window(self):
         """Set up child modal popup matching the native button styling layout."""
