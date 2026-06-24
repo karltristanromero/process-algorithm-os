@@ -318,3 +318,6 @@ class CompareAllScreen(tk.Frame):
 
         self._notebook = ttk.Notebook(parent, style="Custom.TNotebook")
         self._notebook.grid(row=1, column=0, sticky="nsew", padx=8, pady=4)
+
+        self._tab_traces = {}     # algo_key -> FrameTraceTable
+        self._tab_stats = {}      # algo_key -> StatsBar
