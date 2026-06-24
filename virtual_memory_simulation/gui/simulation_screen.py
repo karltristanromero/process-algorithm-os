@@ -353,3 +353,11 @@ class CompareAllScreen(tk.Frame):
 
         self._summary_frame = tk.Frame(summary_outer, bg=theme.COLOR_PANEL_BG)
         self._summary_frame.grid(row=1, column=0, sticky="ew")
+
+        # Back button
+        RoundedButton(
+            summary_outer, text="Back", width=10,
+            command=self.on_back
+        ).grid(row=2, column=0, sticky="e", pady=6)
+
+        self._draw_summary_placeholder()
