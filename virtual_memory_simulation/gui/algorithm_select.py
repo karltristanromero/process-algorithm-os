@@ -71,3 +71,15 @@ class AlgorithmSelectScreen(tk.Frame):
         # ── 2-column button grid ──────────────────────────────────
         grid_frame = tk.Frame(panel, bg=theme.COLOR_PANEL_BG)
         grid_frame.pack(pady=(0, 16))
+
+        # Place 6 buttons in 3 rows × 2 columns
+        for idx, (label, key) in enumerate(self.ALGORITHMS):
+            row = idx // 2
+            col = idx % 2
+            btn = RoundedButton(
+                grid_frame,
+                text=label,
+                width=26,
+                command=lambda k=key: self.on_select(k)
+            )
+            btn.grid(row=row, column=col, padx=16, pady=10, sticky="ew")
