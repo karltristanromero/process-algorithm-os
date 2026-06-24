@@ -115,3 +115,17 @@ class FrameTraceTable(tk.Frame):
 
 class StatsBar(tk.Frame):
     '''Horizontal summary strip showing faults, hits, and hit rate.'''
+
+    def __init__(self, parent, **kwargs):
+        super().__init__(parent, bg=theme.COLOR_STATS_BG, pady=8, **kwargs)
+        self._fault_var = tk.StringVar(value="Faults: —")
+        self._hit_var   = tk.StringVar(value="Hits: —")
+        self._rate_var  = tk.StringVar(value="Hit Rate: —")
+
+        for var, fg in [
+            (self._fault_var, theme.COLOR_FAULT),
+            (self._hit_var, theme.COLOR_HIT),
+            (self._rate_var, theme.COLOR_TITLE),
+        ]:
+            tk.Label(self, textvariable=var, font=theme.FONT_BODY_BOLD,
+                     bg=theme.COLOR_STATS_BG, fg=fg).pack(side=tk.LEFT, padx=24)
