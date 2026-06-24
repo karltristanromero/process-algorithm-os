@@ -441,3 +441,16 @@ class CompareAllScreen(tk.Frame):
         ref = self._parse_input()
         if ref is None:
             return
+        
+        results = []
+        for key, (name, AlgoClass) in ALGO_MAP.items():
+            algo = AlgoClass(NUM_FRAMES)
+            steps = algo.simulate(ref)
+            self._tab_traces[key].render(steps, NUM_FRAMES)
+            self._tab_stats[key].update_stats(
+                algo.fault_count, algo.hit_count, algo.hit_rate
+            )
+            results.append((name, algo.fault_count, algo.hit_count, algo.hit_rate))
+
+        results.sort(key=lambda x: x[1])
+        self._draw_summary_results(results)
