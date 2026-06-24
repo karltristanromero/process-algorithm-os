@@ -171,3 +171,6 @@ class SimulationScreen(tk.Frame):
             bg=theme.COLOR_PANEL_BG,
             fg="#888888"
         ).grid(row=0, column=0, sticky="e", pady=(8, 6))
+
+        self._trace_table = FrameTraceTable(right)
+        self._trace_table.grid(row=1, column=0, sticky="nsew", pady=(0, 8))
