@@ -177,3 +177,7 @@ class SimulationScreen(tk.Frame):
 
         self._stats_bar = StatsBar(right)
         self._stats_bar.grid(row=2, column=0, sticky="ew")
+
+    # ── Actions ────────────────────────────────────────────────────────────────
+    def _parse_input(self):
+        
