@@ -72,3 +72,16 @@ class App(tk.Tk):
         screen = AlgorithmSelectScreen(self, on_select=self._on_algo_selected)
         screen.place(x=0, y=0, width=theme.WINDOW_WIDTH, height=theme.WINDOW_HEIGHT)
         self._current_screen = screen
+
+    def _on_algo_selected(self, algo_key: str):
+        self._clear()
+        if algo_key == "Compare All":
+            screen = CompareAllScreen(self, on_back=self.show_algorithm_select)
+        else:
+            screen = SimulationScreen(
+                self,
+                algo_key=algo_key,
+                on_back=self.show_algorithm_select
+            )
+        screen.place(x=0, y=0, width=theme.WINDOW_WIDTH, height=theme.WINDOW_HEIGHT)
+        self._current_screen = screen
