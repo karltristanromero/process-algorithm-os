@@ -83,3 +83,11 @@ class AlgorithmSelectScreen(tk.Frame):
                 command=lambda k=key: self.on_select(k)
             )
             btn.grid(row=row, column=col, padx=16, pady=10, sticky="ew")
+
+        # ── Compare All button (centered below grid) ──────────────
+        RoundedButton(
+            panel,
+            text="Compare All Algorithms",
+            width=40,
+            command=lambda: self.on_select("COMPARE ALL")
+        ).pack(pady=(4, 20))
