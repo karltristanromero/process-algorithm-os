@@ -342,3 +342,11 @@ class CompareAllScreen(tk.Frame):
         summary_outer = tk.Frame(parent, bg=theme.COLOR_PANEL_BG)
         summary_outer.grid(row=2, column=0, sticky="ew", padx=8, pady=(4, 4))
         summary_outer.columnconfigure(0, weight=1)
+
+        tk.Label(
+            summary_outer,
+            text="Summary",
+            font=theme.FONT_TITLE_SMALL,
+            bg=theme.COLOR_PANEL_BG,
+            fg=theme.COLOR_TITLE
+        ).grid(row=0, column=0, sticky="w", pady=(4, 2))
