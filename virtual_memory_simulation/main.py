@@ -30,3 +30,12 @@ vm_simulator/
     └── TT-Chocolates-Trial-Regular-iF67447a8ce204c.ttf         ← download from DaFonts
 '''
 
+import tkinter as tk
+import sys
+import os
+
+sys.path.insert(0, os.path.dirname(__file__))
+
+import gui.theme as theme
+from gui.algorithm_select import AlgorithmSelectScreen
+from gui.simulation_screen import SimulationScreen, CompareAllScreen
