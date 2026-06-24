@@ -156,3 +156,10 @@ class SimulationScreen(tk.Frame):
         right.grid(row=0, column=1, sticky="nsew")
         right.rowconfigure(1, weight=1)
         right.columnconfigure(0, weight=1)
+
+        tk.Label(
+            right,
+            text="Frame Trace",
+            bg=theme.COLOR_PANEL_BG,
+            fg=theme.COLOR_TITLE
+        ).grid(row=0, column=0, sticky="w", pady=(8, 6))
