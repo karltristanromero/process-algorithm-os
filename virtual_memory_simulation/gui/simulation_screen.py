@@ -200,4 +200,10 @@ class SimulationScreen(tk.Frame):
         self._ref_entry.insert(0, " ".join(map(str, pages)))
 
     def _simulate(self):
-        
+        ref = self._parse_input()
+        if ref is None:
+            return
+        algo = self._algo_class(NUM_FRAMES)
+        steps = algo.simulate(ref)
+        self._trace_table.render(steps, NUM_FRAMES)
+        self._stats_bar.update_stats(algo.fault_count, algo.hit_count, algo.hit_rate)
