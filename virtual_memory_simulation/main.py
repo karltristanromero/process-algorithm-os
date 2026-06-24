@@ -49,3 +49,9 @@ class App(tk.Tk):
         - SimulationScreen  (per algorithm)
         - CompareAllScreen
     '''
+
+    def __init__(self):
+        super().__init__()
+        self.title("Virtual Memory Page Replacement Simulator")
+        self.geometry(f"{theme.WINDOW_WIDTH}x{theme.WINDOW_HEIGHT}")
+        self.resizable(False, False)
