@@ -119,3 +119,10 @@ class SimulationScreen(tk.Frame):
         self._ref_entry.pack(anchor="w", pady=(4, 8), ipady=5)
 
         RoundedButton(left, text="Randomize", width=18, command=self._randomize).pack(anchor="w", pady=(0, 16))
+
+        tk.Frame(left, bg=theme.COLOR_BTN_BORDER, height=1).pack(fill=tk.X, pady=8)
+
+        tk.Label(left, text=f"Number of Frames: {NUM_FRAMES} (fixed)",
+                 font=theme.FONT_BODY,
+                 bg=theme.COLOR_PANEL_BG,
+                 fg=theme.COLOR_TITLE).pack(anchor="w", pady=(0, 16))
