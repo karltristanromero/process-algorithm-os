@@ -281,3 +281,11 @@ class CompareAllScreen(tk.Frame):
 
             RoundedButton(strip, text="Randomize", width=12,
                           command=self._randomize).pack(side=tk.LEFT, padx=4)
+            
+            tk.Label(
+                strip,
+                text=f"Frames: {NUM_FRAMES}",
+                font=theme.FONT_BODY,
+                bg=theme.COLOR_STATS_BG,
+                fg=theme.COLOR_TITLE
+            ).pack(tk.LEFT, padx=12)
