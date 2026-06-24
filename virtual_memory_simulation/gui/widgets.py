@@ -111,3 +111,7 @@ class FrameTraceTable(tk.Frame):
                 cell(sr, i, "F", "#FDECEA", theme.COLOR_FAULT, bold=True)
             else:
                 cell(sr, i, "H", "#EAF5EA", theme.COLOR_HIT, bold=True)
+
+
+class StatsBar(tk.Frame):
+    '''Horizontal summary strip showing faults, hits, and hit rate.'''
