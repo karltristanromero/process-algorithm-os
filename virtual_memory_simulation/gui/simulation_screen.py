@@ -224,4 +224,7 @@ class CompareAllScreen(tk.Frame):
     '''
 
     def __init__(self, parent, on_back):
-        
+        super().__init__(parent)
+        self.on_back = on_back
+        self._bg_image = None
+        self._build()
