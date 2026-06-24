@@ -52,3 +52,15 @@ def load_fonts():
             pixel_font = "Courier"
     else:
         pixel_font = "Courier"
+
+    # Register TT Chocolates if available
+    nunito_path = os.path.join(base, "TT-Chocolates-Trial-Regular-iF67447a8ce204c.ttf")
+    if os.path.exists(nunito_path):
+        try:
+            from ctypes import windll
+            windll.gdi32.AddFontResourceExW(nunito_path, 0x10, 0)
+            nunito_font = "TT Chocolates"
+        except:
+            nunito_font = "Helvetica"
+    else:
+        nunito_font = "Helvetica"
