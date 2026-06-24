@@ -70,3 +70,9 @@ class FrameTraceTable(tk.Frame):
         self.inner.bind("<Configure>", lambda e: self.canvas.configure(
             scrollregion=self.canvas.bbox("all")
         ))
+
+    def render(self, steps, num_frames: int):
+        for widget in self.inner.winfo_children():
+            widget.destroy()
+        if not steps:
+            return
