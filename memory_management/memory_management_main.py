@@ -174,7 +174,6 @@ class MemoryManagementApp:
 
         self.canvas.create_text(cfg.BOTTOM_MENU_LAYOUT["algo_label_x"], bottom_menu_y, text="ALGO:", font=cfg.BOTTOM_MENU_LAYOUT["font_nav"], fill=Theme.PRIMARY, anchor=tk.W)
         
-        # Combined explicit strategy selections straight into algorithm dropdown array
         algo_selections = [
             "MFT: First Fit", 
             "MFT: Best Fit", 
@@ -259,7 +258,6 @@ class MemoryManagementApp:
             self.add_event_log("Automated clock loop paused.", "INFO")
 
     def execute_mvt_allocation(self, algo_title, process):
-        """ Router logic wrapper to process variable allocations with or without mid-transit automatic compaction loops. """
         if "First Fit" in algo_title:
             msg = first_fit_mvt(process, self.mvt_manager)
         elif "Best Fit" in algo_title:
@@ -267,13 +265,11 @@ class MemoryManagementApp:
         else:
             msg = worst_fit_mvt(process, self.mvt_manager)
 
-        # Catch if allocation failed but "Auto Compaction" strategy scope is active
         if "Failed" in msg and "Auto Compaction" in algo_title:
             total_free_memory = sum(b.block_size for b in self.mvt_manager.blocks if b.occupied_process is None)
             if total_free_memory >= process.process_size:
                 self.mvt_manager.compact_memory()
                 self.add_event_log("⚡ Auto Compaction Triggered: Consolidated dynamic blocks on the fly.", "WARNING")
-                # Re-run selection loop once blocks are shifted
                 if "First Fit" in algo_title: msg = first_fit_mvt(process, self.mvt_manager)
                 elif "Best Fit" in algo_title: msg = best_fit_mvt(process, self.mvt_manager)
                 else: msg = worst_fit_mvt(process, self.mvt_manager)
@@ -480,10 +476,10 @@ class MemoryManagementApp:
             
             if block.occupied_process:
                 self.canvas.create_rectangle(x1, y1, x2, y2, fill=Theme.ALLOCATED, outline=Theme.ALLOCATED_DARK, width=3, tags="mem_element")
-                self.canvas.create_text(x1 + 125, y1 + (height / 2), text=f"{block.occupied_process.process_id}\n({block.block_size}K)", font=cfg.SIMULATION_PANE_LAYOUT["font_allocated_block"], fill="white", tags="mem_element")
+                self.canvas.create_text(x1 + 125, y1 + (height / 2), text=f"{block.occupied_process.process_id} ({block.block_size}K)", font=cfg.SIMULATION_PANE_LAYOUT["font_allocated_block"], fill="white", tags="mem_element")
             else:
                 self.canvas.create_rectangle(x1, y1, x2, y2, fill=Theme.FREE, outline=Theme.FREE_BORDER, width=2, tags="mem_element")
-                self.canvas.create_text(x1 + 125, y1 + (height / 2), text=f"✓ FREE\n({block.block_size}K)", font=cfg.SIMULATION_PANE_LAYOUT["font_allocated_block"], fill=Theme.SUCCESS, tags="mem_element")
+                self.canvas.create_text(x1 + 125, y1 + (height / 2), text=f"✓ FREE ({block.block_size}K)", font=cfg.SIMULATION_PANE_LAYOUT["font_allocated_block"], fill=Theme.SUCCESS, tags="mem_element")
                 total_free_space += block.block_size
                 free_segments += 1
             start_y += height
