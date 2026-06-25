@@ -218,6 +218,10 @@ class DiskSchedulerGUI:
     """GUI application for disk scheduling simulation"""
     
     def __init__(self, root):
+        self.default_requests = "98, 183, 37, 122, 14, 124, 65, 67"
+        self.default_head = "53"
+        self.default_disk_size = "200"
+
         self.root = root
         self.root.title("Disk Scheduling Algorithms Simulator")
         self.root.geometry("1200x800")
@@ -260,19 +264,19 @@ class DiskSchedulerGUI:
         ttk.Label(left_frame, text="Disk Requests (comma-separated):").pack(anchor=tk.W, padx=(5, 0))
         self.requests_entry = ttk.Entry(left_frame, width=38)
         self.requests_entry.pack(fill=tk.X, padx=(5, 0), pady=(0, 12))
-        self.requests_entry.insert(0, "98, 183, 37, 122, 14, 124, 65, 67")
+        self.requests_entry.insert(0, self.default_requests)
         
         # Initial head position
         ttk.Label(left_frame, text="Initial Head Position:").pack(anchor=tk.W, padx=(5, 0))
         self.head_entry = ttk.Entry(left_frame, width=38)
         self.head_entry.pack(fill=tk.X, padx=(5, 0), pady=(0, 12))
-        self.head_entry.insert(0, "53")
+        self.head_entry.insert(0, self.default_head)
         
         # Disk size
         ttk.Label(left_frame, text="Disk Size (cylinders):").pack(anchor=tk.W, padx=(5, 0))
         self.disk_size_entry = ttk.Entry(left_frame, width=38)
         self.disk_size_entry.pack(fill=tk.X, padx=(5, 0), pady=(0, 18))
-        self.disk_size_entry.insert(0, "200")
+        self.disk_size_entry.insert(0, self.default_disk_size)
         
         # Algorithm selection
         ttk.Label(left_frame, text="Select Algorithm:", style='Title.TLabel').pack(anchor=tk.W, pady=(12, 12), padx=(5, 0))
@@ -282,9 +286,16 @@ class DiskSchedulerGUI:
             ttk.Radiobutton(left_frame, text=algo, variable=self.algorithm_var, 
                            value=algo).pack(anchor=tk.W, padx=(10, 0), pady=4)
         
-        # Run button
-        ttk.Button(left_frame, text="Run Simulation", 
-                  command=self.run_simulation).pack(fill=tk.X, padx=(5, 0), pady=(18, 0))
+        # Action buttons
+        actions_frame = ttk.Frame(left_frame)
+        actions_frame.pack(fill=tk.X, padx=(5, 0), pady=(18, 0))
+
+        ttk.Button(actions_frame, text="Run Simulation", command=self.run_simulation).pack(
+            side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 6)
+        )
+        ttk.Button(actions_frame, text="Reset", command=self.reset_simulation).pack(
+            side=tk.LEFT, fill=tk.X, expand=True
+        )
         
         # Results frame
         results_frame = ttk.LabelFrame(left_frame, text="Results", padding=10)
@@ -368,6 +379,32 @@ class DiskSchedulerGUI:
             messagebox.showerror("Error", "Please enter valid numbers")
         except Exception as e:
             messagebox.showerror("Error", str(e))
+
+    def reset_simulation(self):
+        """Reset inputs, outputs, and plot to the initial state"""
+        self.algorithm_var.set("FCFS")
+
+        self.requests_entry.delete(0, tk.END)
+        self.requests_entry.insert(0, self.default_requests)
+
+        self.head_entry.delete(0, tk.END)
+        self.head_entry.insert(0, self.default_head)
+
+        self.disk_size_entry.delete(0, tk.END)
+        self.disk_size_entry.insert(0, self.default_disk_size)
+
+        self.seek_time_label.config(text="N/A")
+
+        self.sequence_text.config(state=tk.NORMAL)
+        self.sequence_text.delete(1.0, tk.END)
+        self.sequence_text.config(state=tk.DISABLED)
+
+        self.computation_text.config(state=tk.NORMAL)
+        self.computation_text.delete(1.0, tk.END)
+        self.computation_text.config(state=tk.DISABLED)
+
+        for widget in self.canvas_frame.winfo_children():
+            widget.destroy()
     
     def draw_visualization(self, sequence: List[int], disk_size: int, head_pos: int):
         """Draw the disk head movement visualization"""
