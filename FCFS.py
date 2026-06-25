@@ -1,99 +1,225 @@
 import tkinter as tk
-from tkinter import ttk, messagebox
-from typing import Optional
+from tkinter import messagebox
+
 from scheduler_base import SchedulerBase
-from temporary_utils.theme import COLORS
+from temporary_utils.theme import BACKGROUND_MAP, UI_CONFIG
+
 
 class FCFS(SchedulerBase):
-    def __init__(self, title: str, width: int, height: int):
+
+    def __init__(self, title, width, height):
         super().__init__(title, width, height)
-        self.process_table: Optional[ttk.Treeview] = None
-        self.arrival_entry: Optional[tk.Entry] = None
-        self.burst_entry: Optional[tk.Entry] = None
 
-    # --- Mandatory Overrides ---
+        self.set_background(BACKGROUND_MAP["FCFS"])
+        self.setup_main_window()
+        self.add_nav_buttons()
+
+    # =================================================
+    # Navigation Buttons
+    # =================================================
+
+    def add_nav_buttons(self):
+
+        style = {
+            "bg": UI_CONFIG["button_bg"],
+            "fg": "black",
+            "font": ("Georgia", 16, "bold"),
+            "width": 8,
+            "height": 1,
+            "bd": 0,
+            "relief": "flat",
+            "cursor": "hand2",
+            "activebackground": UI_CONFIG["button_bg"],
+            "activeforeground": "black",
+            "highlightthickness": 0,
+            "padx": 68,
+            "pady": 15
+        }
+
+        tk.Button(
+            self.root,
+            text="MENU",
+            command=self.root.destroy,
+            **style
+        ).place(relx=0.0967, rely=0.955, anchor="center")
+
+        tk.Button(
+            self.root,
+            text="START",
+            command=self.start_simulation,
+            **style
+        ).place(relx=0.271, rely=0.955, anchor="center")
+
+        tk.Button(
+            self.root,
+            text="ADD",
+            command=self.open_add_process_window,
+            **style
+        ).place(relx=0.45, rely=0.955, anchor="center")
+
+        tk.Button(
+            self.root,
+            text="RESET",
+            command=self.reset_simulation,
+            **style
+        ).place(relx=0.625, rely=0.955, anchor="center")
+
+    # =================================================
+    # Add Process Window
+    # =================================================
+
     def open_add_process_window(self):
+
         win = tk.Toplevel(self.root)
-        win.title("Manage Processes")
-        win.state('zoomed')
-        win.configure(bg=COLORS['background'])
-        
-        tk.Label(win, text="Arrival Time:", bg=COLORS['background'], fg='white').pack()
-        self.arrival_entry = tk.Entry(win)
-        self.arrival_entry.pack()
+        win.title("Add Process")
+        win.geometry("300x180")
 
-        tk.Label(win, text="Burst Time:", bg=COLORS['background'], fg='white').pack()
-        self.burst_entry = tk.Entry(win)
-        self.burst_entry.pack()
+        tk.Label(win, text="Arrival Time").pack(pady=5)
+        arr_ent = tk.Entry(win)
+        arr_ent.pack()
 
-        tk.Button(win, text="Add Process", command=self.add_process).pack()
+        tk.Label(win, text="Burst Time").pack(pady=5)
+        brst_ent = tk.Entry(win)
+        brst_ent.pack()
 
-        self.process_table = ttk.Treeview(win, columns=('PID', 'Arrival', 'Burst'), show='headings')
-        for col in ('PID', 'Arrival', 'Burst'): self.process_table.heading(col, text=col)
-        self.process_table.pack(fill=tk.BOTH, expand=True)
-        self.refresh_process_table()
+        tk.Button(
+            win,
+            text="Add",
+            command=lambda: self.add_process(
+                win,
+                arr_ent,
+                brst_ent
+            )
+        ).pack(pady=15)
+
+    # =================================================
+    # Add Process
+    # =================================================
+
+    def add_process(self, win, arr_ent, brst_ent):
+
+        try:
+
+            arrival = int(arr_ent.get())
+            burst = int(brst_ent.get())
+
+            process = {
+                "pid": f"P{len(self._processes)+1}",
+                "arrival_time": arrival,
+                "burst_time": burst,
+                "color": self.generate_process_color(
+                    len(self._processes)
+                )
+            }
+
+            super().add_process(process)
+
+            messagebox.showinfo(
+                "Success",
+                f"{process['pid']} added successfully."
+            )
+
+            win.destroy()
+
+        except ValueError:
+
+            messagebox.showerror(
+                "Error",
+                "Please enter valid integers."
+            )
+
+    # =================================================
+    # FCFS Algorithm
+    # =================================================
 
     def start_simulation(self):
-        if not self.processes:
-            messagebox.showwarning("Empty", "No processes to run.")
+
+        if not self._processes:
+
+            messagebox.showwarning(
+                "Warning",
+                "No processes to schedule!"
+            )
+
             return
-        self.run_fcfs()
 
-    def reset_simulation(self):
-        self.processes = []
-        self.clear_canvas()
-        self.reset_metrics()
-        self.refresh_process_table()
+        processes = sorted(
+            self._processes,
+            key=lambda p: p["arrival_time"]
+        )
 
-    # --- FCFS Logic ---
-    def add_process(self):
-        if not (self.arrival_entry and self.burst_entry): return
-        try:
-            p = {
-                "pid": f"P{len(self.processes) + 1}", 
-                "arrival_time": int(self.arrival_entry.get()), 
-                "burst_time": int(self.burst_entry.get()),
-                "color": self.generate_process_color(len(self.processes))
-            }
-            self.processes.append(p)
-            self.refresh_process_table()
-            self.arrival_entry.delete(0, tk.END)
-            self.burst_entry.delete(0, tk.END)
-        except ValueError:
-            messagebox.showerror("Error", "Invalid inputs")
+        current_time = 0
 
-    def refresh_process_table(self):
-        if self.process_table:
-            for item in self.process_table.get_children(): self.process_table.delete(item)
-            for p in self.processes:
-                self.process_table.insert('', tk.END, values=(p['pid'], p['arrival_time'], p['burst_time']))
+        total_tat = 0
+        total_wt = 0
 
-    def run_fcfs(self):
-        # Sort by arrival
-        processes = sorted(self.processes, key=lambda x: x['arrival_time'])
-        n = len(processes)
-        time = 0
-        total_tat, total_wt = 0, 0
         segments = []
-        
-        for i, p in enumerate(processes):
-            if time < p['arrival_time']: time = p['arrival_time']
-            start = time
-            time += p['burst_time']
-            completion_time = time
-            
-            tat = completion_time - p['arrival_time']
-            wt = tat - p['burst_time']
+
+        for process in processes:
+
+            if current_time < process["arrival_time"]:
+                current_time = process["arrival_time"]
+
+            start = current_time
+            current_time += process["burst_time"]
+
+            tat = current_time - process["arrival_time"]
+            wt = tat - process["burst_time"]
+
             total_tat += tat
             total_wt += wt
-            
-            segments.append((i, start, completion_time))
-            
-        # Metric Calculations
-        avg_tat = total_tat / n
-        avg_wt = total_wt / n
-        cpu_util = (sum(p['burst_time'] for p in processes) / time) * 100
-        throughput = n / time
-        
-        self.update_metrics(avg_tat=avg_tat, avg_wt=avg_wt, cpu_util=cpu_util, throughput=throughput)
-        self.animate_execution_loop(segments, processes)
+
+            segments.append(
+                (
+                    self._processes.index(process),
+                    start,
+                    current_time
+                )
+            )
+
+        avg_tat = total_tat / len(self._processes)
+        avg_wt = total_wt / len(self._processes)
+
+        cpu_util = (
+            sum(
+                p["burst_time"]
+                for p in self._processes
+            )
+            / current_time
+        ) * 100
+
+        throughput = (
+            len(self._processes)
+            / current_time
+        )
+
+        self.update_metrics(
+            avg_tat,
+            avg_wt,
+            cpu_util,
+            throughput
+        )
+
+        self.animate_execution_loop(
+            segments,
+            self._processes
+        )
+
+    # =================================================
+    # Reset
+    # =================================================
+
+    def reset_simulation(self):
+
+        self._processes.clear()
+
+        self.clear_canvas()
+        self.reset_metrics()
+
+    # =================================================
+    # Mainloop
+    # =================================================
+
+    def run(self):
+
+        self.root.mainloop()

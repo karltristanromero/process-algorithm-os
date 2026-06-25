@@ -1,117 +1,250 @@
 import tkinter as tk
-from tkinter import ttk, messagebox
-from typing import Optional
+from tkinter import messagebox
+
 from scheduler_base import SchedulerBase
-from temporary_utils.theme import COLORS, FONTS
-from temporary_utils.layout_config import ADD_PROCESS_LAYOUT
+from temporary_utils.theme import BACKGROUND_MAP, UI_CONFIG
+
 
 class PriorityNonPreemptive(SchedulerBase):
-    """Non-Preemptive Priority Scheduler implementation."""
 
-    def __init__(self, title: str, width: int, height: int):
+    def __init__(self, title, width, height):
         super().__init__(title, width, height)
-        self.process_table: Optional[ttk.Treeview] = None
-        self.arrival_entry: Optional[tk.Entry] = None
-        self.burst_entry: Optional[tk.Entry] = None
-        self.priority_entry: Optional[tk.Entry] = None
 
-    # --- Required Overrides ---
+        self.set_background(BACKGROUND_MAP["PRIO_NON_PREEMPT"])
+        self.setup_main_window()
+        self.add_nav_buttons()
+
+    # =================================================
+    # Navigation Buttons
+    # =================================================
+
+    def add_nav_buttons(self):
+
+        style = {
+            "bg": UI_CONFIG["button_bg"],
+            "fg": "black",
+            "font": ("Georgia", 16, "bold"),
+            "width": 8,
+            "height": 1,
+            "bd": 0,
+            "relief": "flat",
+            "cursor": "hand2",
+            "activebackground": UI_CONFIG["button_bg"],
+            "activeforeground": "black",
+            "highlightthickness": 0,
+            "padx": 68,
+            "pady": 15
+        }
+
+        tk.Button(
+            self.root,
+            text="MENU",
+            command=self.root.destroy,
+            **style
+        ).place(relx=0.0967, rely=0.955, anchor="center")
+
+        tk.Button(
+            self.root,
+            text="START",
+            command=self.start_simulation,
+            **style
+        ).place(relx=0.271, rely=0.955, anchor="center")
+
+        tk.Button(
+            self.root,
+            text="ADD",
+            command=self.open_add_process_window,
+            **style
+        ).place(relx=0.45, rely=0.955, anchor="center")
+
+        tk.Button(
+            self.root,
+            text="RESET",
+            command=self.reset_simulation,
+            **style
+        ).place(relx=0.625, rely=0.955, anchor="center")
+
+    # =================================================
+    # Add Process Window
+    # =================================================
+
     def open_add_process_window(self):
+
         win = tk.Toplevel(self.root)
-        win.title("Manage Processes")
-        win.state('zoomed')
-        win.configure(bg=COLORS['background'])
-        
-        frame = tk.Frame(win, bg=COLORS['background'])
-        frame.pack(pady=ADD_PROCESS_LAYOUT.get('frame_padding', 20))
-        
-        tk.Label(frame, text="Arrival Time:", font=FONTS['default'], bg=COLORS['background'], fg='white').grid(row=0, column=0)
-        self.arrival_entry = tk.Entry(frame, font=FONTS['default'])
-        self.arrival_entry.grid(row=0, column=1)
+        win.title("Add Process")
+        win.geometry("300x230")
 
-        tk.Label(frame, text="Burst Time:", font=FONTS['default'], bg=COLORS['background'], fg='white').grid(row=1, column=0)
-        self.burst_entry = tk.Entry(frame, font=FONTS['default'])
-        self.burst_entry.grid(row=1, column=1)
-        
-        tk.Label(frame, text="Priority:", font=FONTS['default'], bg=COLORS['background'], fg='white').grid(row=2, column=0)
-        self.priority_entry = tk.Entry(frame, font=FONTS['default'])
-        self.priority_entry.grid(row=2, column=1)
+        tk.Label(win, text="Arrival Time").pack(pady=5)
+        arr_ent = tk.Entry(win)
+        arr_ent.pack()
 
-        tk.Button(frame, text="Add Process", command=self.add_process).grid(row=3, columnspan=2, pady=10)
+        tk.Label(win, text="Burst Time").pack(pady=5)
+        brst_ent = tk.Entry(win)
+        brst_ent.pack()
 
-        self.process_table = ttk.Treeview(win, columns=('PID', 'Arrival', 'Burst', 'Priority'), show='headings')
-        for col in ('PID', 'Arrival', 'Burst', 'Priority'): self.process_table.heading(col, text=col)
-        self.process_table.pack(fill=tk.BOTH, expand=True)
-        self.refresh_process_table()
+        tk.Label(win, text="Priority").pack(pady=5)
+        prio_ent = tk.Entry(win)
+        prio_ent.pack()
+
+        tk.Button(
+            win,
+            text="Add",
+            command=lambda: self.add_process(
+                win,
+                arr_ent,
+                brst_ent,
+                prio_ent
+            )
+        ).pack(pady=15)
+
+    # =================================================
+    # Add Process
+    # =================================================
+
+    def add_process(self, win, arr_ent, brst_ent, prio_ent):
+
+        try:
+
+            arrival = int(arr_ent.get())
+            burst = int(brst_ent.get())
+            priority = int(prio_ent.get())
+
+            process = {
+                "pid": f"P{len(self._processes)+1}",
+                "arrival_time": arrival,
+                "burst_time": burst,
+                "priority": priority,
+                "color": self.generate_process_color(
+                    len(self._processes)
+                )
+            }
+
+            super().add_process(process)
+
+            messagebox.showinfo(
+                "Success",
+                f"{process['pid']} added successfully."
+            )
+
+            win.destroy()
+
+        except ValueError:
+
+            messagebox.showerror(
+                "Error",
+                "Please enter valid integers."
+            )
+
+    # =================================================
+    # Priority Non-Preemptive Algorithm
+    # =================================================
 
     def start_simulation(self):
-        if not self.processes:
-            messagebox.showwarning("Empty", "No processes to run.")
+
+        if not self._processes:
+
+            messagebox.showwarning(
+                "Warning",
+                "No processes to schedule!"
+            )
+
             return
-        self.run_priority_non_preemptive()
+
+        time = 0
+        completed = 0
+        total = len(self._processes)
+
+        remaining = self._processes.copy()
+        segments = []
+
+        while completed < total:
+
+            available = [
+                p for p in remaining
+                if p["arrival_time"] <= time
+            ]
+
+            if not available:
+                time += 1
+                continue
+
+            next_process = min(
+                available,
+                key=lambda p: (
+                    p["priority"],
+                    p["arrival_time"]
+                )
+            )
+
+            start = time
+            finish = start + next_process["burst_time"]
+
+            tat = finish - next_process["arrival_time"]
+            wt = tat - next_process["burst_time"]
+
+            next_process["tat"] = tat
+            next_process["wt"] = wt
+
+            segments.append(
+                (
+                    self._processes.index(next_process),
+                    start,
+                    finish
+                )
+            )
+
+            time = finish
+            remaining.remove(next_process)
+            completed += 1
+
+        avg_tat = sum(
+            p["tat"] for p in self._processes
+        ) / total
+
+        avg_wt = sum(
+            p["wt"] for p in self._processes
+        ) / total
+
+        cpu_util = (
+            sum(
+                p["burst_time"]
+                for p in self._processes
+            )
+            / time
+        ) * 100
+
+        throughput = total / time
+
+        self.update_metrics(
+            avg_tat,
+            avg_wt,
+            cpu_util,
+            throughput
+        )
+
+        self.animate_execution_loop(
+            segments,
+            self._processes
+        )
+
+    # =================================================
+    # Reset
+    # =================================================
 
     def reset_simulation(self):
-        self.processes = []
+
+        for process in self._processes:
+            process.pop("tat", None)
+            process.pop("wt", None)
+
+        self._processes.clear()
+
         self.clear_canvas()
         self.reset_metrics()
-        self.refresh_process_table()
 
-    # --- Logic ---
-    def add_process(self):
-        if not (self.arrival_entry and self.burst_entry and self.priority_entry): return
-        try:
-            p = {
-                "pid": f"P{len(self.processes) + 1}",
-                "arrival_time": int(self.arrival_entry.get()),
-                "burst_time": int(self.burst_entry.get()),
-                "priority": int(self.priority_entry.get()),
-                "color": self.generate_process_color(len(self.processes))
-            }
-            self.processes.append(p)
-            self.refresh_process_table()
-            self.arrival_entry.delete(0, tk.END)
-            self.burst_entry.delete(0, tk.END)
-            self.priority_entry.delete(0, tk.END)
-        except ValueError:
-            messagebox.showerror("Error", "Invalid inputs")
+    # =================================================
+    # Mainloop
+    # =================================================
 
-    def refresh_process_table(self):
-        if self.process_table:
-            for i in self.process_table.get_children(): self.process_table.delete(i)
-            for p in self.processes:
-                self.process_table.insert('', tk.END, values=(p['pid'], p['arrival_time'], p['burst_time'], p['priority']))
-
-    def run_priority_non_preemptive(self):
-        processes = [p.copy() for p in self.processes]
-        n, time, completed = len(processes), 0, 0
-        is_comp = [False] * n
-        segments = []
-        total_tat, total_wt = 0, 0
-        
-        while completed < n:
-            available = [i for i in range(n) if processes[i]['arrival_time'] <= time and not is_comp[i]]
-            
-            if available:
-                idx = min(available, key=lambda i: (processes[i]['priority'], processes[i]['arrival_time']))
-                start_time = time
-                time += processes[idx]['burst_time']
-                
-                # Metrics Calculation
-                tat = time - processes[idx]['arrival_time']
-                wt = tat - processes[idx]['burst_time']
-                total_tat += tat
-                total_wt += wt
-                
-                segments.append((idx, start_time, time))
-                is_comp[idx] = True
-                completed += 1
-            else:
-                time += 1
-        
-        self.update_metrics(
-            avg_tat=total_tat/n,
-            avg_wt=total_wt/n,
-            cpu_util=(sum(p['burst_time'] for p in processes) / time) * 100,
-            throughput=n/time
-        )
-        self.animate_execution_loop(segments, processes)
+    def run(self):
+        self.root.mainloop()

@@ -1,35 +1,18 @@
-# Centralized UI color codes, font choices, and window configurations
+import os
 
-# Asset paths
-BACKGROUND = "temporary_assets/background.png"
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ASSETS_DIR = os.path.join(BASE_DIR, "Backgrounds")
 
-# Color scheme - High contrast for process visualization
-COLORS = {
-    'background': '#2b2b2b',
-    'canvas': '#1e1e1e',
-    'text_primary': '#ffffff',
-    'text_secondary': '#b0b0b0',
-    'accent': '#007acc',
-    'success': '#4caf50',
-    'warning': '#ff9800',
-    'error': '#f44336',
-    'metrics_text': '#2e1b5b',
-    'process_base': '#3f51b5'
+BACKGROUND_MAP = {
+    "FCFS": os.path.join(ASSETS_DIR, "background_FCFS.png"),
+    "PRIO_PREEMPT": os.path.join(ASSETS_DIR, "background_prio_pre.png"),
+    "PRIO_NON_PREEMPT": os.path.join(ASSETS_DIR, "background_prio_non_pre.png")
 }
 
-# Font specifications - Retro pixel/monospaced aesthetic
-FONTS = {
-    'default': ('Courier', 11, 'bold'),
-    'heading': ('Courier', 16, 'bold'),
-    'small': ('Courier', 9, 'bold'),
-    'metric': ('Courier', 20, 'bold')
+UI_CONFIG = {
+    'font_family': "Courier",
+    'font_size': 12,
+    'bg_color': "#FFFFFF",
+    'text_color': "#000000",
+    'button_bg': "#EEDC82"
 }
-
-# Window dimensions - Added to resolve the missing Key error
-WINDOW_SIZES = {
-    'main': (1920, 1080),
-    'add_process': (1280, 720)
-}
-
-# Process table configuration constants
-PROCESS_TABLE_COLUMNS = ('PID', 'Arrival Time', 'Burst Time')
