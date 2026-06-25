@@ -324,14 +324,58 @@ class CompareAllScreen(tk.Frame):
         self._tab_stats = {}      # algo_key -> StatsBar
 
         for key, (name, _) in ALGO_MAP.items():
+            # 1. Base Tab Frame
             tab = tk.Frame(self._notebook, bg=theme.COLOR_PANEL_BG)
-            tab.rowconfigure(0, weight=1)
             tab.columnconfigure(0, weight=1)
+            # Row 0 (Table) expands; Row 1 (Stats) stays fixed size
+            tab.rowconfigure(0, weight=1) 
+            tab.rowconfigure(1, weight=0)
             self._notebook.add(tab, text=name)
 
-            trace = FrameTraceTable(tab)
-            trace.grid(row=0, column=0, sticky="nsew", padx=8, pady=(8, 4))
+            # 2. Top Section: Canvas and Scrollbar for the Table ONLY
+            table_container = tk.Frame(tab, bg=theme.COLOR_PANEL_BG)
+            table_container.grid(row=0, column=0, sticky="nsew", padx=8, pady=(8, 4))
+            table_container.columnconfigure(0, weight=1)
+            table_container.rowconfigure(0, weight=1)
 
+            canvas = tk.Canvas(table_container, bg=theme.COLOR_PANEL_BG, bd=0, highlightthickness=0)
+            scrollbar = ttk.Scrollbar(table_container, orient="vertical", command=canvas.yview)
+            canvas.configure(yscrollcommand=scrollbar.set)
+
+            canvas.grid(row=0, column=0, sticky="nsew")
+            scrollbar.grid(row=0, column=1, sticky="ns")
+
+            # Inner frame inside the canvas to hold the actual FrameTraceTable
+            scrollable_table_frame = tk.Frame(canvas, bg=theme.COLOR_PANEL_BG)
+            scrollable_table_frame.columnconfigure(0, weight=1)
+            
+            canvas_window = canvas.create_window((0, 0), window=scrollable_table_frame, anchor="nw")
+
+            # 3. Handle responsive resizing for the canvas contents
+            def _configure_scroll_region(event, c=canvas):
+                c.configure(scrollregion=c.bbox("all"))
+
+            def _configure_canvas_window(event, c=canvas, cw=canvas_window):
+                c.itemconfig(cw, width=event.width)
+
+            scrollable_table_frame.bind("<Configure>", _configure_scroll_region)
+            canvas.bind("<Configure>", _configure_canvas_window)
+
+            # 4. Optional: Mousewheel scrolling scoped to this canvas
+            def _on_mousewheel(event, c=canvas):
+                delta = event.delta if event.delta else (-120 if event.num == 5 else 120)
+                c.yview_scroll(int(-1 * (delta / 120)), "units")
+
+            canvas.bind_all("<MouseWheel>", lambda e, c=canvas: _on_mousewheel(e, c))
+            canvas.bind_all("<Button-4>", lambda e, c=canvas: _on_mousewheel(e, c))
+            canvas.bind_all("<Button-5>", lambda e, c=canvas: _on_mousewheel(e, c))
+
+            # 5. Populate Content
+            # The Trace Table goes INSIDE the scrollable Canvas frame
+            trace = FrameTraceTable(scrollable_table_frame)
+            trace.grid(row=0, column=0, sticky="nsew")
+
+            # The Stats Bar goes directly into the fixed bottom row of the MAIN tab frame
             stats = StatsBar(tab)
             stats.grid(row=1, column=0, sticky="ew", padx=8, pady=(0, 6))
 
