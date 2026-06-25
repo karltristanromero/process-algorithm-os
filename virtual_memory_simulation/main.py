@@ -76,7 +76,7 @@ class App(tk.Tk):
 
     def _on_algo_selected(self, algo_key: str):
         self._clear()
-        if algo_key == "COMPARE ALL":
+        if algo_key == "COMPARE_ALL":
             screen = CompareAllScreen(self, on_back=self.show_algorithm_select)
         else:
             screen = SimulationScreen(
