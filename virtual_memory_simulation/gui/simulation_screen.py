@@ -258,42 +258,42 @@ class CompareAllScreen(tk.Frame):
         self._build_notebook(panel)
         self._build_summary(panel)
 
-        # ── Input strip (top bar) ──────────────────────────────────────────────────
-        def _build_input_strip(self, parent):
-            strip = tk.Frame(parent, bg=theme.COLOR_STATS_BG, pady=10, padx=16)
-            strip.grid(row=0, column=0, sticky="ew")
+    # ── Input strip (top bar) ──────────────────────────────────────────────────
+    def _build_input_strip(self, parent):
+        strip = tk.Frame(parent, bg=theme.COLOR_STATS_BG, pady=10, padx=16)
+        strip.grid(row=0, column=0, sticky="ew")
 
-            tk.Label(
-                strip,
-                text="Reference String:",
-                bg=theme.COLOR_STATS_BG,
-                fg=theme.COLOR_TITLE
-            ).pack(side=tk.LEFT, padx=(0, 8))
+        tk.Label(
+            strip,
+            text="Reference String:",
+            bg=theme.COLOR_STATS_BG,
+            fg=theme.COLOR_TITLE
+        ).pack(side=tk.LEFT, padx=(0, 8))
 
-            self._ref_entry = tk.Entry(
-                strip,
-                font=theme.FONT_BODY,
-                bg="#FAFAFA",
-                fg=theme.COLOR_TITLE,
-                relief="solid",
-                bd=1, width=30
-            )
-            self._ref_entry.pack(side=tk.LEFT, ipady=4, padx=(0, 10))
+        self._ref_entry = tk.Entry(
+            strip,
+            font=theme.FONT_BODY,
+            bg="#FAFAFA",
+            fg=theme.COLOR_TITLE,
+            relief="solid",
+            bd=1, width=30
+        )
+        self._ref_entry.pack(side=tk.LEFT, ipady=4, padx=(0, 10))
 
-            RoundedButton(strip, text="Randomize", width=12,
-                          command=self._randomize).pack(side=tk.LEFT, padx=4)
+        RoundedButton(strip, text="Randomize", width=12,
+                        command=self._randomize).pack(side=tk.LEFT, padx=4)
             
-            tk.Label(
-                strip,
-                text=f"Frames: {NUM_FRAMES}",
-                font=theme.FONT_BODY,
-                bg=theme.COLOR_STATS_BG,
-                fg=theme.COLOR_TITLE
-            ).pack(tk.LEFT, padx=12)
+        tk.Label(
+            strip,
+            text=f"Frames: {NUM_FRAMES}",
+            font=theme.FONT_BODY,
+            bg=theme.COLOR_STATS_BG,
+                g=theme.COLOR_TITLE
+        ).pack(tk.LEFT, padx=12)
 
-            RoundedButton(strip, text="Simulate", width=10,
+        RoundedButton(strip, text="Simulate", width=10,
                           command=self._simulate).pack(side=tk.LEFT, padx=4)
-            RoundedButton(strip, text="Reset", width=8,
+        RoundedButton(strip, text="Reset", width=8,
                           command=self._reset).pack(tk.LEFT, padx=4)
             
     # ── Tabbed notebook ────────────────────────────────────────────────────────
