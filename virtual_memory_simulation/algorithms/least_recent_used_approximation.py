@@ -34,7 +34,7 @@ class LRUApproximation(PageReplacementAlgorithm):
                 index = pages_in_mem.index(page)
                 frames[index][1] = 1
                 self.hit_count += 1
-                self.steps.append(SimStep(i, page, self.snapshot(pages_in_mem), False))
+                self.steps.append(SimStep(i, page, self._snapshot(pages_in_mem), False))
             else:
                 self.fault_count += 1
                 evicted = None
