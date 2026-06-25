@@ -26,7 +26,7 @@ class FIFO(PageReplacementAlgorithm):
         for i, page in enumerate(reference_string, 1):
             if page in frames:
                 self.hit_count += 1
-                self.steps.append(SimStep(i, page, self.snapshot(frames), False))
+                self.steps.append(SimStep(i, page, self._snapshot(frames), False))
             else:
                 self.fault_count += 1
                 evicted = None
@@ -38,6 +38,6 @@ class FIFO(PageReplacementAlgorithm):
                     frames[frames.index(evicted)] = page
 
                 queue.append(page)
-                self.steps.append(SimStep(i, page, self.snapshot(frames), True, evicted))
+                self.steps.append(SimStep(i, page, self._snapshot(frames), True, evicted))
 
         return self.steps
