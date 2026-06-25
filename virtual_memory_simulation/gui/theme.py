@@ -4,8 +4,8 @@ All GUI files import from here to stay consistent.
 '''
 
 # ── Window ─────────────────────────────────────────────────────────────────────
-WINDOW_WIDTH = 1440
-WINDOW_HEIGHT = 810
+WINDOW_WIDTH = 1540
+WINDOW_HEIGHT = 850
 
 # ── Colors ─────────────────────────────────────────────────────────────────────
 COLOR_TITLE       = "#2D2466"   # dark purple — titles and headings
