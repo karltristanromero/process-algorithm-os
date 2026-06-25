@@ -31,7 +31,7 @@ class MFU(PageReplacementAlgorithm):
                 lru_order.remove(page)
                 lru_order.append(page)
                 self.hit_count += 1
-                self.steps.append(SimStep(i, page, self._snapshot(frames)), False)
+                self.steps.append(SimStep(i, page, self._snapshot(list(frames)), False))
             else:
                 self.fault_count += 1
                 evicted = None
