@@ -208,9 +208,8 @@ class MemoryManagementApp:
                 self.canvas.itemconfig(self.bg_canvas_item, image=self.bg_image_ref)
 
     def go_back_to_main_menu(self):
-        if self.auto_mode_running:
-            self.toggle_auto_mode()
-        messagebox.showinfo("Menu Navigation", "Returning back to Main System Menu Shell...")
+        """ Left empty as there is no central main menu shell linking the dashboard algorithms yet. """
+        pass
 
     def update_status(self, message):
         self.canvas.itemconfig(self.status_text_id, text=message, fill=Theme.PRIMARY)

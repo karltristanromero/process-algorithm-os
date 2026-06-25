@@ -51,11 +51,11 @@ INPUTS_LAYOUT = {
 # =========================================================
 BOTTOM_MENU_LAYOUT = {
     "y_offset_from_bottom": 1025,     # Adjusted for text item centering baselines
-    "menu_label_x": 100,
+    "menu_label_x": 120,
     "mode_label_x": 430,
     "combo_mode_x": 500,
     "algo_label_x": 720,
-    "combo_algo_x": 780,
+    "combo_algo_x": 785,
     "btn_start_x": 1140,
     "btn_reset_x": 1480,
     "btn_compaction_x": 1060,
