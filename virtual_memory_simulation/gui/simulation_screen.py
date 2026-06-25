@@ -288,7 +288,7 @@ class CompareAllScreen(tk.Frame):
             text=f"Frames: {NUM_FRAMES}",
             font=theme.FONT_BODY,
             bg=theme.COLOR_STATS_BG,
-                g=theme.COLOR_TITLE
+            fg=theme.COLOR_TITLE
         ).pack(side=tk.LEFT, padx=12)
 
         RoundedButton(strip, text="Simulate", width=10,
