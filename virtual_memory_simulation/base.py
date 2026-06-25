@@ -42,7 +42,7 @@ class PageReplacementAlgorithm(ABC):
         '''Run the algorithm on a reference string. Returns the list of SimStep.'''
         pass
 
-    def snapshot(self, frames: list) -> list:
+    def _snapshot(self, frames: list) -> list:
         '''Returns a fixed-size snapshot of frames, padded with None.'''
         snap = list(frames)
         while len(snap) < self.num_frames:
