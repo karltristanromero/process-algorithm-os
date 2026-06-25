@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 from abc import ABC, abstractmethod
+from pathlib import Path
 from typing import List, Tuple
 
 
@@ -218,6 +219,10 @@ class DiskSchedulerGUI:
     """GUI application for disk scheduling simulation"""
     
     def __init__(self, root):
+        self.base_dir = Path(__file__).resolve().parent
+        self.assets_dir = self._resolve_assets_dir()
+        self.ui_images = {}
+
         self.default_requests = "98, 183, 37, 122, 14, 124, 65, 67"
         self.default_head = "53"
         self.default_disk_size = "200"
@@ -238,89 +243,175 @@ class DiskSchedulerGUI:
         
         self.create_widgets()
         self.configure_styles()
+
+    def _resolve_assets_dir(self) -> Path:
+        """Find the directory that contains the GUI image assets"""
+        for candidate in (self.base_dir / "buttons", self.base_dir / "utils"):
+            if candidate.exists():
+                return candidate
+        return self.base_dir
     
     def configure_styles(self):
         """Configure TTK styles"""
         style = ttk.Style()
         style.theme_use('clam')
-        style.configure('TLabel', background='#f0f0f0', font=('Arial', 10))
-        style.configure('TButton', font=('Arial', 10))
-        style.configure('Title.TLabel', font=('Arial', 14, 'bold'))
+        style.configure('TFrame', background='#f5c9a1')
+        style.configure('TLabel', background='#f5c9a1', foreground='#2b2235', font=('Courier New', 10, 'bold'))
+        style.configure('TButton', font=('Courier New', 10, 'bold'))
+        style.configure('Title.TLabel', background='#f5c9a1', foreground='#2b2235', font=('Courier New', 15, 'bold'))
+        style.configure('Retro.TLabelframe', background='#f1ef8f', bordercolor='#5c4a78', relief='solid')
+        style.configure('Retro.TLabelframe.Label', background='#f1ef8f', foreground='#2b2235', font=('Courier New', 12, 'bold'))
+        style.configure('Retro.TCheckbutton', background='#f1ef8f', foreground='#2b2235', font=('Courier New', 10, 'bold'))
+        style.configure('Retro.TRadiobutton', background='#f1ef8f', foreground='#2b2235', font=('Courier New', 10, 'bold'))
+
+    def load_ui_image(self, filename: str) -> tk.PhotoImage:
+        """Load and cache an image from the buttons folder"""
+        if filename not in self.ui_images:
+            self.ui_images[filename] = tk.PhotoImage(file=str(self.assets_dir / filename))
+        return self.ui_images[filename]
+
+    def create_image_button(self, parent, filename: str, command):
+        """Create a clickable image button"""
+        image = self.load_ui_image(filename)
+        button = tk.Button(
+            parent,
+            image=image,
+            command=command,
+            bd=0,
+            relief="flat",
+            highlightthickness=0,
+            cursor="hand2",
+            bg="#42c400",
+            activebackground="#42c400",
+        )
+        button.image = image
+        return button
+
+    def create_scaled_image_button(self, parent, filename: str, command, scale: int = 2):
+        """Create a smaller clickable image button"""
+        image = self.load_ui_image(filename)
+        if scale > 1:
+            image = image.subsample(scale, scale)
+        button = tk.Button(
+            parent,
+            image=image,
+            command=command,
+            bd=0,
+            relief="flat",
+            highlightthickness=0,
+            cursor="hand2",
+            bg="#36c21f",
+            activebackground="#36c21f",
+        )
+        button.image = image
+        return button
+
+    def toggle_section(self, section_frame, pack_kwargs):
+        """Show or hide a GUI section without affecting the simulation logic"""
+        if section_frame.winfo_ismapped():
+            section_frame.pack_forget()
+        else:
+            section_frame.pack(**pack_kwargs)
     
     def create_widgets(self):
         """Create GUI widgets"""
+        self.background_image = self.load_ui_image("bg2.png")
+        self.root.geometry(f"{self.background_image.width()}x{self.background_image.height()}")
+        self.root.configure(bg="#f5c9a1")
+
+        background_label = tk.Label(self.root, image=self.background_image, bd=0)
+        background_label.place(x=0, y=0, relwidth=1, relheight=1)
+        background_label.image = self.background_image
+        background_label.lower()
+
         # Main container
-        main_frame = ttk.Frame(self.root)
-        main_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+        main_frame = tk.Frame(self.root, bg="#f5c9a1")
+        main_frame.pack(fill=tk.BOTH, expand=True, padx=12, pady=(12, 0))
         
         # Left panel - Input
-        left_frame = ttk.Frame(main_frame, width=360)
-        left_frame.pack(side=tk.LEFT, fill=tk.BOTH, padx=(10, 20))
+        left_frame = tk.Frame(main_frame, width=360, bg="#f5c9a1")
+        left_frame.pack(side=tk.LEFT, fill=tk.BOTH, padx=(12, 22))
         left_frame.pack_propagate(False)
         
-        ttk.Label(left_frame, text="Input Parameters", style='Title.TLabel').pack(anchor=tk.W, pady=(0, 20))
-        
-        # Disk requests input
-        ttk.Label(left_frame, text="Disk Requests (comma-separated):").pack(anchor=tk.W, padx=(5, 0))
-        self.requests_entry = ttk.Entry(left_frame, width=38)
-        self.requests_entry.pack(fill=tk.X, padx=(5, 0), pady=(0, 12))
+        self.input_section = ttk.LabelFrame(left_frame, text="Input Parameters", style='Retro.TLabelframe', padding=12)
+        self.input_section.pack(fill=tk.X, pady=(0, 14))
+
+        ttk.Label(self.input_section, text="DISK REQUESTS (COMMA-SEPARATED)").pack(anchor=tk.W, padx=(5, 0), pady=(0, 4))
+        self.requests_entry = tk.Entry(self.input_section, width=38, font=('Courier New', 11, 'bold'), bd=0, relief='flat', bg='#a7a36c', fg='#151515', insertbackground='#151515')
+        self.requests_entry.pack(fill=tk.X, padx=(5, 0), pady=(0, 12), ipady=6)
         self.requests_entry.insert(0, self.default_requests)
-        
-        # Initial head position
-        ttk.Label(left_frame, text="Initial Head Position:").pack(anchor=tk.W, padx=(5, 0))
-        self.head_entry = ttk.Entry(left_frame, width=38)
-        self.head_entry.pack(fill=tk.X, padx=(5, 0), pady=(0, 12))
+
+        ttk.Label(self.input_section, text="INITIAL HEAD POSITION").pack(anchor=tk.W, padx=(5, 0), pady=(0, 4))
+        self.head_entry = tk.Entry(self.input_section, width=38, font=('Courier New', 11, 'bold'), bd=0, relief='flat', bg='#a7a36c', fg='#151515', insertbackground='#151515')
+        self.head_entry.pack(fill=tk.X, padx=(5, 0), pady=(0, 12), ipady=6)
         self.head_entry.insert(0, self.default_head)
-        
-        # Disk size
-        ttk.Label(left_frame, text="Disk Size (cylinders):").pack(anchor=tk.W, padx=(5, 0))
-        self.disk_size_entry = ttk.Entry(left_frame, width=38)
-        self.disk_size_entry.pack(fill=tk.X, padx=(5, 0), pady=(0, 18))
+
+        ttk.Label(self.input_section, text="DISK SIZE (CYLINDERS)").pack(anchor=tk.W, padx=(5, 0), pady=(0, 4))
+        self.disk_size_entry = tk.Entry(self.input_section, width=38, font=('Courier New', 11, 'bold'), bd=0, relief='flat', bg='#a7a36c', fg='#151515', insertbackground='#151515')
+        self.disk_size_entry.pack(fill=tk.X, padx=(5, 0), pady=(0, 2), ipady=6)
         self.disk_size_entry.insert(0, self.default_disk_size)
-        
-        # Algorithm selection
-        ttk.Label(left_frame, text="Select Algorithm:", style='Title.TLabel').pack(anchor=tk.W, pady=(12, 12), padx=(5, 0))
-        
+
+        self.algorithm_section = ttk.LabelFrame(left_frame, text="Select Algorithm", style='Retro.TLabelframe', padding=12)
+        self.algorithm_section.pack(fill=tk.X, pady=(0, 14))
+
         self.algorithm_var = tk.StringVar(value="FCFS")
         for algo in self.algorithms.keys():
-            ttk.Radiobutton(left_frame, text=algo, variable=self.algorithm_var, 
-                           value=algo).pack(anchor=tk.W, padx=(10, 0), pady=4)
-        
-        # Action buttons
-        actions_frame = ttk.Frame(left_frame)
-        actions_frame.pack(fill=tk.X, padx=(5, 0), pady=(18, 0))
+            ttk.Radiobutton(self.algorithm_section, text=algo, variable=self.algorithm_var, value=algo, style='Retro.TRadiobutton').pack(anchor=tk.W, padx=(10, 0), pady=4)
 
-        ttk.Button(actions_frame, text="Run Simulation", command=self.run_simulation).pack(
-            side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 6)
+        self.input_section.pack_forget()
+        self.algorithm_section.pack_forget()
+
+        # Action buttons controlled by the image assets
+        button_bar = tk.Frame(self.root, bg="#36c21f", height=96)
+        button_bar.pack(side=tk.BOTTOM, fill=tk.X)
+        button_bar.pack_propagate(False)
+
+        input_button = self.create_image_button(
+            button_bar,
+            "Input_Parameter_button.png",
+            lambda: self.toggle_section(self.input_section, {"fill": tk.X, "pady": (0, 12)})
         )
-        ttk.Button(actions_frame, text="Reset", command=self.reset_simulation).pack(
-            side=tk.LEFT, fill=tk.X, expand=True
+        input_button.pack(side=tk.LEFT, padx=(40, 20), pady=8)
+
+        algorithm_button = self.create_image_button(
+            button_bar,
+            "Pick_Algorithm_button.png",
+            lambda: self.toggle_section(self.algorithm_section, {"fill": tk.X, "pady": (0, 12)})
         )
+        algorithm_button.pack(side=tk.LEFT, padx=(0, 20), pady=8)
+
+        run_button = self.create_image_button(button_bar, "Run_Sim_button.png", self.run_simulation)
+        run_button.pack(side=tk.LEFT, padx=(0, 20), pady=8)
+
+        reset_button = self.create_image_button(button_bar, "Reset_button.png", self.reset_simulation)
+        reset_button.pack(side=tk.LEFT, padx=(0, 20), pady=8)
+
+        quit_button = self.create_scaled_image_button(button_bar, "quit_button.png", self.root.destroy, scale=2)
+        quit_button.pack(side=tk.RIGHT, padx=(0, 20), pady=8)
         
         # Results frame
-        results_frame = ttk.LabelFrame(left_frame, text="Results", padding=10)
-        results_frame.pack(fill=tk.BOTH, expand=True, pady=(20, 0), padx=(5, 0))
+        results_frame = ttk.LabelFrame(left_frame, text="Results", style='Retro.TLabelframe', padding=8)
+        results_frame.pack(fill=tk.X, expand=False, pady=(18, 0), padx=(5, 0))
         
-        ttk.Label(results_frame, text="Total Seek Time:").pack(anchor=tk.W)
-        self.seek_time_label = ttk.Label(results_frame, text="N/A", foreground="blue")
-        self.seek_time_label.pack(anchor=tk.W, pady=(0, 10))
+        ttk.Label(results_frame, text="TOTAL SEEK TIME:").pack(anchor=tk.W)
+        self.seek_time_label = ttk.Label(results_frame, text="N/A", foreground="#111111")
+        self.seek_time_label.pack(anchor=tk.W, pady=(0, 8))
         
-        ttk.Label(results_frame, text="Sequence:").pack(anchor=tk.W)
-        self.sequence_text = tk.Text(results_frame, height=6, width=34, font=('Courier', 9))
-        self.sequence_text.pack(fill=tk.BOTH, expand=True)
+        ttk.Label(results_frame, text="SEQUENCE:").pack(anchor=tk.W)
+        self.sequence_text = tk.Text(results_frame, height=4, width=34, font=('Courier New', 9, 'bold'), bd=0, relief='flat', bg='#a7a36c', fg='#111111', insertbackground='#111111')
+        self.sequence_text.pack(fill=tk.X, expand=False, pady=(0, 8))
 
-        ttk.Label(results_frame, text="Computation:").pack(anchor=tk.W, pady=(10, 0))
-        self.computation_text = tk.Text(results_frame, height=10, width=34, font=('Courier', 9))
-        self.computation_text.pack(fill=tk.BOTH, expand=True)
+        ttk.Label(results_frame, text="COMPUTATION:").pack(anchor=tk.W, pady=(6, 0))
+        self.computation_text = tk.Text(results_frame, height=6, width=34, font=('Courier New', 9, 'bold'), bd=0, relief='flat', bg='#a7a36c', fg='#111111', insertbackground='#111111')
+        self.computation_text.pack(fill=tk.X, expand=False)
         
         # Right panel - Visualization
-        right_frame = ttk.Frame(main_frame)
+        right_frame = ttk.Frame(main_frame, style='TFrame')
         right_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
         
-        ttk.Label(right_frame, text="Disk Head Movement Visualization", 
-                 style='Title.TLabel').pack(anchor=tk.W, pady=(0, 10))
+        ttk.Label(right_frame, text="Disk Head Movement Visualization", style='Title.TLabel').pack(anchor=tk.W, pady=(0, 10))
         
-        self.canvas_frame = ttk.Frame(right_frame)
+        self.canvas_frame = tk.Frame(right_frame, bg='#f1ef8f')
         self.canvas_frame.pack(fill=tk.BOTH, expand=True)
     
     def run_simulation(self):
@@ -413,9 +504,10 @@ class DiskSchedulerGUI:
             widget.destroy()
         
         # Create figure with a top cylinder scale and a downward head path
-        fig = Figure(figsize=(12, 8), dpi=100)
+        fig = Figure(figsize=(12, 8), dpi=100, facecolor='#f1ef8f')
         
         ax = fig.add_subplot(111)
+        ax.set_facecolor('#f1ef8f')
         
         axis_y = 1.0
         path_start_y = 0.55
@@ -484,12 +576,12 @@ class DiskSchedulerGUI:
                    markeredgecolor='darkorange', markeredgewidth=2, label='End Position'),
             Line2D([0], [0], color='navy', lw=2, label='Head Movement Path')
         ]
-        ax.legend(handles=legend_elements, loc='upper left', fontsize=10)
+        ax.legend(handles=legend_elements, loc='upper left', bbox_to_anchor=(0.0, 1.20), fontsize=9, frameon=False)
         
         # Add grid for reference
         ax.grid(True, axis='x', alpha=0.3, linestyle='--')
         
-        fig.tight_layout()
+        fig.tight_layout(rect=[0, 0, 1, 0.93])
         
         # Embed in tkinter
         canvas = FigureCanvasTkAgg(fig, master=self.canvas_frame)
