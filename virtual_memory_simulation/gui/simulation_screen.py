@@ -70,7 +70,7 @@ class SimulationScreen(tk.Frame):
             self,
             text=self._algo_name.upper(),
             font=theme.FONT_TITLE_LARGE,
-            bg="#F5C842",
+            bg="#FFFFFF",
             fg=theme.COLOR_TITLE
         ).place(relx=0.5, rely=0.09, anchor="center")
 
