@@ -28,7 +28,7 @@ class LRU(PageReplacementAlgorithm):
                 # hit – move to most-recently-used end
                 cache.move_to_end(page)
                 self.hit_count += 1
-                self.steps.append(SimStep(i, page, self.snapshot(list(cache)), False))
+                self.steps.append(SimStep(i, page, self._snapshot(list(cache)), False))
             else:
                 self.fault_count += 1
                 evicted = None
@@ -38,6 +38,6 @@ class LRU(PageReplacementAlgorithm):
                     evicted, _ = cache.popitem(last=False)
 
                 cache[page] = True
-                self.steps.append(SimStep(i, page, self.snapshot(list(cache)), True, evicted))
+                self.steps.append(SimStep(i, page, self._snapshot(list(cache)), True, evicted))
 
         return self.steps
