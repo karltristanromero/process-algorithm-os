@@ -79,8 +79,8 @@ class SchedulerBase:
             'activebackground': '#ebd29b',
             'activeforeground': '#000000'
         }
-
-        self.menu_btn = tk.Button(self.root, text="Menu", **button_properties)
+        
+        self.menu_btn = tk.Button(self.root, text="Menu", command=self.return_to_menu, **button_properties)
         self.start_btn = tk.Button(self.root, text="Start", command=self.start_simulation, **button_properties)
         self.add_process_btn = tk.Button(self.root, text="Add Process", command=self.open_add_process_window, **button_properties)
         self.reset_btn = tk.Button(self.root, text="Reset", command=self.reset_simulation, **button_properties)
@@ -110,6 +110,15 @@ class SchedulerBase:
         for key, text_id in self.metrics_labels.items():
             default_text = "--%" if key == "cpu_utilization" else "--"
             self.canvas.itemconfig(text_id, text=default_text)
+
+    def return_to_menu(self):
+        self.root.destroy()
+        
+        # 2. Perform a scoped runtime import to completely eliminate circular import crashes
+        from menu_launcher import LauncherMenu
+        menu = LauncherMenu()
+        menu.setup_menu_window()
+        menu.run()
 
     def clear_canvas(self):
         """FIX: Only deletes simulation blocks. Ignores persistent menu assets, labels, and buttons."""

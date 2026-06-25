@@ -87,36 +87,43 @@ class LauncherMenu:
         )
 
     # =====================================================================
-    # ALGORITHM ROUTING INTERRUPT STUBS (Placeholders)
+    # LIVE ACTIVE ROUTING INTERRUPTS
     # =====================================================================
-    def launch_fcfs(self):
-        messagebox.showinfo("Context Route", "First Come First Served simulator module context not staged.")
-
     def launch_sjf_np(self):
-        # Example linking structure for active modules:
-        # self.root.destroy()  # Shut down menu framework loop
-        # from sjf_non_preemptive import SJFNonPreemptive
-        # app = SJFNonPreemptive("SJF Non-Preemptive", 1920, 1080)
-        # app.setup_main_window()
-        # app.run()
-        messagebox.showinfo("Context Route", "SJF Non-Preemptive simulator module context not staged.")
+        """Clean handoff route to the SJF Non-Preemptive scheduler module."""
+        self.root.destroy()  # Close menu loop
+        from sjf_non_preemptive import SJFNonPreemptive
+        app = SJFNonPreemptive("SJF Non-Preemptive Scheduler", 1920, 1080)
+        app.setup_main_window()
+        app.run()
 
     def launch_sjf_p(self):
-        messagebox.showinfo("Context Route", "SJF Preemptive simulator module context not staged.")
+        """Clean handoff route to the SJF Preemptive scheduler module."""
+        self.root.destroy()  # Close menu loop
+        from sjf_preemptive import SJFPreemptive
+        app = SJFPreemptive("SJF Preemptive Scheduler", 1920, 1080)
+        app.setup_main_window()
+        app.run()
 
     def launch_round_robin(self):
-        # Clean handoff route to your working Round Robin interface module
-        self.root.destroy()
+        """Clean handoff route to the Round Robin scheduler module."""
+        self.root.destroy()  # Close menu loop
         from round_robin import RoundRobin
         app = RoundRobin("Round Robin Scheduler", 1920, 1080)
         app.setup_main_window()
         app.run()
 
+    # =====================================================================
+    # PLACEHOLDER INTERRUPTS (For the other files in your skeleton branch)
+    # =====================================================================
+    def launch_fcfs(self):
+        messagebox.showinfo("Placeholder Link", "FCFS module file has not been implemented yet.")
+
     def launch_priority_np(self):
-        messagebox.showinfo("Context Route", "Priority Non-Preemptive simulator module context not staged.")
+        messagebox.showinfo("Placeholder Link", "Priority Non-Preemptive module file has not been implemented yet.")
 
     def launch_priority_p(self):
-        messagebox.showinfo("Context Route", "Priority Preemptive simulator module context not staged.")
+        messagebox.showinfo("Placeholder Link", "Priority Preemptive module file has not been implemented yet.")
 
     def run(self):
         self.root.mainloop()
