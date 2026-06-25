@@ -294,7 +294,7 @@ class CompareAllScreen(tk.Frame):
         RoundedButton(strip, text="Simulate", width=10,
                           command=self._simulate).pack(side=tk.LEFT, padx=4)
         RoundedButton(strip, text="Reset", width=8,
-                          command=self._reset).pack(tk.LEFT, padx=4)
+                          command=self._reset).pack(side=tk.LEFT, padx=4)
             
     # ── Tabbed notebook ────────────────────────────────────────────────────────
     def _build_notebook(self, parent):
