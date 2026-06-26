@@ -75,9 +75,9 @@ class LauncherMenu:
             # Embed window instance onto canvas tracking workspace
             self.canvas.create_window(col_x, target_y, window=btn, anchor=tk.CENTER)
 
-        # Include explicit application termination route at the very bottom right workspace edge
+        # FIX: Changed command from self.root.destroy to self.return_to_suite
         self.back_btn = tk.Button(
-            self.root, text="Back", command=self.root.destroy, **button_properties
+            self.root, text="Back", command=self.return_to_suite, **button_properties
         )
         
         # Pull layout coordinates dynamically from the configuration dictionary
@@ -119,13 +119,56 @@ class LauncherMenu:
     # PLACEHOLDER INTERRUPTS (For the other files in your skeleton branch)
     # =====================================================================
     def launch_fcfs(self):
-        messagebox.showinfo("Placeholder Link", "FCFS module file has not been implemented yet.")
+        self.root.destroy()
+        from FCFS import FCFS
+        app = FCFS(
+            title="First Come First Serve Scheduler",
+            width=1920,
+            height=1080
+        )
+
+        app.setup_main_window()
+        app.run()
 
     def launch_priority_np(self):
-        messagebox.showinfo("Placeholder Link", "Priority Non-Preemptive module file has not been implemented yet.")
+        self.root.destroy()
+        from priority_non_preemptive import PriorityNonPreemptive
+        app = PriorityNonPreemptive(
+            title="Priority Non-Preemptive Scheduler",
+            width=1920,
+            height=1080
+        )
+
+        app.setup_main_window()
+        app.run()
 
     def launch_priority_p(self):
-        messagebox.showinfo("Placeholder Link", "Priority Preemptive module file has not been implemented yet.")
+        self.root.destroy()
+        from priority_preemptive import PriorityPreemptive
+        app = PriorityPreemptive(
+            title="Priority Preemptive Scheduler",
+            width=1920,
+            height=1080
+        )
+
+        app.setup_main_window()
+        app.run()
+
+    # =====================================================================
+    # BACK NAVIGATION ROUTE TO ROOT LAYER
+    # =====================================================================
+    def return_to_suite(self):
+        """Dismantle CPU menu and safely revert context to the main entry point."""
+        self.root.destroy()
+        
+        # Explicitly shift working directory back to root so main.py finds its assets
+        os.chdir(project_root)
+        
+        # Load and run your master integrated main framework
+        from main import IntegratedSuiteMenu
+        suite = IntegratedSuiteMenu()
+        suite.setup_suite_window()
+        suite.run()
 
     def run(self):
         self.root.mainloop()

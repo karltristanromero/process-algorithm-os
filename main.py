@@ -27,6 +27,8 @@ class IntegratedSuiteMenu:
         self.canvas = None
         self.bg_image = None
 
+        self.root_dir = os.path.abspath(os.path.dirname(__file__))
+
     def setup_suite_window(self):
         """Build canvas viewport and map the 2x2 selector grid matrix."""
         self.bg_image = tk.PhotoImage(file="assets/main_menu.png")

@@ -11,7 +11,7 @@ if project_root not in sys.path:
 import tkinter as tk
 from tkinter import ttk, messagebox
 
-from scheduler_base import SchedulerBase
+from base_sjf_rr import SchedulerBase
 from utils.cpu_sched_theme import COLORS, FONTS, WINDOW_SIZES
 from utils.cpu_sched_config import SIMULATION_PANE, ADD_PROCESS_LAYOUT
 from utils.cpu_sched_theme import BG_SJF_PREEMPTIVE
