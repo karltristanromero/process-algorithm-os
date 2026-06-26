@@ -18,7 +18,7 @@ if sys.platform.startswith("win"):
             pass
 # ------------------------------------
 
-from utils.process_generator import process_pool, process_user_choice
+from mem_management_utils.process_generator import process_pool, process_user_choice
 from mft.fixed_partition import FixedMemoryManager
 from mft.first_fit import first_fit_mft
 from mft.best_fit import best_fit_mft

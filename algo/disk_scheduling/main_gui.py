@@ -6,6 +6,7 @@ from matplotlib.figure import Figure
 from matplotlib.lines import Line2D
 from typing import List
 import sys
+import os
 from pathlib import Path
 
 # Force current directory visibility

@@ -76,6 +76,6 @@ MAIN_MENU_LAYOUT = {
     'btn_pady': 20,              
 
     # Position for the master exit application button
-    'exit_btn_x': 1850,              
-    'exit_btn_y': 1000               
+    'exit_btn_x': 1300,              
+    'exit_btn_y': 900              
 }

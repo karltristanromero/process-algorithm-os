@@ -93,16 +93,100 @@ class IntegratedSuiteMenu:
         menu.run()
 
     def open_memory_management(self):
-        messagebox.showinfo("Suite Route", "Memory Management sub-suite module is currently unlinked.")
+        """Dismantle suite layer and initialize the CPU Scheduling dashboard launcher."""
+        self.root.destroy()
+        sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), 'algo', 'memory_management')))
+        
+        # Import their exact class name
+        from algo.memory_management.memory_management_main import MemoryManagementApp
+        
+        # 1. Provide the root window container their constructor demands
+        mem_root = tk.Tk()
+        
+        # 2. Instantiate using their exact variable signatures
+        app = MemoryManagementApp(mem_root)
+        
+        # 3. Dynamic Back Route Injection (Fixes their empty 'pass' logic without touching their file)
+        def runtime_back_navigation():
+            mem_root.destroy()
+            from main import IntegratedSuiteMenu
+            suite = IntegratedSuiteMenu()
+            suite.setup_suite_window()
+            suite.run()
+            
+        app.go_back_to_main_menu = runtime_back_navigation
+        
+        # 4. Turn control over to their application loop execution layer
+        mem_root.mainloop()
 
     def open_virtual_memory(self):
-        messagebox.showinfo("Suite Route", "Virtual Memory sub-suite module is currently unlinked.")
+        self.root.destroy()
+        
+        target_path = os.path.join(self.root_dir, 'algo', 'virtual_memory_simulation')
+        sys.path.append(target_path)
+        os.chdir(target_path)
+        
+        from algo.virtual_memory_simulation.main import App as VMApp
+        app = VMApp()
+        
+        def return_to_suite():
+            app.destroy()
+            os.chdir(self.root_dir) # Safely restore root environment layout
+            from main import IntegratedSuiteMenu
+            suite = IntegratedSuiteMenu()
+            suite.setup_suite_window()
+            suite.run()
+
+        original_show_select = app.show_algorithm_select
+        
+        def patched_show_algorithm_select():
+            original_show_select()
+            back_btn = tk.Button(
+                app._current_screen, text="⬅ BACK TO SUITE", 
+                font=('Courier', 12, 'bold'), bg='#ffe6ad', fg='#000000',
+                relief=tk.SOLID, bd=1, padx=15, pady=8,
+                activebackground='#ebd29b', command=return_to_suite
+            )
+            back_btn.place(x=30, y=30)
+
+        app.show_algorithm_select = patched_show_algorithm_select
+        patched_show_algorithm_select()
+        app.mainloop()
 
     def open_disk_scheduling(self):
+        """Placeholder for Disk Scheduling execution module wrapper."""
         messagebox.showinfo("Suite Route", "Disk Scheduling sub-suite module is currently unlinked.")
 
     def run(self):
         self.root.mainloop()
+
+    def open_disk_scheduling(self):
+        """Dismantle suite layer and initialize the CPU Scheduling dashboard launcher."""
+        self.root.destroy()
+        
+        target_path = os.path.join(self.root_dir, 'algo', 'disk_scheduling')
+        sys.path.insert(0, target_path)
+        os.chdir(target_path)  # Shift execution context for assets
+        
+        from algo.disk_scheduling.main_gui import DiskSchedulerGUI
+        
+        disk_root = tk.Tk()
+        app = DiskSchedulerGUI(disk_root)
+        
+        # Intercept their Quit button action to make it act as a "Back to Suite" transition
+        def runtime_back_navigation():
+            disk_root.destroy()
+            os.chdir(self.root_dir)  # Reset back to global root directory
+            from main import IntegratedSuiteMenu
+            suite = IntegratedSuiteMenu()
+            suite.setup_suite_window()
+            suite.run()
+            
+        # Re-map the window closure and button trigger dynamically
+        disk_root.protocol("WM_DELETE_WINDOW", runtime_back_navigation)
+        # Note: If they named their button variable specifically, we can intercept its command here
+        
+        disk_root.mainloop()
 
 
 if __name__ == "__main__":
