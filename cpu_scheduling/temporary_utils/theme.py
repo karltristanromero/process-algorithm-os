@@ -1,10 +1,20 @@
 # Centralized UI color codes, font choices, and asset mapping variables
+from pathlib import Path
 
-# Asset paths - using relative paths for easy refactoring
-BACKGROUND = "temporary_assets/background.png"  # Default fallback asset
-BG_ROUND_ROBIN = "temporary_assets/background_rr.png"
-BG_SJF_PREEMPTIVE = "temporary_assets/background_sjf_p.png"
-BG_SJF_NON_PREEMPTIVE = "temporary_assets/background_sjf_np.png"
+# 1. This gets the 'temporary_utils' folder
+UTILS_DIR = Path(__file__).resolve().parent
+
+# 2. This climbs up one level to the main project folder (the parent)
+PROJECT_ROOT = UTILS_DIR.parent
+
+# 3. Now point directly to the sibling 'temporary_assets' folder
+BACKGROUND = (PROJECT_ROOT / "temporary_assets/background.png").as_posix()
+BG_ROUND_ROBIN = (PROJECT_ROOT / "temporary_assets/background_rr.png").as_posix()
+BG_SJF_PREEMPTIVE = (PROJECT_ROOT / "temporary_assets/background_sjf_p.png").as_posix()
+BG_SJF_NON_PREEMPTIVE = (PROJECT_ROOT / "temporary_assets/background_sjf_np.png").as_posix()
+BG_PRIORITY_PREEMPTIVE = (PROJECT_ROOT / "temporary_assets/bg_prio_preemp.png").as_posix()
+BG_PRIORITY_NON_PREEMPTIVE = (PROJECT_ROOT / "temporary_assets/bg_prio_non.png").as_posix()
+BG_FCFS = (PROJECT_ROOT / "temporary_assets/Bg_FCFS.png").as_posix()
 
 # Color scheme - high contrast colors for process visualization
 COLORS = {

@@ -5,7 +5,7 @@ Preemptive Shortest Job First (SJF) Scheduler implementation.
 import tkinter as tk
 from tkinter import ttk, messagebox
 
-from scheduler_base import SchedulerBase
+from base_sjf_rr import SchedulerBase
 from temporary_utils.theme import COLORS, FONTS, WINDOW_SIZES
 from temporary_utils.layout_config import SIMULATION_PANE, ADD_PROCESS_LAYOUT
 from temporary_utils.theme import BG_SJF_PREEMPTIVE

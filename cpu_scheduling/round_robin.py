@@ -1,19 +1,22 @@
 """
-Non-Preemptive Shortest Job First (SJF) Scheduler implementation.
+Round Robin (RR) Scheduler implementation inheriting from SchedulerBase.
+Integrates configuration geometry layouts from layout_config.py and theme.py styles.
 """
+
 import tkinter as tk
 from tkinter import ttk, messagebox
 
-from scheduler_base import SchedulerBase
+from base_sjf_rr import SchedulerBase
 from temporary_utils.theme import COLORS, FONTS, WINDOW_SIZES
 from temporary_utils.layout_config import SIMULATION_PANE, ADD_PROCESS_LAYOUT
-from temporary_utils.theme import BG_SJF_NON_PREEMPTIVE
+from temporary_utils.theme import BG_ROUND_ROBIN
 
-class SJFNonPreemptive(SchedulerBase):
+class RoundRobin(SchedulerBase):
     def __init__(self, title, width, height):
         super().__init__(title, width, height)
-        # FIX: Point strictly to the Non-Preemptive SJF artwork asset
-        self.background_path = BG_SJF_NON_PREEMPTIVE
+        # FIX: Point strictly to the Round Robin artwork asset
+        self.background_path = BG_ROUND_ROBIN
+        self.time_quantum = 2  
         self.process_table = None  
         self.add_process_window = None
 
@@ -45,6 +48,11 @@ class SJFNonPreemptive(SchedulerBase):
         tk.Label(input_frame, text="Burst Time:", font=FONTS['default'], bg='#2b2b2b', fg='white').grid(row=1, column=0, sticky=tk.W, pady=5)
         self.burst_entry = tk.Entry(input_frame, font=FONTS['default'], width=f_width)
         self.burst_entry.grid(row=1, column=1, padx=(10, 0), pady=5, sticky=tk.W)
+
+        tk.Label(input_frame, text="Time Quantum:", font=FONTS['default'], bg='#2b2b2b', fg='white').grid(row=2, column=0, sticky=tk.W, pady=5)
+        self.quantum_entry = tk.Entry(input_frame, font=FONTS['default'], width=f_width)
+        self.quantum_entry.grid(row=2, column=1, padx=(10, 0), pady=5, sticky=tk.W)
+        self.quantum_entry.insert(0, str(self.time_quantum))
 
         btn_frame = tk.Frame(main_frame, bg='#2b2b2b')
         btn_frame.pack(fill=tk.X, pady=(10, 0))
@@ -102,29 +110,47 @@ class SJFNonPreemptive(SchedulerBase):
         self.refresh_process_table()
 
     def add_process(self):
-        """Add a new process while strictly capping registration bounds."""
-        if len(self.processes) >= 10:
-            messagebox.showwarning("Capped Capacity", "Simulation maximum boundary condition reached (10 Processes).")
-            return
-        try:
-            arrival_time = int(self.arrival_entry.get())
-            burst_time = int(self.burst_entry.get())
+        """Validates entry parameters; saves quantum modifications if parameters are left blank."""
+        arrival_raw = self.arrival_entry.get().strip()
+        burst_raw = self.burst_entry.get().strip()
+        quantum_raw = self.quantum_entry.get().strip()
 
-            if arrival_time < 0 or burst_time <= 0:
-                raise ValueError("Values must be non-negative operational metrics.")
+        if not arrival_raw and not burst_raw:
+            try:
+                time_quantum = int(quantum_raw)
+                if time_quantum <= 0: raise ValueError
+                self.time_quantum = time_quantum  
+                self.add_process_window.destroy()  
+                return
+            except ValueError:
+                messagebox.showerror("Invalid Input", "Time quantum must be an integer greater than 0.")
+                return
+
+        try:
+            arrival_time = int(arrival_raw)
+            burst_time = int(burst_raw)
+            time_quantum = int(quantum_raw)
+
+            if arrival_time < 0 or burst_time <= 0 or time_quantum <= 0: raise ValueError
+            self.time_quantum = time_quantum
+
+            if len(self.processes) >= 10:
+                messagebox.showwarning("Capped Capacity", "Simulation maximum bounds reached (10 Processes).")
+                return
 
             pid = f"P{len(self.processes) + 1}"
             process = {
                 'pid': pid, 'arrival_time': arrival_time, 'burst_time': burst_time,
-                'completion_time': 0, 'start_time': -1, 'color': self.generate_process_color(len(self.processes))
+                'remaining_time': burst_time, 'completion_time': 0, 'start_time': -1,
+                'color': self.generate_process_color(len(self.processes))
             }
             self.processes.append(process)
             self.refresh_process_table()
 
             self.arrival_entry.delete(0, tk.END)
             self.burst_entry.delete(0, tk.END)
-        except ValueError as e:
-            messagebox.showerror("Invalid Input", "Provide standard integers for parameters.")
+        except ValueError:
+            messagebox.showerror("Invalid Input", "Provide standard operational integers for parameters.")
 
     def edit_process(self):
         """Open single unified dialog window styled with thin-bordered yellow properties."""
@@ -198,6 +224,9 @@ class SJFNonPreemptive(SchedulerBase):
             self.setup_add_process_window()
         else:
             self.add_process_window.lift()
+        if self.quantum_entry and self.quantum_entry.winfo_exists():
+            self.quantum_entry.delete(0, tk.END)
+            self.quantum_entry.insert(0, str(self.time_quantum))
 
     def reset_simulation(self):
         self.processes.clear()
@@ -212,45 +241,70 @@ class SJFNonPreemptive(SchedulerBase):
             return
         if self.add_process_window and self.add_process_window.winfo_exists():
             self.add_process_window.destroy()
-        self.run_non_preemptive_sjf()
+        self.run_round_robin()
 
-    def run_non_preemptive_sjf(self):
+    def run_round_robin(self):
         processes = [p.copy() for p in self.processes]
-        processes.sort(key=lambda p: (p['arrival_time'], p['burst_time']))
+        processes.sort(key=lambda p: p['arrival_time'])
 
         time, completed, n = 0, 0, len(processes)
-        is_completed = [False] * n
-        start_times, completion_times = [-1] * n, [0] * n
         execution_segments = []
+        first_start_times = [-1] * n
 
-        while completed != n:
-            available = [i for i in range(n) if processes[i]['arrival_time'] <= time and not is_completed[i]]
-            if available:
-                idx = min(available, key=lambda i: (processes[i]['burst_time'], processes[i]['arrival_time']))
-                start_times[idx] = time
-                execution_segments.append((idx, time, time + processes[idx]['burst_time']))
-                time += processes[idx]['burst_time']
-                completion_times[idx] = time
-                is_completed[idx] = True
-                completed += 1
+        from collections import deque
+        ready_queue = deque()
+        in_queue = [False] * n
+        arrival_idx = 0
+
+        while completed < n or ready_queue:
+            while arrival_idx < n and processes[arrival_idx]['arrival_time'] <= time:
+                if not in_queue[arrival_idx]:
+                    ready_queue.append(arrival_idx)
+                    in_queue[arrival_idx] = True
+                arrival_idx += 1
+
+            if ready_queue:
+                idx = ready_queue.popleft()
+                in_queue[idx] = False
+
+                if first_start_times[idx] == -1:
+                    first_start_times[idx] = time
+
+                exec_time = min(self.time_quantum, processes[idx]['remaining_time'])
+                execution_segments.append((idx, time, time + exec_time))
+                time += exec_time
+                processes[idx]['remaining_time'] -= exec_time
+
+                while arrival_idx < n and processes[arrival_idx]['arrival_time'] <= time:
+                    if not in_queue[arrival_idx]:
+                        ready_queue.append(arrival_idx)
+                        in_queue[arrival_idx] = True
+                    arrival_idx += 1
+
+                if processes[idx]['remaining_time'] > 0:
+                    ready_queue.append(idx)
+                    in_queue[idx] = True
+                else:
+                    processes[idx]['completion_time'] = time
+                    completed += 1
             else:
-                future = [processes[i]['arrival_time'] for i in range(n) if processes[i]['arrival_time'] > time and not is_completed[i]]
-                time = min(future) if future else time + 1
+                time = processes[arrival_idx]['arrival_time'] if arrival_idx < n else time + 1
 
-        self.animate_execution_loop(execution_segments, processes, start_times, completion_times)
+        self.animate_execution_loop(execution_segments, processes, first_start_times)
 
-    def animate_execution_loop(self, segments, processes, *args, step=0):
-        """Animate process blocks cleanly using SIMULATION_PANE coordinates and large timestamps."""
+    def animate_execution_loop(self, segments, processes, first_start_times, step=0):
+        """Animate process blocks cleanly along a single horizontal row track using SIMULATION_PANE spatial parameters."""
         self.root.update()
         canvas_width = max(self.canvas.winfo_width(), 1000)
         total_time = segments[-1][2] if segments else 1
         
+        # Read exact horizontal margins from layout_config variables
         l_margin = SIMULATION_PANE['left_margin']
         r_margin = SIMULATION_PANE['right_margin']
         time_scale = (canvas_width - (l_margin + r_margin)) / total_time
         
         p_height = SIMULATION_PANE['process_block_height']
-        y_start = SIMULATION_PANE['y_start_coordinate']  
+        y_start = SIMULATION_PANE['y_start_coordinate']
         t_offset = SIMULATION_PANE['timestamp_offset_y']
 
         if step == 0:
@@ -264,23 +318,24 @@ class SJFNonPreemptive(SchedulerBase):
             bar_x = l_margin + s_time * time_scale
             bar_w = (e_time - s_time) * time_scale
 
-            # Render process rectangle block
+            # Seamless process block rendering
             self.canvas.create_rectangle(bar_x, y + 5, bar_x + bar_w, y + 5 + p_height - 10, fill=process['color'], outline='white')
             self.canvas.create_text(bar_x + bar_w / 2, y + 5 + (p_height - 10) / 2, text=process['pid'], fill='white', font=FONTS['default'])
             
-            # FIX: Swapped font from 'small' to 'metric' for large yellow timestamps
+            # High-contrast pixelated timestamps printed explicitly at segment boundaries
             self.canvas.create_text(bar_x, y + p_height + t_offset, text=str(s_time), fill='#ffcc00', font=FONTS['metric'], anchor=tk.N)
             self.canvas.create_text(bar_x + bar_w, y + p_height + t_offset, text=str(e_time), fill='#ffcc00', font=FONTS['metric'], anchor=tk.N)
 
-            self.root.after(400, lambda: self.animate_execution_loop(segments, processes, args[0], args[1], step=step+1))
+            # Explicitly pass step=step+1 keyword parameter to preserve variable execution scope
+            self.root.after(450, lambda: self.animate_execution_loop(segments, processes, first_start_times, step=step+1))
         else:
-            self.finalize_metrics_calculations(processes, args[1])
+            self.finalize_metrics_calculations(processes, segments)
 
-    def finalize_metrics_calculations(self, processes, completion_times):
+    def finalize_metrics_calculations(self, processes, segments):
         n = len(processes)
-        total_tat = sum(completion_times[i] - processes[i]['arrival_time'] for i in range(n))
-        total_wt = sum((completion_times[i] - processes[i]['arrival_time']) - processes[i]['burst_time'] for i in range(n))
-        total_time = max(completion_times) if completion_times else 1
+        total_tat = sum(p['completion_time'] - p['arrival_time'] for p in processes)
+        total_wt = sum((p['completion_time'] - p['arrival_time']) - p['burst_time'] for p in processes)
+        total_time = segments[-1][2] if segments else 1
         
         avg_tat = total_tat / n
         avg_wt = total_wt / n
@@ -291,7 +346,6 @@ class SJFNonPreemptive(SchedulerBase):
 
 
 if __name__ == "__main__":
-    # Test blocks now initialize with 0 items, tracking strictly from P1 onwards
-    app = SJFNonPreemptive("Non-Preemptive SJF Scheduler", 1920, 1080)
+    app = RoundRobin("Round Robin Scheduler", 1920, 1080)
     app.setup_main_window()
     app.run()
