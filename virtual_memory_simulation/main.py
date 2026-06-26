@@ -53,13 +53,20 @@ class App(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("Virtual Memory Page Replacement Simulator")
+
+        # ── Detect screen size and scale to fit ───────────────
+        screen_w = self.winfo_screenwidth()
+        screen_h = self.winfo_screenheight()
+
+        # Use 90% of screen to leave room for taskbar
+        theme.WINDOW_WIDTH  = int(screen_w * 0.90)
+        theme.WINDOW_HEIGHT = int(screen_h * 0.90)
+
         self.geometry(f"{theme.WINDOW_WIDTH}x{theme.WINDOW_HEIGHT}")
-        self.resizable(False, False)
-        self.state("zoomed")
+        self.resizable(True, True)   # allow resizing too
+        self.state("zoomed")         # start maximized
 
-        # Load custom fonts after root is created
         theme.load_fonts()
-
         self._current_screen = None
         self.show_algorithm_select()
 
