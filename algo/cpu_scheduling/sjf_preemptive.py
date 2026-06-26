@@ -1,14 +1,20 @@
 """
 Preemptive Shortest Job First (SJF) Scheduler implementation.
 """
+import sys
+import os
+
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
 
 import tkinter as tk
 from tkinter import ttk, messagebox
 
 from scheduler_base import SchedulerBase
-from temporary_utils.theme import COLORS, FONTS, WINDOW_SIZES
-from temporary_utils.layout_config import SIMULATION_PANE, ADD_PROCESS_LAYOUT
-from temporary_utils.theme import BG_SJF_PREEMPTIVE
+from utils.cpu_sched_theme import COLORS, FONTS, WINDOW_SIZES
+from utils.cpu_sched_config import SIMULATION_PANE, ADD_PROCESS_LAYOUT
+from utils.cpu_sched_theme import BG_SJF_PREEMPTIVE
 
 class SJFPreemptive(SchedulerBase):
     def __init__(self, title, width, height):

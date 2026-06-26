@@ -1,12 +1,14 @@
-"""
-Central launcher system window managing the dashboard main menu panel.
-Draws a 3x2 grid structure over background.png with absolute alignment rules.
-"""
+import sys
+import os
+
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
 
 import tkinter as tk
 from tkinter import messagebox
-from temporary_utils.theme import BACKGROUND, COLORS, FONTS
-from temporary_utils.layout_config import MENU_LAYOUT
+from utils.cpu_sched_theme import BG_CPU_SCHED, COLORS, FONTS
+from utils.cpu_sched_config import MENU_LAYOUT
 
 
 class LauncherMenu:
@@ -25,7 +27,7 @@ class LauncherMenu:
 
     def setup_menu_window(self):
         """Build the master canvas workspace and plot the 3x2 center layout grid."""
-        self.bg_image = tk.PhotoImage(file=BACKGROUND)
+        self.bg_image = tk.PhotoImage(file=BG_CPU_SCHED)
         
         # Instantiate master canvas mapping layer
         self.canvas = tk.Canvas(self.root, bg=COLORS['background'], highlightthickness=0, bd=0)

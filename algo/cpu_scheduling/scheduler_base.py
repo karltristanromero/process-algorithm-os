@@ -2,16 +2,25 @@
 Base scheduler class utilizing a unified Master Canvas system with persistent
 widget tracking to prevent layout items from disappearing during canvas wipes.
 """
+import sys
+import os
+
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
 
 import tkinter as tk
-from temporary_utils.theme import BACKGROUND, COLORS, FONTS
-from temporary_utils.layout_config import METRICS_LAYOUT, SIMULATION_PANE, BUTTONS_LAYOUT
+from utils.cpu_sched_theme import BG_CPU_SCHED, COLORS, FONTS
+from utils.cpu_sched_config import METRICS_LAYOUT, SIMULATION_PANE, BUTTONS_LAYOUT
 
 
 class SchedulerBase:
     """Base class for scheduler interfaces utilizing absolute master canvas layering."""
 
-    def __init__(self, title, width, height):
+    def __init__(self, title, width, height):        
+        from utils.cpu_sched_theme import BG_CPU_SCHED
+        self.background_path = BG_CPU_SCHED
+        
         self.root = tk.Tk()
         self.root.title(title)
         

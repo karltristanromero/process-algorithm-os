@@ -1,10 +1,10 @@
 # Centralized UI color codes, font choices, and asset mapping variables
 
 # Asset paths - using relative paths for easy refactoring
-BACKGROUND = "temporary_assets/background.png"  # Default fallback asset
-BG_ROUND_ROBIN = "temporary_assets/background_rr.png"
-BG_SJF_PREEMPTIVE = "temporary_assets/background_sjf_p.png"
-BG_SJF_NON_PREEMPTIVE = "temporary_assets/background_sjf_np.png"
+BG_CPU_SCHED = "assets/background_cpu_sched.png"  
+BG_ROUND_ROBIN = "assets/background_rr.png"
+BG_SJF_PREEMPTIVE = "assets/background_sjf_p.png"
+BG_SJF_NON_PREEMPTIVE = "assets/background_sjf_np.png"
 
 # Color scheme - high contrast colors for process visualization
 COLORS = {
