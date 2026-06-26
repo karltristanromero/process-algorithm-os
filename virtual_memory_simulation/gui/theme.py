@@ -4,8 +4,13 @@ All GUI files import from here to stay consistent.
 '''
 
 # ── Window ─────────────────────────────────────────────────────────────────────
+<<<<<<< HEAD
+WINDOW_WIDTH  = 1280   # fallback only — overwritten at runtime by main.py
+WINDOW_HEIGHT = 720    # fallback only — overwritten at runtime by main.py
+=======
 WINDOW_WIDTH = 1540
 WINDOW_HEIGHT = 850
+>>>>>>> 2ec6bbabd0781473477be6f8cd7227741393929e
 
 # ── Colors ─────────────────────────────────────────────────────────────────────
 COLOR_TITLE       = "#2D2466"   # dark purple — titles and headings
