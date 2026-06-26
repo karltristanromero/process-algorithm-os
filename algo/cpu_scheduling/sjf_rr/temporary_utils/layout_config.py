@@ -62,3 +62,20 @@ MENU_LAYOUT = {
     'back_btn_x': 1290,              
     'back_btn_y': 897    
 }
+# =====================================================================
+# 6. INTEGRATED SUITE MAIN MENU LAYOUT (2x2 Grid Matrix)
+# =====================================================================
+MAIN_MENU_LAYOUT = {
+    'col0_x': 610,                   # Left column absolute X alignment
+    'col1_x': 1335,                  # Right column absolute X alignment
+    'start_y': 480,                  # Top row absolute Y alignment
+    'row_gap_y': 160,                # Vertical distance between the two rows
+    
+    # Sizing parameters for the macro suite selectors
+    'btn_padx': 48,             
+    'btn_pady': 20,              
+
+    # Position for the master exit application button
+    'exit_btn_x': 1850,              
+    'exit_btn_y': 1000               
+}
