@@ -53,6 +53,7 @@ class App(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("Virtual Memory Page Replacement Simulator")
+<<<<<<< HEAD
 
         # ── Detect screen size and scale to fit ───────────────
         screen_w = self.winfo_screenwidth()
@@ -67,6 +68,15 @@ class App(tk.Tk):
         self.state("zoomed")         # start maximized
 
         theme.load_fonts()
+=======
+        self.geometry(f"{theme.WINDOW_WIDTH}x{theme.WINDOW_HEIGHT}")
+        self.resizable(False, False)
+        self.state("zoomed")
+
+        # Load custom fonts after root is created
+        theme.load_fonts()
+
+>>>>>>> 2ec6bbabd0781473477be6f8cd7227741393929e
         self._current_screen = None
         self.show_algorithm_select()
 
@@ -78,8 +88,12 @@ class App(tk.Tk):
     def show_algorithm_select(self):
         self._clear()
         screen = AlgorithmSelectScreen(self, on_select=self._on_algo_selected)
+<<<<<<< HEAD
         # CHANGE: Use relwidth and relheight instead of absolute theme values
         screen.place(x=0, y=0, relwidth=1.0, relheight=1.0)
+=======
+        screen.place(x=0, y=0, width=theme.WINDOW_WIDTH, height=theme.WINDOW_HEIGHT)
+>>>>>>> 2ec6bbabd0781473477be6f8cd7227741393929e
         self._current_screen = screen
 
     def _on_algo_selected(self, algo_key: str):
@@ -92,8 +106,12 @@ class App(tk.Tk):
                 algo_key=algo_key,
                 on_back=self.show_algorithm_select
             )
+<<<<<<< HEAD
         # CHANGE: Use relwidth and relheight instead of absolute theme values
         screen.place(x=0, y=0, relwidth=1.0, relheight=1.0)
+=======
+        screen.place(x=0, y=0, width=theme.WINDOW_WIDTH, height=theme.WINDOW_HEIGHT)
+>>>>>>> 2ec6bbabd0781473477be6f8cd7227741393929e
         self._current_screen = screen
 
 if __name__ == "__main__":
