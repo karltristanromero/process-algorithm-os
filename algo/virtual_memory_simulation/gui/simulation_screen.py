@@ -11,28 +11,27 @@ Compare All layout:
   Bottom    : comparison summary table + back button
 """
 
-import tkinter as tk
-from tkinter import ttk, messagebox
-import random
 import os
+import random
+import sys
+import tkinter as tk
+from tkinter import messagebox, ttk
 from PIL import Image, ImageTk
 
 import gui.theme as theme
-from gui.widgets import RoundedButton, FrameTraceTable, StatsBar
+from gui.widgets import FrameTraceTable, RoundedButton, StatsBar
 
-import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-from algorithms import FIFO, Optimal, LRU, LRUApproximation, LFU, MFU
-
+from algorithms import FIFO, LFU, MFU, LRU, LRUApproximation, Optimal
 
 # ── Algorithm registry ─────────────────────────────────────────────────────────
 ALGO_MAP = {
-    "FIFO":         ("First In, First Out (FIFO)",      FIFO),
-    "OPTIMAL":      ("Optimal",                         Optimal),
-    "LRU":          ("Least Recently Used (LRU)",       LRU),
-    "LRU_APPROX":   ("LRU Approximation",               LRUApproximation),
-    "LFU":          ("Least Frequently Used (LFU)",     LFU),
-    "MFU":          ("Most Frequenly Used (MFU)",       MFU),
+    "FIFO": ("First In, First Out (FIFO)", FIFO),
+    "OPTIMAL": ("Optimal", Optimal),
+    "LRU": ("Least Recently Used (LRU)", LRU),
+    "LRU_APPROX": ("LRU Approximation", LRUApproximation),
+    "LFU": ("Least Frequently Used (LFU)", LFU),
+    "MFU": ("Most Frequenly Used (MFU)", MFU),
 }
 
 NUM_FRAMES = 4
@@ -51,20 +50,29 @@ class SimulationScreen(tk.Frame):
         super().__init__(parent)
         self.algo_key = algo_key
         self.on_back = on_back
-        self._bg_image = None
+
+        # Image memory references to guard against Garbage Collection
+        self.original_bg = None
+        self._bg_image_tk = None
+
         self._algo_name, self._algo_class = ALGO_MAP[algo_key]
+
+        # Load raw asset once
+        bg_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "SIMULATION_BG.png")
+        if os.path.exists(bg_path):
+            self.original_bg = Image.open(bg_path)
+
         self._build()
+
+        # Bind configuration updates to recalculate background boundaries
+        if self.original_bg:
+            self.bind("<Configure>", self._resize_background)
 
     def _build(self):
         # ── Background ────────────────────────────────────────────
-        bg_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "SIMULATION_BG.png")
-        if os.path.exists(bg_path):
-            img = Image.open(bg_path).resize(
-                (theme.WINDOW_WIDTH, theme.WINDOW_HEIGHT), Image.LANCZOS)
-            self._bg_image = ImageTk.PhotoImage(img)
-            tk.Label(self, image=self._bg_image).place(
-                x=0, y=0, relwidth=1, relheight=1)
-            
+        self.bg_label = tk.Label(self)
+        self.bg_label.place(x=0, y=0, relwidth=1, relheight=1)
+
         # ── Algorithm title (above panel, over BG) ────────────────
         tk.Label(
             self,
@@ -90,7 +98,16 @@ class SimulationScreen(tk.Frame):
 
         self._build_results_panel(panel)
         self._build_input_panel(panel)
-        
+
+    def _resize_background(self, event):
+        '''Fires when user resizes or zooms the Simulation Window.'''
+        new_width = event.width
+        new_height = event.height
+
+        if new_width > 10 and new_height > 10:
+            resized_img = self.original_bg.resize((new_width, new_height), Image.Resampling.LANCZOS)
+            self._bg_image_tk = ImageTk.PhotoImage(resized_img)
+            self.bg_label.config(image=self._bg_image_tk)
 
     # ── Left: Input Panel ──────────────────────────────────────────────────────
     def _build_input_panel(self, parent):
@@ -227,17 +244,23 @@ class CompareAllScreen(tk.Frame):
     def __init__(self, parent, on_back):
         super().__init__(parent)
         self.on_back = on_back
-        self._bg_image = None
+
+        self.original_bg = None
+        self._bg_image_tk = None
+
+        bg_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "SIMULATION_BG.png")
+        if os.path.exists(bg_path):
+            self.original_bg = Image.open(bg_path)
+
         self._build()
+
+        if self.original_bg:
+            self.bind("<Configure>", self._resize_background)
 
     def _build(self):
         # ── Background ────────────────────────────────────────────
-        bg_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "SIMULATION_BG.png")
-        if os.path.exists(bg_path):
-            img = Image.open(bg_path).resize(
-                (theme.WINDOW_WIDTH, theme.WINDOW_HEIGHT), Image.LANCZOS)
-            self._bg_image = ImageTk.PhotoImage(img)
-            tk.Label(self, image=self._bg_image).place(x=0, y=0, relwidth=1, relheight=1)
+        self.bg_label = tk.Label(self)
+        self.bg_label.place(x=0, y=0, relwidth=1, relheight=1)
 
         # ── Title ─────────────────────────────────────────────────
         tk.Label(
@@ -257,6 +280,16 @@ class CompareAllScreen(tk.Frame):
         self._build_input_strip(panel)
         self._build_notebook(panel)
         self._build_summary(panel)
+
+    def _resize_background(self, event):
+        '''Fires when user resizes or zooms the Comparison Window.'''
+        new_width = event.width
+        new_height = event.height
+
+        if new_width > 10 and new_height > 10:
+            resized_img = self.original_bg.resize((new_width, new_height), Image.Resampling.LANCZOS)
+            self._bg_image_tk = ImageTk.PhotoImage(resized_img)
+            self.bg_label.config(image=self._bg_image_tk)
 
     # ── Input strip (top bar) ──────────────────────────────────────────────────
     def _build_input_strip(self, parent):
@@ -298,7 +331,6 @@ class CompareAllScreen(tk.Frame):
             
     # ── Tabbed notebook ────────────────────────────────────────────────────────
     def _build_notebook(self, parent):
-        # Style the notebook tabs to match theme
         style = ttk.Style()
         style.configure(
             "Custom.TNotebook",
@@ -324,15 +356,12 @@ class CompareAllScreen(tk.Frame):
         self._tab_stats = {}      # algo_key -> StatsBar
 
         for key, (name, _) in ALGO_MAP.items():
-            # 1. Base Tab Frame
             tab = tk.Frame(self._notebook, bg=theme.COLOR_PANEL_BG)
             tab.columnconfigure(0, weight=1)
-            # Row 0 (Table) expands; Row 1 (Stats) stays fixed size
             tab.rowconfigure(0, weight=1) 
             tab.rowconfigure(1, weight=0)
             self._notebook.add(tab, text=name)
 
-            # 2. Top Section: Canvas and Scrollbar for the Table ONLY
             table_container = tk.Frame(tab, bg=theme.COLOR_PANEL_BG)
             table_container.grid(row=0, column=0, sticky="nsew", padx=8, pady=(8, 4))
             table_container.columnconfigure(0, weight=1)
@@ -345,13 +374,11 @@ class CompareAllScreen(tk.Frame):
             canvas.grid(row=0, column=0, sticky="nsew")
             scrollbar.grid(row=0, column=1, sticky="ns")
 
-            # Inner frame inside the canvas to hold the actual FrameTraceTable
             scrollable_table_frame = tk.Frame(canvas, bg=theme.COLOR_PANEL_BG)
             scrollable_table_frame.columnconfigure(0, weight=1)
             
             canvas_window = canvas.create_window((0, 0), window=scrollable_table_frame, anchor="nw")
 
-            # 3. Handle responsive resizing for the canvas contents
             def _configure_scroll_region(event, c=canvas):
                 c.configure(scrollregion=c.bbox("all"))
 
@@ -361,7 +388,6 @@ class CompareAllScreen(tk.Frame):
             scrollable_table_frame.bind("<Configure>", _configure_scroll_region)
             canvas.bind("<Configure>", _configure_canvas_window)
 
-            # 4. Optional: Mousewheel scrolling scoped to this canvas
             def _on_mousewheel(event, c=canvas):
                 delta = event.delta if event.delta else (-120 if event.num == 5 else 120)
                 c.yview_scroll(int(-1 * (delta / 120)), "units")
@@ -370,12 +396,9 @@ class CompareAllScreen(tk.Frame):
             canvas.bind_all("<Button-4>", lambda e, c=canvas: _on_mousewheel(e, c))
             canvas.bind_all("<Button-5>", lambda e, c=canvas: _on_mousewheel(e, c))
 
-            # 5. Populate Content
-            # The Trace Table goes INSIDE the scrollable Canvas frame
             trace = FrameTraceTable(scrollable_table_frame)
             trace.grid(row=0, column=0, sticky="nsew")
 
-            # The Stats Bar goes directly into the fixed bottom row of the MAIN tab frame
             stats = StatsBar(tab)
             stats.grid(row=1, column=0, sticky="ew", padx=8, pady=(0, 6))
 
@@ -399,7 +422,6 @@ class CompareAllScreen(tk.Frame):
         self._summary_frame = tk.Frame(summary_outer, bg=theme.COLOR_PANEL_BG)
         self._summary_frame.grid(row=1, column=0, sticky="ew")
 
-        # Back button
         RoundedButton(
             summary_outer, text="Back", width=10,
             command=self.on_back
