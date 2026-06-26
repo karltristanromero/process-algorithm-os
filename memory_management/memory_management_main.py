@@ -208,8 +208,24 @@ class MemoryManagementApp:
                 self.canvas.itemconfig(self.bg_canvas_item, image=self.bg_image_ref)
 
     def go_back_to_main_menu(self):
-        """ Left empty as there is no central main menu shell linking the dashboard algorithms yet. """
-        pass
+        """ Stops all automated processing, cross-launches the root menu shell script, and closes down the current module. """
+        if self.auto_mode_running:
+            self.toggle_auto_mode()
+            
+        # Get absolute structural coordinates of main.py relative to memory_management folder
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        parent_dir = os.path.dirname(current_dir)
+        main_py_path = os.path.join(parent_dir, "main.py")
+        
+        # Spawn the root menu layout script independently
+        try:
+            subprocess.Popen([sys.executable, main_py_path])
+        except Exception as e:
+            messagebox.showerror("Navigation Error", f"Could not launch main shell interface:\n{str(e)}")
+            return
+            
+        # Safely shut down the local fullscreen Tkinter environment loop
+        self.window_root.destroy()
 
     def update_status(self, message):
         self.canvas.itemconfig(self.status_text_id, text=message, fill=Theme.PRIMARY)
