@@ -10,6 +10,7 @@ from tkinter import messagebox
 from utils.cpu_sched_theme import BG_CPU_SCHED, COLORS, FONTS
 from utils.cpu_sched_config import MENU_LAYOUT
 
+
 class LauncherMenu:
     """Main menu system routing calls to individual execution simulator modules."""
 

@@ -298,7 +298,7 @@ class RoundRobin(SchedulerBase):
         canvas_width = max(self.canvas.winfo_width(), 1000)
         total_time = segments[-1][2] if segments else 1
         
-        # Read exact horizontal margins from layout_config variables
+        # Read exact horizontal margins from cpu_sched_config variables
         l_margin = SIMULATION_PANE['left_margin']
         r_margin = SIMULATION_PANE['right_margin']
         time_scale = (canvas_width - (l_margin + r_margin)) / total_time
