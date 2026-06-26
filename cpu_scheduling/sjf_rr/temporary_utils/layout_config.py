@@ -7,9 +7,9 @@ on the master canvas window layer.
 # 1. LIVE METRICS AREA COORDINATES (Top Section Group)
 # =====================================================================
 METRICS_LAYOUT = {
-    'start_x': 320,                  
+    'start_x': 380,                  
     'start_y': 720,                   
-    'spacing_x': 350,                
+    'spacing_x': 340,                
     'value_offset_y': 40             # FIX: Vertical gap pushing metrics directly UNDER names
 }
 
@@ -19,8 +19,8 @@ METRICS_LAYOUT = {
 SIMULATION_PANE = {
     'y_start_coordinate': 350,       
     'process_block_height': 80,      
-    'left_margin': 100,              
-    'right_margin': 130,             
+    'left_margin': 120,              
+    'right_margin': 100,             
     'timestamp_offset_y': 20,        
 }
 
