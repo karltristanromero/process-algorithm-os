@@ -1,263 +1,125 @@
+"""
+Base scheduler class.
+Manages canvas layering, dynamic background scaling, and persistent UI tracking.
+"""
+
 import tkinter as tk
-from tkinter import Canvas
+from typing import Optional, List, Dict, Any
 from PIL import Image, ImageTk
-
-from temporary_utils.layout_config import (
-    GANTT_CHART,
-    METRIC_LOCATIONS
-)
-from temporary_utils.theme import UI_CONFIG
-
+from temporary_utils.theme import BACKGROUND, COLORS, FONTS
+from temporary_utils.layout_config import METRICS_LAYOUT, BUTTONS_LAYOUT
 
 class SchedulerBase:
+    # Explicit type hints to satisfy Pylance
+    root: tk.Tk
+    canvas: Optional[tk.Canvas]
+    add_process_window: Optional[tk.Toplevel]
+    processes: List[Dict[str, Any]]
+    metrics_labels: Dict[str, int]
+    persistent_canvas_items: List[int]
+    bg_image: Optional[ImageTk.PhotoImage]
 
     def __init__(self, title: str, width: int, height: int):
-
         self.root = tk.Tk()
         self.root.title(title)
-        self.root.overrideredirect(True)
+        self.root.attributes('-fullscreen', True)
+        self.root.bind('<Escape>', lambda event: self.root.destroy())
 
+        self.processes = []
+        self.canvas = None
+        self.add_process_window = None
+        self.metrics_labels = {}
+        self.persistent_canvas_items = []
+        self.background_path = BACKGROUND
+        self.bg_image = None
+
+    def generate_process_color(self, index: int) -> str:
+        colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#ffe66d', '#f7971e', '#ff9ff3', '#54a0ff']
+        return colors[index % len(colors)]
+
+    def setup_main_window(self):
+        """Initializes canvas, scales background, and layers UI elements."""
         screen_w = self.root.winfo_screenwidth()
         screen_h = self.root.winfo_screenheight()
 
-        self.root.geometry(f"{screen_w}x{screen_h}+0+0")
+        # 1. Initialize Canvas
+        self.canvas = tk.Canvas(self.root, bg=COLORS['background'], highlightthickness=0, bd=0)
+        self.canvas.pack(fill=tk.BOTH, expand=True)
 
-        # Encapsulated attributes
-        self._processes = []
-        self._metrics_labels = {}
+        # 2. Scale and Draw Background
+        try:
+            raw_img = Image.open(self.background_path)
+            resized_img = raw_img.resize((screen_w, screen_h), Image.Resampling.LANCZOS)
+            self.bg_image = ImageTk.PhotoImage(resized_img)
+            bg_id = self.canvas.create_image(0, 0, image=self.bg_image, anchor=tk.NW)
+            self.persistent_canvas_items.append(bg_id)
+            self.canvas.tag_lower(bg_id)  # Ensure background is the bottom layer
+        except Exception as e:
+            print(f"Background scaling error: {e}")
+        
+        # 3. Setup Metrics (Visual order: WT, TAT, Throughput, CPU)
+        metrics_keys = ["average_wt", "average_tat", "throughput", "cpu_utilization"]
+        m_x, m_y = METRICS_LAYOUT['start_x'], METRICS_LAYOUT['start_y']
+        m_space = METRICS_LAYOUT['spacing_x']
+        v_offset = METRICS_LAYOUT['value_offset_y']
 
-        self._canvas = Canvas(
-            self.root,
-            bd=0,
-            highlightthickness=0,
-            bg="#F3EEFF"
-        )
-
-        self._bg_image = None
-        self._bg_label = None
-
-        self.root.bind("<ButtonPress-1>", self._start_move)
-        self.root.bind("<B1-Motion>", self._do_move)
-
-    # =================================================
-    # Window Dragging
-    # =================================================
-
-    def _start_move(self, event):
-        self._x = event.x
-        self._y = event.y
-
-    def _do_move(self, event):
-        x = self.root.winfo_x() + (event.x - self._x)
-        y = self.root.winfo_y() + (event.y - self._y)
-        self.root.geometry(f"+{x}+{y}")
-
-    # =================================================
-    # Background
-    # =================================================
-
-    def set_background(self, image_path):
-
-        self.root.update_idletasks()
-
-        width = self.root.winfo_width()
-        height = self.root.winfo_height()
-
-        image = Image.open(image_path)
-        image = image.resize(
-            (width, height),
-            Image.Resampling.LANCZOS
-        )
-
-        self._bg_image = ImageTk.PhotoImage(image)
-
-        if self._bg_label is not None:
-            self._bg_label.destroy()
-
-        self._bg_label = tk.Label(
-            self.root,
-            image=self._bg_image,
-            bd=0
-        )
-
-        self._bg_label.place(
-            x=0,
-            y=0,
-            relwidth=1,
-            relheight=1
-        )
-
-        self._bg_label.lower()
-
-    # =================================================
-    # Main Window
-    # =================================================
-
-    def setup_main_window(self):
-
-        self.root.update_idletasks()
-
-        width = self.root.winfo_width()
-        height = self.root.winfo_height()
-
-        self._canvas.place(
-            x=GANTT_CHART["relx"] * width,
-            y=GANTT_CHART["rely"] * height,
-            width=GANTT_CHART["relwidth"] * width,
-            height=GANTT_CHART["relheight"] * height
-        )
-
-        for key, pos in METRIC_LOCATIONS.items():
-
-            lbl = tk.Label(
-                self.root,
-                text="--",
-                bg="#FFFFFF",
-                fg=UI_CONFIG["text_color"],
-                font=(
-                    UI_CONFIG["font_family"],
-                    UI_CONFIG["font_size"]
-                )
+        for i, key in enumerate(metrics_keys):
+            val_id = self.canvas.create_text(
+                m_x + (i * m_space), m_y + v_offset, text="--", 
+                font=FONTS['metric'], fill="#8c6f87", anchor=tk.W
             )
+            self.metrics_labels[key] = val_id
+            self.persistent_canvas_items.append(val_id)
 
-            lbl.place(
-                x=pos["relx"] * width,
-                y=pos["rely"] * height,
-                anchor="center"
-            )
-
-            self._metrics_labels[key] = lbl
-
-    # =================================================
-    # Public Process Methods
-    # =================================================
-
-    def add_process(self, process):
-        self._processes.append(process)
-
-    def get_processes(self):
-        return self._processes
-
-    # =================================================
-    # Shared Utility Methods
-    # =================================================
-
-    def generate_process_color(self, index):
-
-        colors = [
-            "#FF6B6B",
-            "#4ECDC4",
-            "#45B7D1",
-            "#96CEB4",
-            "#FFEAA7",
-            "#DDA0DD",
-            "#F4A261",
-            "#A8DADC",
-            "#74B9FF",
-            "#55EFC4"
+        # 4. Setup Buttons
+        btn_props = {
+            'font': FONTS['default'], 'bg': '#ffe6ad', 'fg': '#000000',
+            'relief': tk.SOLID, 'bd': 1, 'padx': 60, 'pady': 22
+        }
+        
+        buttons = [
+            tk.Button(self.root, text="Menu", command=self.return_to_menu, **btn_props),
+            tk.Button(self.root, text="Start", command=self.start_simulation, **btn_props),
+            tk.Button(self.root, text="Add Process", command=self.open_add_process_window, **btn_props),
+            tk.Button(self.root, text="Reset", command=self.reset_simulation, **btn_props)
         ]
+        
+        # Position buttons dynamically, ensuring visibility
+        current_x = BUTTONS_LAYOUT['start_x']
+        safe_btn_y = min(BUTTONS_LAYOUT['start_y'], screen_h - 100)
+        
+        for btn in buttons:
+            w_id = self.canvas.create_window(current_x, safe_btn_y, window=btn, anchor=tk.W)
+            self.persistent_canvas_items.append(w_id)
+            current_x += 250 
+            
+        self.root.update_idletasks()
 
-        return colors[index % len(colors)]
-
-    def clear_canvas(self):
-        self._canvas.delete("all")
+    def update_metrics(self, avg_wt: float, avg_tat: float, throughput: float, cpu_util: float):
+        """Updates metrics with the visual order: WT, TAT, Throughput, CPU."""
+        if not self.canvas: return
+        self.canvas.itemconfig(self.metrics_labels['average_wt'], text=f"{avg_wt:.2f}")
+        self.canvas.itemconfig(self.metrics_labels['average_tat'], text=f"{avg_tat:.2f}")
+        self.canvas.itemconfig(self.metrics_labels['throughput'], text=f"{throughput:.2f}")
+        self.canvas.itemconfig(self.metrics_labels['cpu_utilization'], text=f"{cpu_util:.1f}%")
 
     def reset_metrics(self):
+        if self.canvas:
+            for text_id in self.metrics_labels.values():
+                self.canvas.itemconfig(text_id, text="--")
 
-        for lbl in self._metrics_labels.values():
-            lbl.config(text="--")
+    def clear_canvas(self):
+        if self.canvas:
+            for item in self.canvas.find_all():
+                if item not in self.persistent_canvas_items:
+                    self.canvas.delete(item)
 
-    def update_metrics(
-        self,
-        avg_tat,
-        avg_wt,
-        cpu_util,
-        throughput
-    ):
+    def return_to_menu(self):
+        self.root.destroy()
 
-        self._metrics_labels["avg_tat"].config(
-            text=f"{avg_tat:.2f}"
-        )
-
-        self._metrics_labels["avg_wt"].config(
-            text=f"{avg_wt:.2f}"
-        )
-
-        self._metrics_labels["cpu_util"].config(
-            text=f"{cpu_util:.2f}%"
-        )
-
-        self._metrics_labels["throughput"].config(
-            text=f"{throughput:.2f}"
-        )
-
-    # =================================================
-    # Gantt Chart
-    # =================================================
-
-    def animate_execution_loop(
-        self,
-        segments,
-        processes
-    ):
-
-        self.clear_canvas()
-
-        if not segments:
-            return
-
-        self.root.update_idletasks()
-
-        width = self._canvas.winfo_width()
-        height = self._canvas.winfo_height()
-
-        total_time = max(segment[2] for segment in segments)
-
-        if total_time <= 0:
-            total_time = 1
-
-        top = 20
-        bottom = height - 35
-
-        for process_index, start, end in segments:
-
-            x1 = (start / total_time) * width
-            x2 = (end / total_time) * width
-
-            self._canvas.create_rectangle(
-                x1,
-                top,
-                x2,
-                bottom,
-                fill=processes[process_index]["color"],
-                outline="black",
-                width=2
-            )
-
-            self._canvas.create_text(
-                (x1 + x2) / 2,
-                (top + bottom) / 2,
-                text=processes[process_index]["pid"],
-                font=("Arial", 10, "bold")
-            )
-
-            self._canvas.create_text(
-                x1,
-                bottom + 15,
-                text=str(start),
-                anchor="n"
-            )
-
-        self._canvas.create_text(
-            width,
-            bottom + 15,
-            text=str(total_time),
-            anchor="ne"
-        )
-
-    # =================================================
-    # Mainloop
-    # =================================================
+    def start_simulation(self): raise NotImplementedError
+    def reset_simulation(self): raise NotImplementedError
+    def open_add_process_window(self): raise NotImplementedError
 
     def run(self):
         self.root.mainloop()

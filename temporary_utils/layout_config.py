@@ -1,16 +1,64 @@
-# Relative positioning ensures elements scale with the window
-GANTT_CHART = {'relx': 0.05, 'rely': 0.35, 'relwidth': 0.9, 'relheight': 0.28}
+"""
+Centralized structural layout configuration for absolute positioning 
+on the master canvas window layer.
+"""
 
-METRIC_LOCATIONS = {
-    'avg_wt':     {'relx': 0.26, 'rely': 0.85},
-    'avg_tat':    {'relx': 0.44, 'rely': 0.85},
-    'throughput': {'relx': 0.62, 'rely': 0.85},
-    'cpu_util':   {'relx': 0.80, 'rely': 0.85}
+# =====================================================================
+# 1. LIVE METRICS AREA COORDINATES (Top Section Group)
+# =====================================================================
+METRICS_LAYOUT = {
+    'start_x': 300,                  
+    'start_y': 564,                   
+    'spacing_x': 260,                
+    'value_offset_y': 40             # FIX: Vertical gap pushing metrics directly UNDER names
 }
 
-BUTTON_LOCATIONS = {
-    'menu':  {'relx': 0.1, 'rely': 0.95},
-    'start': {'relx': 0.3, 'rely': 0.95},
-    'add':   {'relx': 0.5, 'rely': 0.95},
-    'reset': {'relx': 0.7, 'rely': 0.95}
+# =====================================================================
+# 2. SIMULATION CANVAS TRACK (Middle Section Group)
+# =====================================================================
+SIMULATION_PANE = {
+    'y_start_coordinate': 274,       
+    'process_block_height': 120,      
+    'left_margin': 120,              
+    'right_margin': 100,             
+    'timestamp_offset_y': 20,        
+}
+
+# =====================================================================
+# 3. NATIVE BUTTONS CONTROL LAYOUT (Main Page Only)
+# =====================================================================
+BUTTONS_LAYOUT = {
+    'start_x': 30,                  # Horizontal starting point for the button row
+    'start_y': 1025,                 # Absolute vertical coordinate at the bottom
+    
+    'button_gap': 15,               # FIX: The exact small space (in pixels) between buttons
+    
+    # MANUAL SIZE ADJUSTMENTS: Increase these to make buttons larger
+    'main_btn_padx': 60,             
+    'main_btn_pady': 22,          
+}
+
+# =====================================================================
+# 4. ADD PROCESS WINDOW LAYOUT (1280x720 Popup Scoped)
+# =====================================================================
+ADD_PROCESS_LAYOUT = {
+    'frame_padding': 20,
+    'entry_field_width': 20,         
+    'table_row_height': 12,          
+    'col_pid_width': 100,
+    'col_arrival_width': 150,
+    'col_burst_width': 150
+}
+
+MENU_LAYOUT = {
+    'col0_x': 610, # Absolute X coordinate for the left column
+    'col1_x': 1335, # Absolute X coordinate for the right column
+    'start_y': 443, # Absolute Y coordinate for the top row
+    'row_gap_y': 140, # Vertical pixel distance between successive rows
+
+    'menu_btn_padx': 48, # Horizontal interior element text clearance
+    'menu_btn_pady': 15, # Vertical interior element text clearance
+
+    'back_btn_x': 1290,              
+    'back_btn_y': 897    
 }

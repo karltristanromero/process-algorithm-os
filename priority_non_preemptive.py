@@ -1,250 +1,150 @@
+"""
+Priority Non-Preemptive (PNP) Scheduler implementation.
+Refactored for safe window management and consistent metric ordering.
+"""
+
 import tkinter as tk
 from tkinter import messagebox
+from typing import List, Dict, Optional
 
 from scheduler_base import SchedulerBase
-from temporary_utils.theme import BACKGROUND_MAP, UI_CONFIG
-
+from temporary_utils.theme import FONTS, WINDOW_SIZES, BG_PRIORITY_NON_PREEMPTIVE
+from temporary_utils.layout_config import SIMULATION_PANE
 
 class PriorityNonPreemptive(SchedulerBase):
-
-    def __init__(self, title, width, height):
+    def __init__(self, title: str, width: int, height: int):
         super().__init__(title, width, height)
+        self.background_path = BG_PRIORITY_NON_PREEMPTIVE
+        self.arrival_entry: Optional[tk.Entry] = None
+        self.burst_entry: Optional[tk.Entry] = None
+        self.priority_entry: Optional[tk.Entry] = None
 
-        self.set_background(BACKGROUND_MAP["PRIO_NON_PREEMPT"])
-        self.setup_main_window()
-        self.add_nav_buttons()
+    def setup_add_process_window(self):
+        self.add_process_window = tk.Toplevel(self.root)
+        self.add_process_window.title("Add Process")
+        self.add_process_window.geometry("300x320")
+        self.add_process_window.grab_set()
 
-    # =================================================
-    # Navigation Buttons
-    # =================================================
+        main_frame = tk.Frame(self.add_process_window, bg='#2b2b2b')
+        main_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
 
-    def add_nav_buttons(self):
+        fields = [("Arrival Time:", "arrival_entry"), 
+                  ("Burst Time:", "burst_entry"), 
+                  ("Priority (Low # = High):", "priority_entry")]
+        
+        for label, attr in fields:
+            tk.Label(main_frame, text=label, font=FONTS['default'], bg='#2b2b2b', fg='white').pack()
+            entry = tk.Entry(main_frame, font=FONTS['default'])
+            entry.pack(pady=(0, 10))
+            setattr(self, attr, entry)
 
-        style = {
-            "bg": UI_CONFIG["button_bg"],
-            "fg": "black",
-            "font": ("Georgia", 16, "bold"),
-            "width": 8,
-            "height": 1,
-            "bd": 0,
-            "relief": "flat",
-            "cursor": "hand2",
-            "activebackground": UI_CONFIG["button_bg"],
-            "activeforeground": "black",
-            "highlightthickness": 0,
-            "padx": 68,
-            "pady": 15
-        }
+        tk.Button(main_frame, text="Add Process", command=self.add_process, bg='#ffe6ad').pack(pady=10)
 
-        tk.Button(
-            self.root,
-            text="MENU",
-            command=self.root.destroy,
-            **style
-        ).place(relx=0.0967, rely=0.955, anchor="center")
-
-        tk.Button(
-            self.root,
-            text="START",
-            command=self.start_simulation,
-            **style
-        ).place(relx=0.271, rely=0.955, anchor="center")
-
-        tk.Button(
-            self.root,
-            text="ADD",
-            command=self.open_add_process_window,
-            **style
-        ).place(relx=0.45, rely=0.955, anchor="center")
-
-        tk.Button(
-            self.root,
-            text="RESET",
-            command=self.reset_simulation,
-            **style
-        ).place(relx=0.625, rely=0.955, anchor="center")
-
-    # =================================================
-    # Add Process Window
-    # =================================================
-
-    def open_add_process_window(self):
-
-        win = tk.Toplevel(self.root)
-        win.title("Add Process")
-        win.geometry("300x230")
-
-        tk.Label(win, text="Arrival Time").pack(pady=5)
-        arr_ent = tk.Entry(win)
-        arr_ent.pack()
-
-        tk.Label(win, text="Burst Time").pack(pady=5)
-        brst_ent = tk.Entry(win)
-        brst_ent.pack()
-
-        tk.Label(win, text="Priority").pack(pady=5)
-        prio_ent = tk.Entry(win)
-        prio_ent.pack()
-
-        tk.Button(
-            win,
-            text="Add",
-            command=lambda: self.add_process(
-                win,
-                arr_ent,
-                brst_ent,
-                prio_ent
-            )
-        ).pack(pady=15)
-
-    # =================================================
-    # Add Process
-    # =================================================
-
-    def add_process(self, win, arr_ent, brst_ent, prio_ent):
+    def add_process(self):
+        # Pylance type safety
+        assert self.arrival_entry is not None
+        assert self.burst_entry is not None
+        assert self.priority_entry is not None
 
         try:
-
-            arrival = int(arr_ent.get())
-            burst = int(brst_ent.get())
-            priority = int(prio_ent.get())
-
-            process = {
-                "pid": f"P{len(self._processes)+1}",
-                "arrival_time": arrival,
-                "burst_time": burst,
-                "priority": priority,
-                "color": self.generate_process_color(
-                    len(self._processes)
-                )
+            p = {
+                'pid': f"P{len(self.processes) + 1}",
+                'arrival_time': int(self.arrival_entry.get()),
+                'burst_time': int(self.burst_entry.get()),
+                'priority': int(self.priority_entry.get()),
+                'color': self.generate_process_color(len(self.processes))
             }
-
-            super().add_process(process)
-
-            messagebox.showinfo(
-                "Success",
-                f"{process['pid']} added successfully."
-            )
-
-            win.destroy()
-
+            self.processes.append(p)
+            
+            # Destroy window before messagebox to fix focus bug
+            if self.add_process_window:
+                self.add_process_window.destroy()
+                self.add_process_window = None
+                
+            messagebox.showinfo("Success", f"{p['pid']} added successfully.")
         except ValueError:
-
-            messagebox.showerror(
-                "Error",
-                "Please enter valid integers."
-            )
-
-    # =================================================
-    # Priority Non-Preemptive Algorithm
-    # =================================================
+            messagebox.showerror("Error", "Enter valid integers.")
 
     def start_simulation(self):
+        if not self.processes: return
+        self.run_pnp()
 
-        if not self._processes:
-
-            messagebox.showwarning(
-                "Warning",
-                "No processes to schedule!"
-            )
-
-            return
-
+    def run_pnp(self):
+        processes = sorted(self.processes, key=lambda p: p['arrival_time'])
         time = 0
-        completed = 0
-        total = len(self._processes)
-
-        remaining = self._processes.copy()
-        segments = []
-
-        while completed < total:
-
-            available = [
-                p for p in remaining
-                if p["arrival_time"] <= time
-            ]
-
-            if not available:
-                time += 1
-                continue
-
-            next_process = min(
-                available,
-                key=lambda p: (
-                    p["priority"],
-                    p["arrival_time"]
-                )
-            )
-
+        completed_tasks = []
+        ready_queue = []
+        remaining = [p.copy() for p in processes]
+        
+        while len(completed_tasks) < len(processes):
+            for p in remaining[:]:
+                if p['arrival_time'] <= time:
+                    ready_queue.append(p)
+                    remaining.remove(p)
+            
+            if not ready_queue:
+                if remaining:
+                    time = min(p['arrival_time'] for p in remaining)
+                    continue
+                break
+            
+            curr = min(ready_queue, key=lambda x: x['priority'])
+            ready_queue.remove(curr)
+            
             start = time
-            finish = start + next_process["burst_time"]
+            time += curr['burst_time']
+            curr['completion_time'] = time
+            curr['tat'] = curr['completion_time'] - curr['arrival_time']
+            curr['wt'] = curr['tat'] - curr['burst_time']
+            
+            completed_tasks.append((curr, start, time))
+            
+        self.animate_execution_loop(completed_tasks)
 
-            tat = finish - next_process["arrival_time"]
-            wt = tat - next_process["burst_time"]
+    def animate_execution_loop(self, completed_tasks, step=0):
+        canvas = self.canvas
+        if canvas is None: return
+        
+        self.root.update()
+        if step == 0: self.clear_canvas()
 
-            next_process["tat"] = tat
-            next_process["wt"] = wt
+        if step < len(completed_tasks):
+            p, s, e = completed_tasks[step]
+            canvas_width = max(canvas.winfo_width(), 1000)
+            
+            y_pos = SIMULATION_PANE['y_start_coordinate']
+            p_height = SIMULATION_PANE['process_block_height']
+            l_margin = SIMULATION_PANE['left_margin']
+            r_margin = SIMULATION_PANE['right_margin']
+            time_scale = (canvas_width - l_margin - r_margin) / completed_tasks[-1][2]
+            
+            x, w = l_margin + s * time_scale, (e - s) * time_scale
+            canvas.create_rectangle(x, y_pos, x + w, y_pos + p_height, fill=p['color'], outline='white')
+            canvas.create_text(x + w/2, y_pos + (p_height/2), text=p['pid'], fill='white', font=FONTS['default'])
+            
+            self.root.after(600, lambda: self.animate_execution_loop(completed_tasks, step+1))
+        else:
+            self.finalize_metrics(completed_tasks)
 
-            segments.append(
-                (
-                    self._processes.index(next_process),
-                    start,
-                    finish
-                )
-            )
-
-            time = finish
-            remaining.remove(next_process)
-            completed += 1
-
-        avg_tat = sum(
-            p["tat"] for p in self._processes
-        ) / total
-
-        avg_wt = sum(
-            p["wt"] for p in self._processes
-        ) / total
-
-        cpu_util = (
-            sum(
-                p["burst_time"]
-                for p in self._processes
-            )
-            / time
-        ) * 100
-
-        throughput = total / time
-
-        self.update_metrics(
-            avg_tat,
-            avg_wt,
-            cpu_util,
-            throughput
-        )
-
-        self.animate_execution_loop(
-            segments,
-            self._processes
-        )
-
-    # =================================================
-    # Reset
-    # =================================================
+    def finalize_metrics(self, completed_tasks):
+        processes = [c[0] for c in completed_tasks]
+        n = len(processes)
+        total_time = completed_tasks[-1][2]
+        
+        avg_tat = sum(p['tat'] for p in processes) / n
+        avg_wt = sum(p['wt'] for p in processes) / n
+        cpu_util = (sum(p['burst_time'] for p in processes) / total_time) * 100
+        throughput = n / total_time
+        
+        # New synchronized order: WT, TAT, Throughput, CPU
+        self.update_metrics(avg_wt, avg_tat, throughput, cpu_util)
 
     def reset_simulation(self):
-
-        for process in self._processes:
-            process.pop("tat", None)
-            process.pop("wt", None)
-
-        self._processes.clear()
-
+        self.processes.clear()
         self.clear_canvas()
         self.reset_metrics()
+        if self.add_process_window:
+            self.add_process_window.destroy()
+            self.add_process_window = None
 
-    # =================================================
-    # Mainloop
-    # =================================================
-
-    def run(self):
-        self.root.mainloop()
+    def open_add_process_window(self): self.setup_add_process_window()
