@@ -9,8 +9,8 @@ import tkinter as tk
 from tkinter import messagebox
 
 # Updated imports pointing to your new permanent utils folder
-from utils.theme import COLORS, FONTS
-from utils.layout_config import MAIN_MENU_LAYOUT
+from utils.cpu_sched_theme import COLORS, FONTS
+from utils.cpu_sched_config import MAIN_MENU_LAYOUT
 
 
 class IntegratedSuiteMenu:
