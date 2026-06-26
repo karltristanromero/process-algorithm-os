@@ -174,7 +174,18 @@ class MemoryManagementApp:
 
         self.canvas.create_text(cfg.BOTTOM_MENU_LAYOUT["algo_label_x"], bottom_menu_y, text="ALGO:", font=cfg.BOTTOM_MENU_LAYOUT["font_nav"], fill=Theme.PRIMARY, anchor=tk.W)
         
-        self.combo_algo = ttk.Combobox(self.window_root, values=["MFT: First Fit", "MFT: Best Fit", "MFT: Best Available", "MVT: First Fit", "MVT: Best Fit", "MVT: Worst Fit"], state="readonly", font=("Arial", 11, "bold"), style="ModernCombo.TCombobox")
+        algo_selections = [
+            "MFT: First Fit", 
+            "MFT: Best Fit", 
+            "MFT: Best Available", 
+            "MVT: First Fit (No Compaction)",
+            "MVT: First Fit (Auto Compaction)",
+            "MVT: Best Fit (No Compaction)",
+            "MVT: Best Fit (Auto Compaction)",
+            "MVT: Worst Fit (No Compaction)",
+            "MVT: Worst Fit (Auto Compaction)"
+        ]
+        self.combo_algo = ttk.Combobox(self.window_root, values=algo_selections, state="readonly", font=("Arial", 11, "bold"), style="ModernCombo.TCombobox")
         self.combo_algo.set("MFT: First Fit")
         self.canvas.create_window(cfg.BOTTOM_MENU_LAYOUT["combo_algo_x"], bottom_menu_y, window=self.combo_algo, width=cfg.BOTTOM_MENU_LAYOUT["combo_algo_width"], height=cfg.BOTTOM_MENU_LAYOUT["row_height"], anchor=tk.W)
         self.combo_algo.bind("<<ComboboxSelected>>", lambda e: self.refresh_display_matrix())
@@ -184,9 +195,6 @@ class MemoryManagementApp:
 
         self.canvas.create_text(cfg.BOTTOM_MENU_LAYOUT["btn_reset_x"], bottom_menu_y, text="🔄 RESET", font=cfg.BOTTOM_MENU_LAYOUT["font_nav"], fill=Theme.ERROR, anchor=tk.W, tags="btn_reset")
         self.canvas.tag_bind("btn_reset", "<Button-1>", lambda e: self.reset_system())
-
-        self.compact_text_id = self.canvas.create_text(cfg.BOTTOM_MENU_LAYOUT["btn_compaction_x"], bottom_menu_y, text="🔨 COMPACT", font=cfg.BOTTOM_MENU_LAYOUT["font_nav"], fill=Theme.WARNING, anchor=tk.W, tags="btn_compact")
-        self.canvas.tag_bind("btn_compact", "<Button-1>", lambda e: self.trigger_mvt_compaction())
 
         self.status_text_id = self.canvas.create_text(100, bottom_menu_y + 40, text="System Ready", font=("Arial", 11, "italic"), fill=Theme.NEUTRAL, anchor=tk.NW)
 
@@ -200,9 +208,8 @@ class MemoryManagementApp:
                 self.canvas.itemconfig(self.bg_canvas_item, image=self.bg_image_ref)
 
     def go_back_to_main_menu(self):
-        if self.auto_mode_running:
-            self.toggle_auto_mode()
-        messagebox.showinfo("Menu Navigation", "Returning back to Main System Menu Shell...")
+        """ Left empty as there is no central main menu shell linking the dashboard algorithms yet. """
+        pass
 
     def update_status(self, message):
         self.canvas.itemconfig(self.status_text_id, text=message, fill=Theme.PRIMARY)
@@ -249,6 +256,25 @@ class MemoryManagementApp:
             self.canvas.itemconfig(self.start_text_id, text="▶ START", fill=Theme.SUCCESS)
             self.add_event_log("Automated clock loop paused.", "INFO")
 
+    def execute_mvt_allocation(self, algo_title, process):
+        if "First Fit" in algo_title:
+            msg = first_fit_mvt(process, self.mvt_manager)
+        elif "Best Fit" in algo_title:
+            msg = best_fit_mvt(process, self.mvt_manager)
+        else:
+            msg = worst_fit_mvt(process, self.mvt_manager)
+
+        if "Failed" in msg and "Auto Compaction" in algo_title:
+            total_free_memory = sum(b.block_size for b in self.mvt_manager.blocks if b.occupied_process is None)
+            if total_free_memory >= process.process_size:
+                self.mvt_manager.compact_memory()
+                self.add_event_log("⚡ Auto Compaction Triggered: Consolidated dynamic blocks on the fly.", "WARNING")
+                if "First Fit" in algo_title: msg = first_fit_mvt(process, self.mvt_manager)
+                elif "Best Fit" in algo_title: msg = best_fit_mvt(process, self.mvt_manager)
+                else: msg = worst_fit_mvt(process, self.mvt_manager)
+                
+        return msg
+
     def run_auto_step(self):
         if not self.auto_mode_running: return
         try:
@@ -266,9 +292,7 @@ class MemoryManagementApp:
                         elif "Allocated" in msg:
                             self.add_event_log(f"Job {process.process_id} ({process.process_size}K) ↦ Successfully Routed.", "ALLOCATE")
                     else:
-                        if "First Fit" in algo: msg = first_fit_mvt(process, self.mvt_manager)
-                        elif "Best Fit" in algo: msg = best_fit_mvt(process, self.mvt_manager)
-                        else: msg = worst_fit_mvt(process, self.mvt_manager)
+                        msg = self.execute_mvt_allocation(algo, process)
                         if "Failed" in msg and process not in self.mvt_manager.waiting_queue:
                             self.mvt_manager.waiting_queue.append(process)
                             self.add_event_log(f"Inbound Job {process.process_id} ({process.process_size}K) → Halted in Waiting Queue.", "WARNING")
@@ -327,7 +351,7 @@ class MemoryManagementApp:
                 elif "Allocated" in msg:
                     self.add_event_log(f"Manual Job {process.process_id} allocated.", "ALLOCATE")
             else:
-                msg = first_fit_mvt(process, self.mvt_manager) if "First Fit" in algo else (best_fit_mvt(process, self.mvt_manager) if "Best Fit" in algo else worst_fit_mvt(process, self.mvt_manager))
+                msg = self.execute_mvt_allocation(algo, process)
                 if "Failed" in msg and process not in self.mvt_manager.waiting_queue:
                     self.mvt_manager.waiting_queue.append(process)
                     self.add_event_log(f"Manual Job {process.process_id} pushed to queue.", "WARNING")
@@ -362,30 +386,17 @@ class MemoryManagementApp:
         except Exception as e:
             messagebox.showerror("Deallocation Error", str(e))
 
-    def trigger_mvt_compaction(self):
-        try:
-            msg = self.mvt_manager.compact_memory()
-            self.reorder_mvt_queue()
-            self.add_event_log("Memory core defragmented/compacted.", "INFO")
-            self.refresh_display_matrix()
-            messagebox.showinfo("Compaction Engine Active", msg)
-        except Exception as e:
-            messagebox.showerror("Compaction Fault", str(e))
-
     def reorder_mvt_queue(self):
         algo = self.combo_algo.get()
         for queued_proc in list(self.mvt_manager.waiting_queue):
-            res = first_fit_mvt(queued_proc, self.mvt_manager) if "First Fit" in algo else (best_fit_mvt(queued_proc, self.mvt_manager) if "Best Fit" in algo else worst_fit_mvt(queued_proc, self.mvt_manager))
+            res = self.execute_mvt_allocation(algo, queued_proc)
             if "Allocated" in res: self.mvt_manager.waiting_queue.remove(queued_proc)
 
     def refresh_display_matrix(self):
+        self.canvas.delete("mem_element")
         if "MFT" in self.combo_algo.get():
-            self.canvas.itemconfigure("btn_compact", state="hidden")
-            self.canvas.delete("mem_element")
             self.update_mft_display_map()
         else:
-            self.canvas.itemconfigure("btn_compact", state="normal")
-            self.canvas.delete("mem_element")
             self.update_mvt_display_map()
 
     # =========================================================
@@ -395,7 +406,6 @@ class MemoryManagementApp:
         total_free_space = 0
         total_internal_frag = 0
         
-        # Waiting Queue column placement
         self.canvas.create_text(cfg.SIMULATION_PANE_LAYOUT["queue_title_x"], cfg.SIMULATION_PANE_LAYOUT["queue_title_y"], text="⏳ Waiting Queue:", font=cfg.SIMULATION_PANE_LAYOUT["font_title"], fill=Theme.PRIMARY, anchor=tk.W, tags="mem_element")
         if not self.mft_manager.waiting_queue:
             self.canvas.create_text(cfg.SIMULATION_PANE_LAYOUT["queue_title_x"], cfg.SIMULATION_PANE_LAYOUT["queue_list_start_y"], text="[ Queue Empty ]", font=("Courier", 16, "italic"), fill=Theme.NEUTRAL, anchor=tk.W, tags="mem_element")
@@ -404,20 +414,16 @@ class MemoryManagementApp:
                 y_pos = cfg.SIMULATION_PANE_LAYOUT["queue_list_start_y"] + (idx * cfg.SIMULATION_PANE_LAYOUT["queue_list_spacing_y"])
                 self.canvas.create_text(cfg.SIMULATION_PANE_LAYOUT["queue_title_x"], y_pos, text=f"• Job {proc.process_id} ({proc.process_size}K)", font=("Courier", 14, "bold"), fill=Theme.WAITING, anchor=tk.W, tags="mem_element")
 
-        # Memory visualization stack
         start_y = cfg.SIMULATION_PANE_LAYOUT["ram_column_start_y"]
         x1 = cfg.SIMULATION_PANE_LAYOUT["ram_column_x1"]
         x2 = cfg.SIMULATION_PANE_LAYOUT["ram_column_x2"]
         canvas_scale = cfg.SIMULATION_PANE_LAYOUT["ram_vertical_scale"]
         
-        # Address tracking accumulator initialization
         current_accumulation_address = 0
-        
         for partition in self.mft_manager.partitions:
             height = partition.partition_size * canvas_scale
             y1, y2 = start_y, start_y + height
             
-            # Print physical boundary value at the top split line of the current partition
             self.canvas.create_text(x1 - 20, start_y, text=f"{current_accumulation_address}K", font=cfg.SIMULATION_PANE_LAYOUT["font_address_label"], anchor=tk.E, fill=Theme.PRIMARY, tags="mem_element")
             
             if partition.occupied_process:
@@ -437,7 +443,6 @@ class MemoryManagementApp:
             start_y += height
             current_accumulation_address += int(partition.partition_size)
             
-        # Print ultimate 64K termination ceiling address at the bottom line
         self.canvas.create_text(x1 - 20, start_y, text=f"{current_accumulation_address}K", font=cfg.SIMULATION_PANE_LAYOUT["font_address_label"], anchor=tk.E, fill=Theme.PRIMARY, tags="mem_element")
 
         self.lbl_total_space.config(text=f"{total_free_space}K")
@@ -462,7 +467,6 @@ class MemoryManagementApp:
         x2 = cfg.SIMULATION_PANE_LAYOUT["ram_column_x2"]
         canvas_scale = cfg.SIMULATION_PANE_LAYOUT["ram_vertical_scale"]
         
-        # MVT handles start addresses dynamically inside its blocks loop directly
         for block in self.mvt_manager.blocks:
             height = block.block_size * canvas_scale
             y1, y2 = start_y, start_y + height
@@ -471,10 +475,10 @@ class MemoryManagementApp:
             
             if block.occupied_process:
                 self.canvas.create_rectangle(x1, y1, x2, y2, fill=Theme.ALLOCATED, outline=Theme.ALLOCATED_DARK, width=3, tags="mem_element")
-                self.canvas.create_text(x1 + 125, y1 + (height / 2), text=f"{block.occupied_process.process_id}\n({block.block_size}K)", font=cfg.SIMULATION_PANE_LAYOUT["font_allocated_block"], fill="white", tags="mem_element")
+                self.canvas.create_text(x1 + 125, y1 + (height / 2), text=f"{block.occupied_process.process_id} ({block.block_size}K)", font=cfg.SIMULATION_PANE_LAYOUT["font_allocated_block"], fill="white", tags="mem_element")
             else:
                 self.canvas.create_rectangle(x1, y1, x2, y2, fill=Theme.FREE, outline=Theme.FREE_BORDER, width=2, tags="mem_element")
-                self.canvas.create_text(x1 + 125, y1 + (height / 2), text=f"✓ FREE\n({block.block_size}K)", font=cfg.SIMULATION_PANE_LAYOUT["font_allocated_block"], fill=Theme.SUCCESS, tags="mem_element")
+                self.canvas.create_text(x1 + 125, y1 + (height / 2), text=f"✓ FREE ({block.block_size}K)", font=cfg.SIMULATION_PANE_LAYOUT["font_allocated_block"], fill=Theme.SUCCESS, tags="mem_element")
                 total_free_space += block.block_size
                 free_segments += 1
             start_y += height
@@ -487,7 +491,6 @@ class MemoryManagementApp:
         self.lbl_total_space.config(text=f"{total_free_space}K")
         self.lbl_external_frag.config(text=f"{total_external_frag}K")
         self.lbl_internal_frag.config(text="0K")
-
 
 if __name__ == "__main__":
     root = tk.Tk()
